@@ -74,13 +74,35 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| — | — | — |
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Pending |
+| DATA-06 | Phase 1 | Pending |
+| MATH-01 | Phase 2 | Pending |
+| MATH-02 | Phase 2 | Pending |
+| MATH-03 | Phase 2 | Pending |
+| MATH-04 | Phase 2 | Pending |
+| MATH-05 | Phase 2 | Pending |
+| MATH-06 | Phase 2 | Pending |
+| PIPE-01 | Phase 3 | Pending |
+| PIPE-02 | Phase 3 | Pending |
+| PIPE-03 | Phase 3 | Pending |
+| PIPE-04 | Phase 3 | Pending |
+| INTG-01 | Phase 3 | Pending |
+| INTG-02 | Phase 1 | Pending |
+| INTG-03 | Phase 3 | Pending |
+| INTG-04 | Phase 3 | Pending |
+| PKG-01 | Phase 1 | Pending |
+| PKG-02 | Phase 3 | Pending |
+| PKG-03 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20
+- v1 requirements: 23 total
+- Mapped to phases: 23
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-11*
-*Last updated: 2026-04-11 after initial definition*
+*Last updated: 2026-04-11 after roadmap creation*
