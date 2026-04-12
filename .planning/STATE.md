@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-04-12T19:22:21.621Z"
+stopped_at: Completed 04-04-PLAN.md (gap closure)
+last_updated: "2026-04-12T19:50:24.969Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 4
   completed_phases: 4
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 14
+  completed_plans: 14
   percent: 100
 ---
 
@@ -66,6 +66,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04 P01 | 6min | 1 tasks | 5 files |
 | Phase 04 P02 | 7min | 2 tasks | 3 files |
 | Phase 04 P03 | 6min | 2 tasks | 8 files |
+| Phase 04-coxeter-weyl P04 | 6min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,8 @@ Recent decisions affecting current work:
 - [Phase 04]: Reflected contraction curves use g @ curve (Mori space), Kahler rays use ray @ inv(g)
 - [Phase 04]: No deduplication of reflected phases -- each (g, fund_phase) pair is unique (D-11)
 - [Phase 04]: _sym_flop_curves stored during BFS for chamber walk; to_fundamental_domain returns (point, g); weyl.py deleted
+- [Phase 04-coxeter-weyl]: Root phase curve_signs keys used as canonical curve set for reflected phases
+- [Phase 04-coxeter-weyl]: Kept _sym_flop_refs set for O(1) dedup alongside _sym_flop_pairs authoritative list
 
 ### Roadmap Evolution
 
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T19:22:21.617Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-04-12T19:50:24.964Z
+Stopped at: Completed 04-04-PLAN.md (gap closure)
 Resume file: None
