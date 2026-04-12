@@ -1,4 +1,4 @@
-"""Tests for cybir.core.graph PhaseGraph."""
+"""Tests for cybir.core.graph CYGraph."""
 
 import numpy as np
 import pytest
@@ -20,60 +20,60 @@ def _make_contraction(start_label, end_label):
     )
 
 
-class TestPhaseGraphEmpty:
-    """Tests for empty PhaseGraph."""
+class TestCYGraphEmpty:
+    """Tests for empty CYGraph."""
 
     def test_empty_graph(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         assert g.num_phases == 0
         assert g.num_contractions == 0
 
     def test_repr_empty(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         assert "phases=0" in repr(g)
 
 
-class TestPhaseGraphNodes:
+class TestCYGraphNodes:
     """Tests for adding phases."""
 
     def test_add_single_phase(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         p = _make_phase("A")
         g.add_phase(p)
         assert g.num_phases == 1
         assert len(g.phases) == 1
 
     def test_phases_returns_calabi_yau_lite(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         p = _make_phase("A")
         g.add_phase(p)
         assert isinstance(g.phases[0], CalabiYauLite)
         assert g.phases[0].label == "A"
 
     def test_get_phase_by_label(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         p = _make_phase("X")
         g.add_phase(p)
         assert g.get_phase("X") is p
 
 
-class TestPhaseGraphEdges:
+class TestCYGraphEdges:
     """Tests for adding contractions and neighbors."""
 
     def test_add_contraction(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         g.add_phase(_make_phase("A"))
         g.add_phase(_make_phase("B"))
         c = _make_contraction("A", "B")
@@ -81,9 +81,9 @@ class TestPhaseGraphEdges:
         assert g.num_contractions == 1
 
     def test_contractions_returns_objects(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         g.add_phase(_make_phase("A"))
         g.add_phase(_make_phase("B"))
         c = _make_contraction("A", "B")
@@ -91,9 +91,9 @@ class TestPhaseGraphEdges:
         assert isinstance(g.contractions[0], ExtremalContraction)
 
     def test_neighbors_single_edge(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         pa = _make_phase("A")
         pb = _make_phase("B")
         g.add_phase(pa)
@@ -105,9 +105,9 @@ class TestPhaseGraphEdges:
 
     def test_neighbors_chain(self):
         """A-B-C chain: neighbors of B should be [A, C]."""
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         for label in ["A", "B", "C"]:
             g.add_phase(_make_phase(label))
         g.add_contraction(_make_contraction("A", "B"))
@@ -117,9 +117,9 @@ class TestPhaseGraphEdges:
         assert labels == ["A", "C"]
 
     def test_num_phases_count(self):
-        from cybir.core.graph import PhaseGraph
+        from cybir.core.graph import CYGraph
 
-        g = PhaseGraph()
+        g = CYGraph()
         for label in ["A", "B", "C"]:
             g.add_phase(_make_phase(label))
         assert g.num_phases == 3

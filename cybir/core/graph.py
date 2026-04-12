@@ -1,6 +1,6 @@
 """Phase adjacency graph for extended Kahler cone construction.
 
-The :class:`PhaseGraph` stores CalabiYauLite phases as nodes and
+The :class:`CYGraph` stores CalabiYauLite phases as nodes and
 ExtremalContraction objects as edges, backed by a ``networkx.Graph``.
 """
 
@@ -9,7 +9,7 @@ import networkx as nx
 from .types import CalabiYauLite, ExtremalContraction
 
 
-class PhaseGraph:
+class CYGraph:
     """Adjacency graph with CalabiYauLite phases as nodes and
     ExtremalContraction objects as edges.
 
@@ -21,7 +21,7 @@ class PhaseGraph:
 
     Examples
     --------
-    >>> g = PhaseGraph()
+    >>> g = CYGraph()
     >>> g.add_phase(phase_a)
     >>> g.add_phase(phase_b)
     >>> g.add_contraction(contraction_ab)
@@ -119,6 +119,6 @@ class PhaseGraph:
 
     def __repr__(self):
         return (
-            f"PhaseGraph(phases={self.num_phases}, "
+            f"CYGraph(phases={self.num_phases}, "
             f"contractions={self.num_contractions})"
         )

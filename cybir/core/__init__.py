@@ -8,7 +8,7 @@ from .classify import (
     zero_vol_divisor,
 )
 from .flop import flop_phase, wall_cross_c2, wall_cross_intnums
-from .graph import PhaseGraph
+from .graph import CYGraph
 from .gv import gv_eff, gv_series, is_nilpotent, is_potent
 from .types import (
     CalabiYauLite,
@@ -36,7 +36,7 @@ __all__ = [
     "ContractionType",
     "ExtremalContraction",
     "InsufficientGVError",
-    "PhaseGraph",
+    "CYGraph",
     # Flop
     "wall_cross_intnums",
     "wall_cross_c2",

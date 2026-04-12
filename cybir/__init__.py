@@ -10,7 +10,7 @@ from cybir.core.classify import (
     zero_vol_divisor,
 )
 from cybir.core.flop import flop_phase, wall_cross_c2, wall_cross_intnums
-from cybir.core.graph import PhaseGraph
+from cybir.core.graph import CYGraph
 from cybir.core.gv import gv_eff, gv_series, is_nilpotent, is_potent
 from cybir.core.types import (
     CalabiYauLite,
@@ -38,7 +38,7 @@ __all__ = [
     "ContractionType",
     "ExtremalContraction",
     "InsufficientGVError",
-    "PhaseGraph",
+    "CYGraph",
     # Flop
     "wall_cross_intnums",
     "wall_cross_c2",
