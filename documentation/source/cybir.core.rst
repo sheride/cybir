@@ -6,7 +6,7 @@ cybir.core
 
    cybir.core.ekc
    cybir.core.build_gv
-   cybir.core.weyl
+   cybir.core.coxeter
    cybir.core.patch
    cybir.core.types
    cybir.core.graph
