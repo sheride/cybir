@@ -892,3 +892,146 @@ def apply_coxeter_orbit(ekc, phases=True):
         expected_order,
         ", ".join(f"{t}_{r}" for t, r, _ in type_list),
     )
+
+
+# ---------------------------------------------------------------------------
+# Chamber walk: to_fundamental_domain (D-18)
+# ---------------------------------------------------------------------------
+
+def to_fundamental_domain(point, reflections, curves, max_iter=1000):
+    r"""Map a point to the fundamental domain via chamber walk.
+
+    Repeatedly scans the wall-defining curves; if ``point @ curve < 0``
+    for any curve, reflects the point through that wall (and accumulates
+    the group element). Stops when the point has non-negative pairing
+    with all curves.
+
+    Parameters
+    ----------
+    point : array_like
+        Point in Mori space.
+    reflections : list of numpy.ndarray
+        Symmetric-flop reflection matrices, one per wall.
+    curves : list of array_like
+        Contraction curves defining the walls (same order as *reflections*).
+    max_iter : int, optional
+        Maximum number of reflections before raising. Default 1000.
+
+    Returns
+    -------
+    (numpy.ndarray, numpy.ndarray)
+        ``(fundamental_domain_point, group_element)`` where the group
+        element *g* satisfies ``g @ fundamental_domain_point == original_point``.
+
+    Raises
+    ------
+    RuntimeError
+        If *max_iter* is exceeded (safety bound, T-04-07 mitigation).
+
+    Notes
+    -----
+    See arXiv:2212.10573 Section 4.3 for the chamber walk algorithm.
+    The fundamental domain is the region where ``point @ curve >= 0``
+    for all symmetric-flop contraction curves.
+    """
+    point = np.asarray(point, dtype=float).copy()
+    n = point.shape[0]
+    g = np.eye(n, dtype=np.int64)
+    curves_arr = [np.asarray(c, dtype=float) for c in curves]
+    reflections_int = [np.asarray(r, dtype=np.int64) for r in reflections]
+
+    iters = 0
+    while iters <= max_iter:
+        reflected = False
+        for i, c in enumerate(curves_arr):
+            if point @ c < 0:
+                M = reflections_int[i]
+                # g tracks: g @ mapped_point == original_point
+                # Before reflection: point is current, g @ point == original
+                # After: new_point = M @ point, new_g = g @ M^{-1}
+                # But for reflections M^{-1} = M, so new_g = g @ M
+                # Wait: we want g_total such that g_total @ fund_point = original
+                # If point = M @ fund_point_next, then fund_point_next = M @ point (since M^2=I)
+                # original = g @ point = g @ M @ fund_point_next
+                # So new_g = g @ M
+                # But for products of reflections, we accumulate differently.
+                # Let's track: original = g @ point at all times.
+                # After reflecting: new_point = M @ point (M is int64)
+                # new_g must satisfy: original = new_g @ new_point
+                # original = g @ point = g @ M^{-1} @ M @ point = g @ M^{-1} @ new_point
+                # For reflections, M^{-1} = M, so new_g = g @ M
+                # But these are GENERATORS, each M^2 = I.
+                # For general group elements in the walk, each step uses a generator.
+                g = (g @ M).astype(np.int64)
+                point = (M.astype(float) @ point)
+                reflected = True
+                iters += 1
+                if iters > max_iter:
+                    raise RuntimeError(
+                        f"to_fundamental_domain exceeded max_iter={max_iter}"
+                    )
+                break  # restart scan
+        if not reflected:
+            return point, g
+    raise RuntimeError(
+        f"to_fundamental_domain exceeded max_iter={max_iter}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# On-demand GV reconstruction (D-17)
+# ---------------------------------------------------------------------------
+
+def _invariants_for_impl(ekc, phase_label):
+    """Reconstruct GV invariants for a phase on demand.
+
+    Compares the phase's ``curve_signs`` to the root phase's
+    ``curve_signs``. Curves where the signs differ are flopped
+    via ``root_invariants.flop_gvs``.
+
+    Parameters
+    ----------
+    ekc : CYBirationalClass
+        Must have ``construct_phases`` completed.
+    phase_label : str
+        Label of the target phase.
+
+    Returns
+    -------
+    Invariants
+        CYTools Invariants object with flop curves reoriented for
+        this phase.
+
+    Notes
+    -----
+    Per D-17: compare ``phase.curve_signs`` to ``root.curve_signs``,
+    collect curves where signs differ, return
+    ``root_invariants.flop_gvs(those_curves)``.
+
+    See arXiv:2212.10573 Section 4.3.
+    """
+    root_invariants = ekc._root_invariants
+    root_phase = ekc._graph.get_phase(ekc._root_label)
+    target_phase = ekc._graph.get_phase(phase_label)
+
+    root_signs = root_phase.curve_signs
+    target_signs = target_phase.curve_signs
+
+    # If same phase or no curve_signs data, return root invariants
+    if root_signs is None or target_signs is None:
+        return root_invariants
+    if phase_label == ekc._root_label:
+        return root_invariants
+
+    # Find curves where signs differ
+    flop_curves = []
+    for curve_tuple, root_sign in root_signs.items():
+        target_sign = target_signs.get(curve_tuple, root_sign)
+        if target_sign != root_sign:
+            flop_curves.append(np.array(curve_tuple))
+
+    if not flop_curves:
+        return root_invariants
+
+    # Flop the differing curves via CYTools Invariants API
+    return root_invariants.flop_gvs(flop_curves)

@@ -67,6 +67,7 @@ class CYBirationalClass:
         self._weyl_phases = []  # labels of Weyl-expanded phases
         self._coxeter_type_info = None
         self._coxeter_order = None
+        self._sym_flop_curves = []  # curves corresponding to sym_flop_refs for chamber walk
 
     # --- Step-by-step construction API ---
 
@@ -124,6 +125,58 @@ class CYBirationalClass:
 
         apply_coxeter_orbit(self, phases=phases)
         self._weyl_expanded = True
+
+    def invariants_for(self, phase_label):
+        """Reconstruct GV invariants for a phase on demand.
+
+        Picks a tip point in the phase's Kahler cone and re-orients
+        flop curves that pair negatively with that point, starting
+        from the root invariants.
+
+        Parameters
+        ----------
+        phase_label : str
+            Label of the phase.
+
+        Returns
+        -------
+        Invariants
+            CYTools Invariants with flop curves reoriented for this phase.
+
+        See Also
+        --------
+        arXiv:2212.10573 Section 4.3
+        """
+        from .coxeter import _invariants_for_impl
+
+        return _invariants_for_impl(self, phase_label)
+
+    def to_fundamental_domain(self, point):
+        """Map a point to the fundamental domain via chamber walk.
+
+        Reflects the point through symmetric-flop walls that pair
+        negatively until it lies in the fundamental domain.
+
+        Parameters
+        ----------
+        point : array_like
+            Point in Mori space.
+
+        Returns
+        -------
+        (numpy.ndarray, numpy.ndarray)
+            ``(fundamental_domain_point, group_element)`` where the group
+            element maps the fundamental domain to the input chamber.
+
+        See Also
+        --------
+        arXiv:2212.10573 Section 4.3
+        """
+        from .coxeter import to_fundamental_domain
+
+        reflections = [np.array(r) for r in self._sym_flop_refs]
+        curves = [np.array(c) for c in self._sym_flop_curves]
+        return to_fundamental_domain(np.asarray(point), reflections, curves)
 
     def expand_weyl(self):
         """Expand to the hyperextended cone via Weyl orbit reflections.
