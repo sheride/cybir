@@ -18,10 +18,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Core Mathematics
 
-- [ ] **MATH-01**: Wall-crossing formula for intersection numbers and second Chern class (Eq. from 2212.10573)
+- [x] **MATH-01**: Wall-crossing formula for intersection numbers and second Chern class (Eq. from 2212.10573)
 - [ ] **MATH-02**: ExtremalContraction diagnosis — all 5 types (asymptotic, CFT, su(2), symmetric flop, generic flop)
-- [ ] **MATH-03**: GV series computation and effective GV
-- [ ] **MATH-04**: Potent/nilpotent curve classification and nop identification
+- [x] **MATH-03**: GV series computation and effective GV
+- [x] **MATH-04**: Potent/nilpotent curve classification and nop identification
 - [x] **MATH-05**: Coxeter reflection computation
 - [x] **MATH-06**: Equation citations in every math function docstring
 
@@ -80,10 +80,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-04 | Phase 1 | Complete |
 | DATA-05 | Phase 1 | Complete |
 | DATA-06 | Phase 1 | Complete |
-| MATH-01 | Phase 2 | Pending |
+| MATH-01 | Phase 2 | Complete |
 | MATH-02 | Phase 2 | Pending |
-| MATH-03 | Phase 2 | Pending |
-| MATH-04 | Phase 2 | Pending |
+| MATH-03 | Phase 2 | Complete |
+| MATH-04 | Phase 2 | Complete |
 | MATH-05 | Phase 2 | Complete |
 | MATH-06 | Phase 2 | Complete |
 | PIPE-01 | Phase 3 | Pending |

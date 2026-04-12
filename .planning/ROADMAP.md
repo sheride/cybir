@@ -45,7 +45,7 @@ Plans:
 **Plans:** 4 plans
 Plans:
 - [x] 02-01-PLAN.md -- Utility additions (projected_int_nums, Coxeter functions) and ExtremalContraction field update
-- [ ] 02-02-PLAN.md -- Wall-crossing formula (flop.py) and GV series computation (gv.py)
+- [x] 02-02-PLAN.md -- Wall-crossing formula (flop.py) and GV series computation (gv.py)
 - [ ] 02-03-PLAN.md -- Contraction classification algorithm (classify.py)
 - [ ] 02-04-PLAN.md -- Re-exports, convenience methods, snapshot generation, and integration tests
 
