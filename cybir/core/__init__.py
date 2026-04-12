@@ -18,11 +18,17 @@ from .types import (
     ExtremalContraction,
     InsufficientGVError,
 )
+from .coxeter import (
+    classify_coxeter_type,
+    coxeter_element,
+    coxeter_matrix,
+    coxeter_order_matrix,
+    coxeter_reflection,
+    is_finite_type,
+    matrix_period,
+)
 from .util import (
     charge_matrix_hsnf,
-    coxeter_matrix,
-    coxeter_reflection,
-    matrix_period,
     minimal_N,
     moving_cone,
     normalize_curve,
@@ -57,11 +63,16 @@ __all__ = [
     "is_cft",
     "zero_vol_divisor",
     "is_symmetric_flop",
+    # Coxeter
+    "classify_coxeter_type",
+    "coxeter_element",
+    "coxeter_matrix",
+    "coxeter_order_matrix",
+    "coxeter_reflection",
+    "is_finite_type",
+    "matrix_period",
     # Utilities
     "charge_matrix_hsnf",
-    "coxeter_matrix",
-    "coxeter_reflection",
-    "matrix_period",
     "minimal_N",
     "moving_cone",
     "normalize_curve",

@@ -541,11 +541,10 @@ class TestReflectPhaseData:
         new_phase = reflect_phase_data(phase, g, label="CY_test")
         np.testing.assert_array_equal(new_phase.c2, c2)
 
-    def test_single_reflection_matches_weyl(self):
-        """reflect_phase_data with single reflection M matches weyl._reflect_phase."""
+    def test_single_reflection_transforms_correctly(self):
+        """reflect_phase_data with single reflection produces correct einsum result."""
         cytools = pytest.importorskip("cytools")
         from cybir.core.coxeter import reflect_phase_data
-        from cybir.core.weyl import _reflect_phase
         from cybir.core.types import CalabiYauLite
 
         kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
@@ -560,10 +559,14 @@ class TestReflectPhaseData:
         M = np.array([[-1, 1], [0, 1]], dtype=np.int64)
 
         new_phase = reflect_phase_data(phase, M, label="CY_ref")
-        old_result = _reflect_phase(phase, M)
 
-        np.testing.assert_allclose(new_phase.int_nums, old_result["int_nums"], atol=1e-10)
-        np.testing.assert_allclose(new_phase.c2, old_result["c2"], atol=1e-10)
+        # Manually compute expected kappa and c2
+        M_float = M.astype(float)
+        expected_kappa = np.round(np.einsum("abc,xa,yb,zc", kappa, M_float, M_float, M_float)).astype(int)
+        expected_c2 = (M @ c2).astype(int)
+
+        np.testing.assert_allclose(new_phase.int_nums, expected_kappa, atol=1e-10)
+        np.testing.assert_allclose(new_phase.c2, expected_c2, atol=1e-10)
 
     def test_product_element_kahler_uses_proper_inverse(self):
         """For a product g = M1 @ M2, Kahler rays use (g^-1)^T, NOT g (D-09)."""
