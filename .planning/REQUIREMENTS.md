@@ -29,7 +29,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **PIPE-01**: `construct_phases` BFS loop with dictionary-keyed phase deduplication
 - [ ] **PIPE-02**: Weyl orbit expansion for hyperextended cone
-- [ ] **PIPE-03**: Clean read-only post-construction API (`ekc.phases`, `ekc.contractions`, `ekc.coxeter_matrix`, etc.)
+- [x] **PIPE-03**: Clean read-only post-construction API (`ekc.phases`, `ekc.contractions`, `ekc.coxeter_matrix`, etc.)
 - [ ] **PIPE-04**: Verbose logging replacing scattered print statements
 
 ### Integration
@@ -88,7 +88,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATH-06 | Phase 2 | Complete |
 | PIPE-01 | Phase 3 | Pending |
 | PIPE-02 | Phase 3 | Pending |
-| PIPE-03 | Phase 3 | Pending |
+| PIPE-03 | Phase 3 | Complete |
 | PIPE-04 | Phase 3 | Pending |
 | INTG-01 | Phase 3 | Pending |
 | INTG-02 | Phase 1 | Complete |
