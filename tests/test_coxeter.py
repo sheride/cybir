@@ -982,3 +982,148 @@ class TestApplyCoxeterOrbit:
         apply_coxeter_orbit(ekc, phases=True)
         assert ekc._coxeter_type_info is not None
         assert ekc._coxeter_order == 6
+
+
+# ============================================================
+# to_fundamental_domain tests
+# ============================================================
+
+class TestToFundamentalDomain:
+    """Test to_fundamental_domain chamber walk algorithm."""
+
+    @pytest.fixture
+    def a2_setup(self):
+        """A_2 reflections and curves for chamber walk tests.
+
+        Returns reflections, curves, and a point in the fundamental domain.
+        The fundamental domain is the region where point @ curve >= 0
+        for all curves.
+        """
+        M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
+        M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
+        # Curves that define the walls (simple roots for A_2)
+        c1 = np.array([1, 0])  # M1 reflects through hyperplane c1.x = 0
+        c2 = np.array([0, 1])  # M2 reflects through hyperplane c2.x = 0
+        return [M1, M2], [c1, c2]
+
+    def test_point_in_fund_domain_returns_unchanged(self, a2_setup):
+        """A point already in the fundamental domain returns unchanged."""
+        from cybir.core.coxeter import to_fundamental_domain
+
+        reflections, curves = a2_setup
+        point = np.array([1.0, 1.0])  # positive pairing with both curves
+        mapped, g = to_fundamental_domain(point, reflections, curves)
+        np.testing.assert_allclose(mapped, point)
+        np.testing.assert_array_equal(g, np.eye(2, dtype=np.int64))
+
+    def test_reflected_point_walks_back(self, a2_setup):
+        """A reflected point is walked back to the fundamental domain."""
+        from cybir.core.coxeter import to_fundamental_domain
+
+        reflections, curves = a2_setup
+        M1 = reflections[0]
+        fund_point = np.array([2.0, 1.0])
+        reflected = (M1 @ fund_point).astype(float)
+        # reflected should have negative pairing with curve c1
+        assert reflected @ curves[0] < 0
+
+        mapped, g = to_fundamental_domain(reflected, reflections, curves)
+        # mapped should be back in the fundamental domain
+        for c in curves:
+            assert mapped @ c >= -1e-12
+        # mapped should equal the original fund_point
+        np.testing.assert_allclose(mapped, fund_point, atol=1e-10)
+
+    def test_max_iter_raises(self, a2_setup):
+        """RuntimeError raised if max_iter exceeded."""
+        from cybir.core.coxeter import to_fundamental_domain
+
+        reflections, curves = a2_setup
+        # Use max_iter=0 to force failure
+        point = np.array([-1.0, -1.0])  # needs reflections
+        with pytest.raises(RuntimeError, match="max_iter"):
+            to_fundamental_domain(point, reflections, curves, max_iter=0)
+
+    def test_wall_point_not_reflected(self, a2_setup):
+        """A point on a wall (curve pairing = 0) is not reflected through it."""
+        from cybir.core.coxeter import to_fundamental_domain
+
+        reflections, curves = a2_setup
+        # Point on the c1 wall: c1.x = 0, c2.x > 0
+        point = np.array([0.0, 1.0])
+        mapped, g = to_fundamental_domain(point, reflections, curves)
+        np.testing.assert_allclose(mapped, point)
+        np.testing.assert_array_equal(g, np.eye(2, dtype=np.int64))
+
+    def test_group_element_maps_back(self, a2_setup):
+        """The returned group element g maps the fund domain point back to input."""
+        from cybir.core.coxeter import to_fundamental_domain
+
+        reflections, curves = a2_setup
+        M1, M2 = reflections
+        fund_point = np.array([3.0, 2.0])
+        # Apply M2 then M1: g_applied = M1 @ M2
+        reflected = (M1 @ M2 @ fund_point).astype(float)
+
+        mapped, g = to_fundamental_domain(reflected, reflections, curves)
+        # g @ mapped should give back the reflected point
+        np.testing.assert_allclose(g @ mapped, reflected, atol=1e-10)
+
+
+# ============================================================
+# _invariants_for_impl tests
+# ============================================================
+
+class TestInvariantsForImpl:
+    """Test _invariants_for_impl helper for on-demand GV reconstruction."""
+
+    def test_root_phase_returns_root_invariants(self):
+        """invariants_for on root phase returns root invariants unchanged."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import _invariants_for_impl
+        from cybir.core.types import CalabiYauLite, ContractionType, ExtremalContraction
+        from cybir.core.graph import CYGraph
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0", tip=np.array([1.0, 1.0]),
+            curve_signs={(1, 0): 1, (0, 1): 1},
+        )
+
+        graph = CYGraph()
+        graph.add_phase(phase)
+
+        class _MockEKC:
+            pass
+
+        ekc = _MockEKC()
+        ekc._graph = graph
+        ekc._root_label = "CY_0"
+        ekc._root_invariants = "mock_invariants"
+
+        # Root phase has same curve_signs as root => no flops needed
+        # Should return root_invariants directly
+        result = _invariants_for_impl(ekc, "CY_0")
+        assert result == "mock_invariants"
+
+
+# ============================================================
+# CYBirationalClass.invariants_for and to_fundamental_domain
+# ============================================================
+
+class TestCYBirationalClassNewMethods:
+    """Test CYBirationalClass.invariants_for and to_fundamental_domain exist."""
+
+    def test_invariants_for_method_exists(self):
+        """CYBirationalClass has invariants_for method."""
+        from cybir.core.ekc import CYBirationalClass
+        assert hasattr(CYBirationalClass, "invariants_for")
+
+    def test_to_fundamental_domain_method_exists(self):
+        """CYBirationalClass has to_fundamental_domain method."""
+        from cybir.core.ekc import CYBirationalClass
+        assert hasattr(CYBirationalClass, "to_fundamental_domain")
