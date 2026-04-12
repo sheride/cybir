@@ -438,22 +438,16 @@ with open("tests/fixtures/h11_2_poly_0.json", "w") as f:
 | A2 | hatchling >=1.21 is current enough | Standard Stack | Build would fail; easily fixable by adjusting version pin |
 | A3 | Adjacency graph should be undirected (contractions are symmetric) | Pattern 4 | If contractions are directed (they have start/end phases), may need DiGraph; the start/end distinction is stored on the edge attribute regardless |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the adjacency graph be directed or undirected?**
-   - What we know: ExtremalContraction has `start_phase` and `end_phase`, implying directionality. But physically, contractions connect phases symmetrically (you can flop in either direction).
-   - What's unclear: Whether the BFS algorithm in Phase 3 needs directed edges.
-   - Recommendation: Use `networkx.Graph` (undirected) with the contraction stored as edge data. The start/end distinction is on the ExtremalContraction object itself, not the graph edge. This matches the physical symmetry while preserving directionality metadata.
+   RESOLVED: Use `networkx.Graph` (undirected) with the contraction stored as edge data. The start/end distinction is on the ExtremalContraction object itself, not the graph edge. This matches the physical symmetry while preserving directionality metadata.
 
 2. **Should CalabiYauLite properties return copies of numpy arrays?**
-   - What we know: The original CY class returns `np.copy(self._int_nums)`. This is defensive but adds overhead.
-   - What's unclear: Whether performance matters at this stage.
-   - Recommendation: Return copies for now (matches original behavior). Can optimize later if profiling shows it matters.
+   RESOLVED: Return copies for now (matches original behavior). Can optimize later if profiling shows it matters.
 
 3. **Test fixture generation: should it be automated or one-shot?**
-   - What we know: D-15 says generate from original code on h11=2 polytopes.
-   - What's unclear: Whether to include the generation script in the repo or just commit the fixtures.
-   - Recommendation: Include the generation script in `tests/fixtures/generate.py` but commit the generated JSON files too, so tests can run without cornell-dev installed.
+   RESOLVED: Include the generation script in `tests/fixtures/generate.py` and commit the generated JSON files too, so tests can run without cornell-dev installed. Per D-16, Phase 1 tests use synthetic known-value inputs; full h11=2 fixture generation for integration tests is deferred to Phase 3.
 
 ## Environment Availability
 
