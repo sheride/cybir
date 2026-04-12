@@ -247,13 +247,17 @@ class CalabiYauLite:
             return NotImplemented
         if not np.allclose(self._int_nums, other._int_nums):
             return False
+        if (self._c2 is None) != (other._c2 is None):
+            return False
         if self._c2 is not None and other._c2 is not None:
             if not np.allclose(self._c2, other._c2):
                 return False
         return True
 
     def __hash__(self):
-        return hash(self._label)
+        if self._label is not None:
+            return hash(self._label)
+        return hash(self._int_nums.tobytes())
 
     def __repr__(self):
         return f"CalabiYauLite(label={self._label!r})"

@@ -349,13 +349,8 @@ class TestCoxeterMatrix:
         """Empty list of reflections raises or returns identity."""
         from cybir.core.util import coxeter_matrix
 
-        # With no reflections, should return identity
-        # But need a size hint -- test expects identity behavior
-        result = coxeter_matrix([])
-        # Result for empty list: plan says identity
-        # Since no size info, should raise or return something
-        # Plan says: "Returns identity if empty list"
-        assert result is not None
+        with pytest.raises(ValueError, match="empty"):
+            coxeter_matrix([])
 
     def test_composition_has_finite_period(self):
         """Coxeter element from reflections has finite period."""

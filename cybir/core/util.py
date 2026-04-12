@@ -13,7 +13,6 @@ import functools
 import hsnf
 import numpy as np
 import sympy
-from scipy.linalg import null_space
 
 
 def charge_matrix_hsnf(vectors):
@@ -162,7 +161,10 @@ def normalize_curve(curve, return_sign=False):
     >>> normalize_curve(np.array([-1, 0, 0]), return_sign=True)
     ((1, 0, 0), -1)
     """
-    if next(c for c in curve if c != 0) > 0:
+    first_nonzero = next((c for c in curve if c != 0), None)
+    if first_nonzero is None:
+        raise ValueError("Cannot normalize the zero curve")
+    if first_nonzero > 0:
         to_return = tuple(curve.tolist())
         sign = 1
     else:
@@ -234,7 +236,7 @@ def projected_int_nums(int_nums, curve, n_projected=3):
     elif n_projected == 1:
         return np.einsum("ai,ijk->ajk", P, int_nums).squeeze()
     else:
-        return int_nums
+        raise ValueError(f"n_projected must be 1, 2, or 3, got {n_projected}")
 
 
 def find_minimal_N(X, epsilon=1e-4, max_val=10000):
@@ -373,5 +375,5 @@ def coxeter_matrix(reflections):
         Returns a 0-d identity-like array if the list is empty.
     """
     if not reflections:
-        return np.array(1.0)
+        raise ValueError("Cannot compute Coxeter matrix from empty list of reflections")
     return functools.reduce(np.matmul, reflections)
