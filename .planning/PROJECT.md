@@ -12,7 +12,9 @@ A clean, well-documented, modular implementation of GV-based EKC construction th
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Structured data types for phases, walls, curves (not ad-hoc attributes) — Validated in Phase 1: Foundation
+- [x] Proper Python package structure (like dbrane-tools: `cybir/core/`, `cybir/analysis/`, `__init__.py`) — Validated in Phase 1: Foundation
+- [x] Decouple from cornell-dev: copy/refactor anything currently imported from `lib.util.lattice` and `misc` — Validated in Phase 1: Foundation
 
 ### Active
 
@@ -82,4 +84,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-11 after initialization*
+*Last updated: 2026-04-12 after Phase 1 completion*
