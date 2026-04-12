@@ -9,9 +9,11 @@ from cybir.core.classify import (
     is_symmetric_flop,
     zero_vol_divisor,
 )
+from cybir.core.ekc import CYBirationalClass
 from cybir.core.flop import flop_phase, wall_cross_c2, wall_cross_intnums
 from cybir.core.graph import CYGraph
 from cybir.core.gv import gv_eff, gv_series, is_nilpotent, is_potent
+from cybir.core.patch import patch_cytools
 from cybir.core.types import (
     CalabiYauLite,
     ContractionType,
@@ -39,6 +41,9 @@ __all__ = [
     "ExtremalContraction",
     "InsufficientGVError",
     "CYGraph",
+    # Pipeline
+    "CYBirationalClass",
+    "patch_cytools",
     # Flop
     "wall_cross_intnums",
     "wall_cross_c2",
