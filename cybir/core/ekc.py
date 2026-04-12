@@ -65,6 +65,8 @@ class CYBirationalClass:
         self._constructed = False
         self._weyl_expanded = False
         self._weyl_phases = []  # labels of Weyl-expanded phases
+        self._coxeter_type_info = None
+        self._coxeter_order = None
 
     # --- Step-by-step construction API ---
 
@@ -102,16 +104,42 @@ class CYBirationalClass:
         construct_phases(self, verbose=verbose, limit=limit)
         self._constructed = True
 
+    def apply_coxeter_orbit(self, phases=True):
+        """Expand to the hyperextended cone via Coxeter group orbit.
+
+        Enumerates the full Coxeter group from symmetric-flop reflections
+        and applies every group element to every fundamental-domain phase.
+
+        Parameters
+        ----------
+        phases : bool, optional
+            If True (default), create full reflected phase objects.
+            If False, only accumulate cone generators (faster, less memory).
+
+        See Also
+        --------
+        arXiv:2212.10573 Section 4.3
+        """
+        from .coxeter import apply_coxeter_orbit
+
+        apply_coxeter_orbit(self, phases=phases)
+        self._weyl_expanded = True
+
     def expand_weyl(self):
         """Expand to the hyperextended cone via Weyl orbit reflections.
 
-        Applies symmetric-flop Coxeter reflections to fundamental-domain
-        phases to discover additional phases. Can be called lazily.
+        .. deprecated::
+            Use :meth:`apply_coxeter_orbit` instead. This will be removed
+            in a future version.
         """
-        from .weyl import expand_weyl
+        import warnings
 
-        expand_weyl(self)
-        self._weyl_expanded = True
+        warnings.warn(
+            "expand_weyl is deprecated, use apply_coxeter_orbit instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.apply_coxeter_orbit(phases=True)
 
     @classmethod
     def from_gv(cls, cy, max_deg=10, verbose=True, limit=100, gvs=None):
@@ -241,6 +269,32 @@ class CYBirationalClass:
         return frozenset(self._eff_cone_gens)
 
     @property
+    def coxeter_type(self):
+        """Coxeter group type classification, or None.
+
+        Set by :meth:`apply_coxeter_orbit`. Returns a list of
+        ``(type_string, rank, order)`` tuples for each irreducible
+        component.
+
+        Returns
+        -------
+        list of tuple or None
+        """
+        return self._coxeter_type_info
+
+    @property
+    def coxeter_order(self):
+        """Order |W| of the Coxeter group, or None.
+
+        Set by :meth:`apply_coxeter_orbit`.
+
+        Returns
+        -------
+        int or None
+        """
+        return self._coxeter_order
+
+    @property
     def coxeter_matrix(self):
         """Coxeter matrix from accumulated reflections, or None.
 
@@ -287,9 +341,9 @@ class CYBirationalClass:
 
     def __repr__(self):
         status = "constructed" if self._constructed else "empty"
-        weyl = ", weyl-expanded" if self._weyl_expanded else ""
+        orbit = ", orbit-expanded" if self._weyl_expanded else ""
         return (
-            f"CYBirationalClass({status}{weyl}, "
+            f"CYBirationalClass({status}{orbit}, "
             f"phases={self._graph.num_phases}, "
             f"contractions={self._graph.num_contractions})"
         )
