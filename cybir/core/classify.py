@@ -20,7 +20,6 @@ from .util import (
     get_coxeter_reflection,
     projected_int_nums,
     projection_matrix,
-    sympy_number_clean,
 )
 
 
@@ -91,15 +90,17 @@ def is_cft(int_nums, curve):
     bool
         ``True`` if the contraction is a CFT boundary.
     """
-    # Compute the projection without squeeze to preserve the projected
-    # dimension (h11-1). projected_int_nums uses .squeeze() which drops
-    # size-1 dimensions and loses the projected basis size for h11=2.
+    # Match the original code: project only the LAST index (N=1), giving
+    # shape (h11, h11, h11-1), then reshape to (h11, -1) and check
+    # rank < min(shape) = rank < h11.
     P = np.asarray(projection_matrix(curve), dtype=float)
-    h11m1 = P.shape[0]
     int_nums = np.asarray(int_nums, dtype=float)
-    proj = np.einsum("ax,xyz->ayz", P, int_nums)  # (h11-1, h11, h11)
-    proj = proj.reshape(h11m1, -1)  # (h11-1, h11*h11)
-    return bool(np.linalg.matrix_rank(proj) < h11m1)
+    h11 = len(curve)
+    # Project last index: einsum('abc,zc->abz', intnums, P.T)
+    # P has shape (h11-1, h11), so P.T is (h11, h11-1)
+    proj = np.einsum("ijk,ak->ija", int_nums, P)  # (h11, h11, h11-1)
+    matrix = proj.reshape(h11, -1)  # (h11, h11*(h11-1))
+    return bool(np.linalg.matrix_rank(matrix, tol=1e-8) < np.amin(matrix.shape))
 
 
 def find_zero_vol_divisor(int_nums, curve):
@@ -138,48 +139,37 @@ def find_zero_vol_divisor(int_nums, curve):
         or ``None`` if no zero-volume divisor exists.
     """
     curve = np.asarray(curve, dtype=float)
-    P = np.asarray(projection_matrix(curve), dtype=float)  # shape (h11-1, h11)
     int_nums = np.asarray(int_nums, dtype=float)
+    h11 = len(curve)
 
-    # Project two indices: shape (h11-1, h11-1, h11)
-    # Use unique subscript letters to avoid numpy 2.x einsum ambiguity
-    proj2 = np.einsum("ax,by,xyz->abz", P, P, int_nums)
+    # Match original: project last 2 indices (N=2), giving shape
+    # (h11, h11-1, h11-1), then reshape to (h11, (h11-1)^2).
+    P = np.asarray(projection_matrix(curve), dtype=float)  # (h11-1, h11)
+    proj2 = np.einsum("ijk,bj,ck->ibc", int_nums, P, P)  # (h11, h11-1, h11-1)
+    matrix = proj2.reshape(h11, -1)  # (h11, (h11-1)^2)
 
-    # Contract with curve: shape (h11-1, h11-1)
-    M = np.einsum("abk,k->ab", proj2, curve)
-
-    # Find null space
-    ns = null_space(M)
-
-    if ns.shape[1] == 0:
+    rank = np.linalg.matrix_rank(matrix, tol=1e-8)
+    if rank == h11:
         return None
+    elif rank == h11 - 1:
+        # Null space of matrix.T gives divisor in full h11 basis
+        result = null_space(matrix.T)[:, 0]
+        result /= max(abs(result))
+        result *= find_minimal_N(result)
 
-    # Take first null vector
-    null_vec = ns[:, 0]
+        assert np.allclose(result, np.round(result))
+        result = np.round(result).astype(int)
 
-    # Lift back to full basis
-    result = P.T @ null_vec
+        # Sign convention: D . C < 0 (simple dot product works here
+        # because D is in the full basis, not the projected subspace)
+        sign = np.sign(result @ curve)
+        if sign != 0:
+            result = -int(sign) * result
 
-    # Clean to integer
-    N = find_minimal_N(result)
-    result = N * result
-    result = np.array([float(sympy_number_clean(x)) for x in result])
-
-    # Sign convention: divisor @ curve < 0 using the intersection pairing.
-    # Since D is found via projection orthogonal to C, the simple dot
-    # product D.C vanishes identically. Instead use the triple
-    # intersection number kappa_{ijk} D_i D_j C_k as the sign indicator:
-    # this is the volume form that determines whether D shrinks at the wall.
-    vol = np.einsum("ijk,i,j,k", int_nums, result, result, curve)
-    if vol > 0:
-        result = -result
-    elif np.isclose(vol, 0):
-        # Fallback: ensure first nonzero entry is positive
-        first_nz = next((x for x in result if not np.isclose(x, 0)), 1)
-        if first_nz < 0:
-            result = -result
-
-    return result
+        return result.astype(float)
+    else:
+        # Rank deficit > 1: zero-vol divisor is not unique
+        return None
 
 
 def is_symmetric_flop(int_nums, c2, curve, gv_eff_1, gv_eff_3,
@@ -227,7 +217,7 @@ def is_symmetric_flop(int_nums, c2, curve, gv_eff_1, gv_eff_3,
     # Coxeter-reflected quantities
     M = coxeter_reflection
     cox_intnums = np.einsum("ia,jb,kc,abc->ijk", M, M, M, int_nums)
-    cox_c2 = M.T @ c2
+    cox_c2 = M @ c2
 
     return bool(
         np.allclose(wc_intnums, cox_intnums)

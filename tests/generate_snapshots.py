@@ -31,8 +31,15 @@ import numpy as np
 _ORIGINAL_DIR = pathlib.Path(
     "/Users/elijahsheridan/Research/string/cytools_code/cornell-dev/projects/vex/elijah"
 )
-if str(_ORIGINAL_DIR) not in sys.path:
-    sys.path.insert(0, str(_ORIGINAL_DIR))
+_CORNELL_DEV_ROOT = pathlib.Path(
+    "/Users/elijahsheridan/Research/string/cytools_code/cornell-dev"
+)
+_ELIJAH_DIR = pathlib.Path(
+    "/Users/elijahsheridan/Research/string/cytools_code/cornell-dev/projects/Elijah"
+)
+for _p in (_ORIGINAL_DIR, _CORNELL_DEV_ROOT, _ELIJAH_DIR):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 import extended_kahler_cone as ekc  # noqa: E402
 
