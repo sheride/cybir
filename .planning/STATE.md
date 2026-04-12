@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-04-12T05:22:35.801Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-04-12T05:41:59.390Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
-  percent: 67
+  completed_plans: 5
+  percent: 83
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 02 (core-mathematics) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 259 | 2 tasks | 6 files |
 | Phase 02 P01 | 321 | 2 tasks | 4 files |
 | Phase 02 P02 | 5min | 2 tasks | 4 files |
+| Phase 02 P03 | 17min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 01]: PhaseGraph uses string labels as node keys; ExtremalContraction start/end store labels not objects
 - [Phase 02]: projected_int_nums uses explicit einsum subscripts per n_projected value to avoid index collision
 - [Phase 02]: gv.py compute_gv_eff implemented as stub during Task 1 for flop.py import, then fully implemented in Task 2
+- [Phase 02]: Sign convention for zero-vol divisor uses kappa_{ijk} D_i D_j C_k (volume-based) instead of D.C (always zero for projection-lifted divisors)
+- [Phase 02]: Numpy 2.x einsum requires unique subscript letters across operands (ax,by,xyz not ia,jb,ijk)
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T05:22:35.798Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-04-12T05:41:59.387Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
