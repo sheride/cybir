@@ -44,11 +44,15 @@ Rewrite the Weyl/orbit expansion machinery. Create `coxeter.py` combining Coxete
 ### Generator Accumulation
 - **D-14:** After orbit expansion, infinity cone gens and effective cone gens include contributions from ALL phases (fundamental + reflected). Reflected Kahler cone rays → eff_cone_gens. Reflected terminal wall curves → infinity_cone_gens. Reflected zero-vol divisors → eff_cone_gens.
 
+### CalabiYauLite Persistent Data
+- **D-15:** Add `curve_signs` (dict of {curve_tuple: +1/-1}) and `tip` (ndarray, interior point of Kahler cone) as persistent fields on CalabiYauLite. These are already computed during BFS — persist them instead of discarding. Both are needed for orbit expansion (updating all phases' curve_signs when reflected flop curves are discovered) and for instant GV reconstruction.
+- **D-16:** During orbit expansion, every reflected flop curve g·C is a new curve. ALL existing phases (fundamental + reflected) must have their `curve_signs` updated with `sign(tip @ g·C)` for each new curve — same pattern as `_update_all_curve_signs` in the BFS.
+
 ### Per-Phase GV Invariants
-- **D-15:** Don't store a separate Invariants object per phase. On-demand reconstruction: pick a point in the phase's Kahler cone, take the root GV object, re-orient all flop curves that pair negatively with that point. Expose as `ekc.invariants_for(phase_label)`.
+- **D-17:** Don't store a separate Invariants object per phase. On-demand reconstruction via `ekc.invariants_for(phase_label)`: compare `phase.curve_signs` to `root.curve_signs`, collect curves where signs differ, return `root_invariants.flop_gvs(those_curves)`. O(n_flop_curves), no tip recomputation needed.
 
 ### Fundamental Domain Mapping
-- **D-16:** Implement `to_fundamental_domain(point)` — given a point in Kahler or Mori space, walk it back to the fundamental domain by repeatedly reflecting through walls that pair negatively. The symmetric-flop contraction curves define the walls of the fundamental domain.
+- **D-18:** Implement `to_fundamental_domain(point)` — given a point in Kahler or Mori space, walk it back to the fundamental domain by repeatedly reflecting through walls that pair negatively. The symmetric-flop contraction curves define the walls of the fundamental domain.
 
 ### Claude's Discretion
 - Internal BFS data structures (queue, seen-set representation)
