@@ -23,7 +23,6 @@ from cybir.core.types import (
 from cybir.core.coxeter import (
     classify_coxeter_type,
     coxeter_element,
-    coxeter_matrix,
     coxeter_order_matrix,
     coxeter_reflection,
     is_finite_type,
@@ -68,7 +67,6 @@ __all__ = [
     # Coxeter
     "classify_coxeter_type",
     "coxeter_element",
-    "coxeter_matrix",
     "coxeter_order_matrix",
     "coxeter_reflection",
     "is_finite_type",

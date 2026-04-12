@@ -107,6 +107,20 @@ class CYGraph:
         """Number of contractions in the graph."""
         return self._graph.number_of_edges()
 
+    def edges(self, data=True):
+        """All edges as (u, v, data) triples.
+
+        Parameters
+        ----------
+        data : bool, optional
+            Include edge data dicts (default True).
+
+        Returns
+        -------
+        list of tuple
+        """
+        return list(self._graph.edges(data=data))
+
     def neighbors(self, label):
         """Phases adjacent to the given phase.
 

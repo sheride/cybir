@@ -90,8 +90,6 @@ def _accumulate_generators(ekc, ctype, result):
     result : dict
         Classification result from ``classify_contraction``.
     """
-    curve_tuple = tuple(result.get("gv_series", []))  # not used for gens
-
     # Infinity cone generators: asymptotic and CFT walls
     if ctype in (ContractionType.ASYMPTOTIC, ContractionType.CFT):
         if "contraction_curve" in result:
@@ -260,7 +258,7 @@ def construct_phases(ekc, verbose=True, limit=100):
         Maximum number of phases. Default 100.
     """
     if verbose:
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
+        logger.setLevel(logging.INFO)
 
     root = ekc._graph.get_phase(ekc._root_label)
 

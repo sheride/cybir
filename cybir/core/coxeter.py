@@ -113,13 +113,19 @@ def coxeter_reflection(divisor, curve):
     **not** :math:`D_a \mathcal{C}_b`. Getting this wrong flips which
     vector is reflected.
     """
-    divisor = np.asarray(divisor, dtype=float)
-    curve = np.asarray(curve, dtype=float)
+    divisor = np.asarray(divisor)
+    curve = np.asarray(curve)
     h11 = len(curve)
-    dot = curve @ divisor
+    dot = int(curve @ divisor)
     if dot == 0:
-        return np.eye(h11, dtype=float)
-    return np.eye(h11) - 2.0 * np.outer(curve, divisor) / dot
+        return np.eye(h11, dtype=np.int64)
+    # M_ab = delta_ab - 2 * C_a * D_b / (C . D)
+    # Use exact integer arithmetic when 2 * C_a * D_b is divisible by C . D
+    numerator = 2 * np.outer(curve, divisor)
+    if np.all(numerator % dot == 0):
+        return np.eye(h11, dtype=np.int64) - (numerator // dot).astype(np.int64)
+    # Fall back to float (may produce non-integer reflection)
+    return np.eye(h11, dtype=float) - numerator.astype(float) / dot
 
 
 def coxeter_element(reflections):
@@ -153,21 +159,6 @@ def coxeter_element(reflections):
     if not reflections:
         raise ValueError("Cannot compute Coxeter element from empty list of reflections")
     return functools.reduce(np.matmul, reflections)
-
-
-def coxeter_matrix(reflections):
-    """Deprecated alias for :func:`coxeter_element`.
-
-    .. deprecated::
-        Use :func:`coxeter_element` instead. This will be removed in a
-        future version.
-    """
-    warnings.warn(
-        "coxeter_matrix is deprecated, use coxeter_element instead",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return coxeter_element(reflections)
 
 
 # ---------------------------------------------------------------------------
@@ -356,6 +347,15 @@ def _classify_irreducible(submatrix):
     # Rank 2: I_2(m) family
     if n == 2:
         m = int(submatrix[0, 1])
+        if m <= 1:
+            raise ValueError(
+                f"Invalid Coxeter order matrix entry m_12={m} (must be >= 2)"
+            )
+        if m == 2:
+            raise ValueError(
+                "Rank-2 submatrix with m_12=2 is reducible (A_1 x A_1). "
+                "It should have been decomposed before classification."
+            )
         if m == 3:
             return ("A", 2, 6)
         if m == 4:
@@ -561,7 +561,7 @@ def _edges_snapshot(graph):
     list of tuple
         Each tuple is (label_a, label_b, edge_data_dict).
     """
-    return list(graph._graph.edges(data=True))
+    return graph.edges(data=True)
 
 
 def enumerate_coxeter_group(generators, expected_order=None, max_memory_bytes=500_000_000):
@@ -803,7 +803,12 @@ def apply_coxeter_orbit(ekc, phases=True):
             continue  # skip identity
 
         g_inv_float = np.linalg.inv(g.astype(float))
-        g_inv_int = np.round(g_inv_float).astype(int)
+        g_inv_int = np.round(g_inv_float).astype(np.int64)
+        if not np.allclose(g_inv_float, g_inv_int, atol=1e-6):
+            raise ValueError(
+                f"Group element inverse is not integer: max deviation "
+                f"{np.max(np.abs(g_inv_float - g_inv_int)):.2e}"
+            )
         g_key = _matrix_key(g)
 
         for fund_phase in fund_phases:
@@ -842,7 +847,6 @@ def apply_coxeter_orbit(ekc, phases=True):
         # Reflect fundamental edges
         for u, v, data in fund_edges:
             contr = data["contraction"]
-            sign_a = data.get("curve_sign_a", 1)
             ctype = contr.contraction_type
 
             # Reflected contraction curve: g @ (sign * curve)
@@ -955,36 +959,18 @@ def to_fundamental_domain(point, reflections, curves, max_iter=1000):
     curves_arr = [np.asarray(c, dtype=float) for c in curves]
     reflections_int = [np.asarray(r, dtype=np.int64) for r in reflections]
 
-    iters = 0
-    while iters <= max_iter:
+    for iters in range(1, max_iter + 1):
         reflected = False
         for i, c in enumerate(curves_arr):
             if point @ c < 0:
                 M = reflections_int[i]
-                # g tracks: g @ mapped_point == original_point
-                # Before reflection: point is current, g @ point == original
-                # After: new_point = M @ point, new_g = g @ M^{-1}
-                # But for reflections M^{-1} = M, so new_g = g @ M
-                # Wait: we want g_total such that g_total @ fund_point = original
-                # If point = M @ fund_point_next, then fund_point_next = M @ point (since M^2=I)
-                # original = g @ point = g @ M @ fund_point_next
-                # So new_g = g @ M
-                # But for products of reflections, we accumulate differently.
-                # Let's track: original = g @ point at all times.
-                # After reflecting: new_point = M @ point (M is int64)
-                # new_g must satisfy: original = new_g @ new_point
-                # original = g @ point = g @ M^{-1} @ M @ point = g @ M^{-1} @ new_point
-                # For reflections, M^{-1} = M, so new_g = g @ M
-                # But these are GENERATORS, each M^2 = I.
-                # For general group elements in the walk, each step uses a generator.
+                # Track: original = g @ point at all times.
+                # After reflecting: new_point = M @ point
+                # original = g @ point = g @ M^{-1} @ new_point
+                # For generators M^{-1} = M, so new_g = g @ M
                 g = (g @ M).astype(np.int64)
                 point = (M.astype(float) @ point)
                 reflected = True
-                iters += 1
-                if iters > max_iter:
-                    raise RuntimeError(
-                        f"to_fundamental_domain exceeded max_iter={max_iter}"
-                    )
                 break  # restart scan
         if not reflected:
             return point, g

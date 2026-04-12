@@ -15,9 +15,9 @@ from scipy.linalg import null_space
 from .flop import wall_cross_c2, wall_cross_intnums
 from .gv import gv_eff
 from .types import ContractionType, InsufficientGVError
+from .coxeter import coxeter_reflection
 from .util import (
     minimal_N,
-    coxeter_reflection,
     projected_int_nums,
     projection_matrix,
 )

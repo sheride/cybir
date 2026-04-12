@@ -170,16 +170,14 @@ class TestCoxeterElement:
         with pytest.raises(ValueError, match="Cannot compute"):
             coxeter_element([])
 
-    def test_deprecated_alias(self):
-        """coxeter_matrix is a deprecated alias for coxeter_element."""
-        from cybir.core.coxeter import coxeter_matrix
+    def test_deprecated_alias_via_util(self):
+        """coxeter_matrix via util.py delegates to coxeter_element."""
+        from cybir.core.util import coxeter_matrix
         M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
         M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
             result = coxeter_matrix([M1, M2])
-            assert len(w) == 1
-            assert "deprecated" in str(w[0].message).lower()
         np.testing.assert_array_equal(result, M1 @ M2)
 
 
