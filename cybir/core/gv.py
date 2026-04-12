@@ -8,7 +8,7 @@ curves as potent or nilpotent.
 import numpy as np
 
 
-def compute_gv_series(gv_invariants, curve):
+def gv_series(gv_invariants, curve):
     r"""Extract the GV series for multiples of a curve class.
 
     Queries the CYTools Invariants object for
@@ -43,7 +43,7 @@ def compute_gv_series(gv_invariants, curve):
     return series
 
 
-def compute_gv_eff(gv_series):
+def gv_eff(gv_series):
     r"""Compute effective GV invariants from a GV series.
 
     The effective GV invariants are weighted sums over the series

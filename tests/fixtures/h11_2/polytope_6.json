@@ -1,0 +1,169 @@
+{
+  "polytope_id": 6,
+  "h11": 2,
+  "int_nums": [
+    [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        4
+      ]
+    ],
+    [
+      [
+        0,
+        4
+      ],
+      [
+        4,
+        -16
+      ]
+    ]
+  ],
+  "c2": [
+    24,
+    8
+  ],
+  "mori_rays": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      -2
+    ]
+  ],
+  "walls": [
+    {
+      "curve": [
+        0,
+        1
+      ],
+      "contraction_type": "asymptotic",
+      "gv_series": null,
+      "gv_eff_1": null,
+      "gv_eff_3": null,
+      "int_nums": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            -16
+          ]
+        ]
+      ],
+      "c2": [
+        24,
+        8
+      ],
+      "zero_vol_divisor": null,
+      "coxeter_reflection": null,
+      "flopped_int_nums": null,
+      "flopped_c2": null
+    },
+    {
+      "curve": [
+        1,
+        -2
+      ],
+      "contraction_type": "symmetric flop",
+      "gv_series": [
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gv_eff_1": 4,
+      "gv_eff_3": 4,
+      "int_nums": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            -16
+          ]
+        ]
+      ],
+      "c2": [
+        24,
+        8
+      ],
+      "zero_vol_divisor": [
+        0,
+        1
+      ],
+      "coxeter_reflection": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          -1.0
+        ]
+      ],
+      "flopped_int_nums": [
+        [
+          [
+            -4,
+            8
+          ],
+          [
+            8,
+            -12
+          ]
+        ],
+        [
+          [
+            8,
+            -12
+          ],
+          [
+            -12,
+            16
+          ]
+        ]
+      ],
+      "flopped_c2": [
+        32,
+        -8
+      ]
+    }
+  ]
+}

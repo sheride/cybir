@@ -17,7 +17,7 @@ import pytest
 
 from cybir.core.classify import classify_contraction
 from cybir.core.flop import wall_cross_c2, wall_cross_intnums
-from cybir.core.gv import compute_gv_eff
+from cybir.core.gv import gv_eff
 from cybir.core.types import ContractionType
 
 FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures" / "h11_2"
@@ -130,7 +130,7 @@ class TestWallCrossing:
 
 
 class TestGVEffective:
-    """Verify compute_gv_eff against snapshots."""
+    """Verify gv_eff against snapshots."""
 
     @pytest.fixture(autouse=True)
     def _check_fixtures(self):
@@ -153,7 +153,7 @@ class TestGVEffective:
         if expected_eff_1 is None or expected_eff_3 is None:
             pytest.skip("No effective GV data for this wall")
 
-        result_eff_1, result_eff_3 = compute_gv_eff(gv_series)
+        result_eff_1, result_eff_3 = gv_eff(gv_series)
 
         assert result_eff_1 == expected_eff_1, (
             f"gv_eff_1 mismatch for polytope {data['polytope_id']} wall {idx}: "

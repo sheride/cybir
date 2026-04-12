@@ -239,7 +239,7 @@ def projected_int_nums(int_nums, curve, n_projected=3):
         raise ValueError(f"n_projected must be 1, 2, or 3, got {n_projected}")
 
 
-def find_minimal_N(X, epsilon=1e-4, max_val=10000):
+def minimal_N(X, epsilon=1e-4, max_val=10000):
     """Find the smallest positive integer N such that N*X is integer-valued.
 
     Useful for determining the minimal multiplicity of a curve class
@@ -311,7 +311,7 @@ def matrix_period(M, max_iter=200):
     )
 
 
-def get_coxeter_reflection(divisor, curve):
+def coxeter_reflection(divisor, curve):
     r"""Compute the Coxeter reflection matrix for a given divisor and curve.
 
     Implements the reflection

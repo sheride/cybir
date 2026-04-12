@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from cybir.core.gv import compute_gv_eff, compute_gv_series, is_nilpotent, is_potent
+from cybir.core.gv import gv_eff, gv_series, is_nilpotent, is_potent
 
 
 class MockGVInvariants:
@@ -21,7 +21,7 @@ class MockGVInvariants:
 
 
 class TestComputeGVSeries:
-    """Tests for compute_gv_series."""
+    """Tests for gv_series."""
 
     def test_basic_series(self):
         """Extract GV series for multiples of a curve."""
@@ -31,7 +31,7 @@ class TestComputeGVSeries:
             (3, 0): 0,
             # (4, 0) not in dict -> returns None -> stop
         })
-        result = compute_gv_series(gv_inv, np.array([1, 0]))
+        result = gv_series(gv_inv, np.array([1, 0]))
         assert result == [252, 0, 0]
 
     def test_stops_at_none(self):
@@ -41,13 +41,13 @@ class TestComputeGVSeries:
             (2, 0): -5,
             # (3, 0) -> None
         })
-        result = compute_gv_series(gv_inv, np.array([1, 0]))
+        result = gv_series(gv_inv, np.array([1, 0]))
         assert result == [10, -5]
 
     def test_first_call_none_returns_empty(self):
         """If gv(1*C) is None, return empty list."""
         gv_inv = MockGVInvariants({})
-        result = compute_gv_series(gv_inv, np.array([1, 0]))
+        result = gv_series(gv_inv, np.array([1, 0]))
         assert result == []
 
     def test_multicomponent_curve(self):
@@ -64,39 +64,39 @@ class TestComputeGVSeries:
             (1, 1): 100,
             (2, 2): 50,
         })
-        result = compute_gv_series(gv_inv2, np.array([1, 1]))
+        result = gv_series(gv_inv2, np.array([1, 1]))
         assert result == [100, 50]
 
 
 class TestComputeGVEff:
-    """Tests for compute_gv_eff."""
+    """Tests for gv_eff."""
 
     def test_single_element(self):
         """[252] -> gv_eff_1 = 252, gv_eff_3 = 252."""
-        gv_eff_1, gv_eff_3 = compute_gv_eff([252])
+        gv_eff_1, gv_eff_3 = gv_eff([252])
         assert gv_eff_1 == 252
         assert gv_eff_3 == 252
 
     def test_series_252_0_0(self):
         """[252, 0, 0] -> gv_eff_1 = 252, gv_eff_3 = 252."""
-        gv_eff_1, gv_eff_3 = compute_gv_eff([252, 0, 0])
+        gv_eff_1, gv_eff_3 = gv_eff([252, 0, 0])
         assert gv_eff_1 == 252
         assert gv_eff_3 == 252
 
     def test_series_with_higher_multiples(self):
         """[1, -2, 3] -> gv_eff_1 = 1-4+9 = 6, gv_eff_3 = 1-16+81 = 66."""
-        gv_eff_1, gv_eff_3 = compute_gv_eff([1, -2, 3])
+        gv_eff_1, gv_eff_3 = gv_eff([1, -2, 3])
         assert gv_eff_1 == 6
         assert gv_eff_3 == 66
 
     def test_empty_raises_valueerror(self):
         """Empty series raises ValueError."""
         with pytest.raises(ValueError):
-            compute_gv_eff([])
+            gv_eff([])
 
     def test_returns_tuple(self):
         """Result is a tuple of (gv_eff_1, gv_eff_3)."""
-        result = compute_gv_eff([1])
+        result = gv_eff([1])
         assert isinstance(result, tuple)
         assert len(result) == 2
 

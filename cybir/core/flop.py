@@ -7,7 +7,7 @@ function to create a new CalabiYauLite representing the flopped phase.
 
 import numpy as np
 
-from .gv import compute_gv_eff
+from .gv import gv_eff
 from .types import CalabiYauLite
 
 
@@ -112,7 +112,7 @@ def flop_phase(cy_lite, curve, gv_series, label=None):
         A new phase with transformed intersection numbers and c2.
     """
     curve = np.asarray(curve)
-    gv_eff_1, gv_eff_3 = compute_gv_eff(gv_series)
+    gv_eff_1, gv_eff_3 = gv_eff(gv_series)
 
     new_int_nums = wall_cross_intnums(cy_lite.int_nums, curve, gv_eff_3)
 

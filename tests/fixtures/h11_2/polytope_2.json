@@ -1,0 +1,181 @@
+{
+  "polytope_id": 2,
+  "h11": 2,
+  "int_nums": [
+    [
+      [
+        1,
+        -1
+      ],
+      [
+        -1,
+        1
+      ]
+    ],
+    [
+      [
+        -1,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ]
+  ],
+  "c2": [
+    10,
+    32
+  ],
+  "mori_rays": [
+    [
+      1,
+      0
+    ],
+    [
+      -1,
+      1
+    ]
+  ],
+  "walls": [
+    {
+      "curve": [
+        1,
+        0
+      ],
+      "contraction_type": "symmetric flop",
+      "gv_series": [
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gv_eff_1": 6,
+      "gv_eff_3": 6,
+      "int_nums": [
+        [
+          [
+            1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ]
+        ],
+        [
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "c2": [
+        10,
+        32
+      ],
+      "zero_vol_divisor": [
+        -2,
+        1
+      ],
+      "coxeter_reflection": [
+        [
+          -1.0,
+          1.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "flopped_int_nums": [
+        [
+          [
+            -5,
+            -1
+          ],
+          [
+            -1,
+            1
+          ]
+        ],
+        [
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "flopped_c2": [
+        22,
+        32
+      ]
+    },
+    {
+      "curve": [
+        -1,
+        1
+      ],
+      "contraction_type": "CFT",
+      "gv_series": null,
+      "gv_eff_1": null,
+      "gv_eff_3": null,
+      "int_nums": [
+        [
+          [
+            1,
+            -1
+          ],
+          [
+            -1,
+            1
+          ]
+        ],
+        [
+          [
+            -1,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "c2": [
+        10,
+        32
+      ],
+      "zero_vol_divisor": [
+        1,
+        0
+      ],
+      "coxeter_reflection": [
+        [
+          -1.0,
+          0.0
+        ],
+        [
+          2.0,
+          1.0
+        ]
+      ],
+      "flopped_int_nums": null,
+      "flopped_c2": null
+    }
+  ]
+}

@@ -13,11 +13,11 @@ import numpy as np
 from scipy.linalg import null_space
 
 from .flop import wall_cross_c2, wall_cross_intnums
-from .gv import compute_gv_eff
+from .gv import gv_eff
 from .types import ContractionType, InsufficientGVError
 from .util import (
-    find_minimal_N,
-    get_coxeter_reflection,
+    minimal_N,
+    coxeter_reflection,
     projected_int_nums,
     projection_matrix,
 )
@@ -103,7 +103,7 @@ def is_cft(int_nums, curve):
     return bool(np.linalg.matrix_rank(matrix, tol=1e-8) < np.amin(matrix.shape))
 
 
-def find_zero_vol_divisor(int_nums, curve):
+def zero_vol_divisor(int_nums, curve):
     r"""Find a divisor that shrinks to zero volume at this wall.
 
     Computes the null space of the projected intersection matrix
@@ -155,7 +155,7 @@ def find_zero_vol_divisor(int_nums, curve):
         # Null space of matrix.T gives divisor in full h11 basis
         result = null_space(matrix.T)[:, 0]
         result /= max(abs(result))
-        result *= find_minimal_N(result)
+        result *= minimal_N(result)
 
         assert np.allclose(result, np.round(result))
         result = np.round(result).astype(int)
@@ -301,7 +301,7 @@ def classify_contraction(int_nums, c2, curve, gv_series):
         return _make_result(ContractionType.CFT)
 
     # 3. Compute effective GV invariants
-    gv_eff_1, gv_eff_3 = compute_gv_eff(gv_series)
+    gv_eff_1, gv_eff_3 = gv_eff(gv_series)
 
     # 4. Potency check
     if gv_series[-1] != 0:
@@ -310,7 +310,7 @@ def classify_contraction(int_nums, c2, curve, gv_series):
         )
 
     # 5. Find zero-volume divisor
-    zero_vol_div = find_zero_vol_divisor(int_nums, curve)
+    zero_vol_div = zero_vol_divisor(int_nums, curve)
 
     # 6. No zero-vol divisor -> generic flop
     if zero_vol_div is None:
@@ -323,7 +323,7 @@ def classify_contraction(int_nums, c2, curve, gv_series):
         )
 
     # 7. Zero-vol divisor exists
-    coxeter_ref = get_coxeter_reflection(zero_vol_div, curve)
+    coxeter_ref = coxeter_reflection(zero_vol_div, curve)
 
     symmetric = is_symmetric_flop(
         int_nums, c2, curve, gv_eff_1, gv_eff_3, coxeter_ref

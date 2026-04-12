@@ -205,37 +205,37 @@ class TestProjectedIntNums:
 
 
 # ============================================================
-# find_minimal_N
+# minimal_N
 # ============================================================
 
 
 class TestFindMinimalN:
-    """Tests for find_minimal_N."""
+    """Tests for minimal_N."""
 
     def test_half_integers(self):
         """Array with 0.5 entries needs N=2."""
-        from cybir.core.util import find_minimal_N
+        from cybir.core.util import minimal_N
 
-        assert find_minimal_N(np.array([0.5, 1.0, 1.5])) == 2
+        assert minimal_N(np.array([0.5, 1.0, 1.5])) == 2
 
     def test_already_integer(self):
         """Integer array needs N=1."""
-        from cybir.core.util import find_minimal_N
+        from cybir.core.util import minimal_N
 
-        assert find_minimal_N(np.array([1.0, 2.0, 3.0])) == 1
+        assert minimal_N(np.array([1.0, 2.0, 3.0])) == 1
 
     def test_thirds(self):
         """Array with 1/3 entries needs N=3."""
-        from cybir.core.util import find_minimal_N
+        from cybir.core.util import minimal_N
 
-        assert find_minimal_N(np.array([1 / 3, 2 / 3])) == 3
+        assert minimal_N(np.array([1 / 3, 2 / 3])) == 3
 
     def test_raises_on_irrational(self):
         """Should raise ValueError for irrational-like entries."""
-        from cybir.core.util import find_minimal_N
+        from cybir.core.util import minimal_N
 
         with pytest.raises(ValueError):
-            find_minimal_N(np.array([np.pi]), max_val=100)
+            minimal_N(np.array([np.pi]), max_val=100)
 
 
 # ============================================================
@@ -276,47 +276,47 @@ class TestMatrixPeriod:
 
 
 # ============================================================
-# get_coxeter_reflection
+# coxeter_reflection
 # ============================================================
 
 
 class TestCoxeterReflection:
-    """Tests for get_coxeter_reflection."""
+    """Tests for coxeter_reflection."""
 
     def test_reflection_sends_curve_to_minus_curve(self):
         """M @ curve = -curve when D.C != 0."""
-        from cybir.core.util import get_coxeter_reflection
+        from cybir.core.util import coxeter_reflection
 
         divisor = np.array([1, 0])
         curve = np.array([1, 0])
-        M = get_coxeter_reflection(divisor, curve)
+        M = coxeter_reflection(divisor, curve)
         assert np.allclose(M @ curve, -curve)
 
     def test_zero_intersection_gives_identity(self):
         """When D.C = 0, return identity."""
-        from cybir.core.util import get_coxeter_reflection
+        from cybir.core.util import coxeter_reflection
 
         divisor = np.array([0, 0])
         curve = np.array([1, 0])
-        M = get_coxeter_reflection(divisor, curve)
+        M = coxeter_reflection(divisor, curve)
         assert np.allclose(M, np.eye(2))
 
     def test_reflection_is_involution(self):
         """Coxeter reflection squared is identity (for D.C=1)."""
-        from cybir.core.util import get_coxeter_reflection
+        from cybir.core.util import coxeter_reflection
 
         divisor = np.array([1, 0])
         curve = np.array([1, 0])
-        M = get_coxeter_reflection(divisor, curve)
+        M = coxeter_reflection(divisor, curve)
         assert np.allclose(M @ M, np.eye(2))
 
     def test_orthogonal_divisor_identity(self):
         """When D.C = 0 (non-trivial divisor), returns identity."""
-        from cybir.core.util import get_coxeter_reflection
+        from cybir.core.util import coxeter_reflection
 
         divisor = np.array([0, 1])
         curve = np.array([1, 0])
-        M = get_coxeter_reflection(divisor, curve)
+        M = coxeter_reflection(divisor, curve)
         assert np.allclose(M, np.eye(2))
 
 
@@ -354,15 +354,15 @@ class TestCoxeterMatrix:
 
     def test_composition_has_finite_period(self):
         """Coxeter element from reflections has finite period."""
-        from cybir.core.util import coxeter_matrix, get_coxeter_reflection, matrix_period
+        from cybir.core.util import coxeter_matrix, coxeter_reflection, matrix_period
 
         # Two reflections for known h11=2 case
         d1 = np.array([1, 0])
         c1 = np.array([1, 0])
         d2 = np.array([0, 1])
         c2 = np.array([0, 1])
-        R1 = get_coxeter_reflection(d1, c1)
-        R2 = get_coxeter_reflection(d2, c2)
+        R1 = coxeter_reflection(d1, c1)
+        R2 = coxeter_reflection(d2, c2)
         C = coxeter_matrix([R1, R2])
         period = matrix_period(C)
         assert period >= 1

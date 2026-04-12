@@ -1,0 +1,256 @@
+{
+  "polytope_id": 13,
+  "h11": 2,
+  "int_nums": [
+    [
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        4
+      ]
+    ],
+    [
+      [
+        0,
+        4
+      ],
+      [
+        4,
+        17
+      ]
+    ]
+  ],
+  "c2": [
+    26,
+    74
+  ],
+  "mori_rays": [
+    [
+      1,
+      1
+    ],
+    [
+      -1,
+      0
+    ]
+  ],
+  "walls": [
+    {
+      "curve": [
+        1,
+        1
+      ],
+      "contraction_type": "su(2) enhancement",
+      "gv_series": [
+        -2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gv_eff_1": -2,
+      "gv_eff_3": -2,
+      "int_nums": [
+        [
+          [
+            -1,
+            0
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            17
+          ]
+        ]
+      ],
+      "c2": [
+        26,
+        74
+      ],
+      "zero_vol_divisor": [
+        -3,
+        1
+      ],
+      "coxeter_reflection": [
+        [
+          -2.0,
+          1.0
+        ],
+        [
+          -3.0,
+          2.0
+        ]
+      ],
+      "flopped_int_nums": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            6
+          ]
+        ],
+        [
+          [
+            2,
+            6
+          ],
+          [
+            6,
+            19
+          ]
+        ]
+      ],
+      "flopped_c2": [
+        22,
+        70
+      ]
+    },
+    {
+      "curve": [
+        -1,
+        0
+      ],
+      "contraction_type": "generic flop (II)",
+      "gv_series": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "gv_eff_1": 1,
+      "gv_eff_3": 1,
+      "int_nums": [
+        [
+          [
+            -1,
+            0
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            17
+          ]
+        ]
+      ],
+      "c2": [
+        26,
+        74
+      ],
+      "zero_vol_divisor": [
+        17,
+        -4
+      ],
+      "coxeter_reflection": [
+        [
+          -1.0,
+          0.47058823529411764
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "flopped_int_nums": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            17
+          ]
+        ]
+      ],
+      "flopped_c2": [
+        24,
+        74
+      ]
+    },
+    {
+      "curve": [
+        0,
+        1
+      ],
+      "contraction_type": "asymptotic",
+      "gv_series": null,
+      "gv_eff_1": null,
+      "gv_eff_3": null,
+      "int_nums": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            4,
+            17
+          ]
+        ]
+      ],
+      "c2": [
+        24,
+        74
+      ],
+      "zero_vol_divisor": null,
+      "coxeter_reflection": null,
+      "flopped_int_nums": null,
+      "flopped_c2": null
+    }
+  ]
+}

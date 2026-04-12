@@ -10,13 +10,13 @@ import pytest
 
 from cybir.core.classify import (
     classify_contraction,
-    find_zero_vol_divisor,
+    zero_vol_divisor,
     is_asymptotic,
     is_cft,
     is_symmetric_flop,
 )
 from cybir.core.types import ContractionType, InsufficientGVError
-from cybir.core.util import get_coxeter_reflection
+from cybir.core.util import coxeter_reflection
 
 
 # ---------------------------------------------------------------------------
@@ -184,20 +184,20 @@ class TestIsCft:
 
 
 # ---------------------------------------------------------------------------
-# find_zero_vol_divisor tests
+# zero_vol_divisor tests
 # ---------------------------------------------------------------------------
 
 
 class TestFindZeroVolDivisor:
     def test_returns_integer_divisor(self, real_symmetric_flop):
         d = real_symmetric_flop
-        result = find_zero_vol_divisor(d["int_nums"], d["curve"])
+        result = zero_vol_divisor(d["int_nums"], d["curve"])
         assert result is not None
         assert np.allclose(result, np.round(result))
 
     def test_matches_expected(self, real_symmetric_flop):
         d = real_symmetric_flop
-        result = find_zero_vol_divisor(d["int_nums"], d["curve"])
+        result = zero_vol_divisor(d["int_nums"], d["curve"])
         assert result is not None
         # May differ by overall sign
         assert np.allclose(np.abs(result), np.abs(d["zero_vol_divisor"]))
@@ -205,18 +205,18 @@ class TestFindZeroVolDivisor:
     def test_sign_convention(self, real_symmetric_flop):
         """D . C < 0 (simple dot product)."""
         d = real_symmetric_flop
-        result = find_zero_vol_divisor(d["int_nums"], d["curve"])
+        result = zero_vol_divisor(d["int_nums"], d["curve"])
         assert result is not None
         assert result @ d["curve"] <= 0
 
     def test_generic_flop_has_divisor(self, real_generic_flop):
         d = real_generic_flop
-        result = find_zero_vol_divisor(d["int_nums"], d["curve"])
+        result = zero_vol_divisor(d["int_nums"], d["curve"])
         assert result is not None
 
     def test_su2_has_divisor(self, real_su2):
         d = real_su2
-        result = find_zero_vol_divisor(d["int_nums"], d["curve"])
+        result = zero_vol_divisor(d["int_nums"], d["curve"])
         assert result is not None
 
 
@@ -228,9 +228,9 @@ class TestFindZeroVolDivisor:
 class TestIsSymmetricFlop:
     def test_symmetric_true(self, real_symmetric_flop):
         d = real_symmetric_flop
-        from cybir.core.gv import compute_gv_eff
+        from cybir.core.gv import gv_eff
 
-        gv_eff_1, gv_eff_3 = compute_gv_eff(d["gv_series"])
+        gv_eff_1, gv_eff_3 = gv_eff(d["gv_series"])
         assert is_symmetric_flop(
             d["int_nums"], d["c2"], d["curve"],
             gv_eff_1, gv_eff_3, d["coxeter_reflection"]
@@ -239,11 +239,11 @@ class TestIsSymmetricFlop:
     def test_symmetric_false(self, real_generic_flop):
         """Generic flop (II) is not symmetric."""
         d = real_generic_flop
-        from cybir.core.gv import compute_gv_eff
+        from cybir.core.gv import gv_eff
 
-        gv_eff_1, gv_eff_3 = compute_gv_eff(d["gv_series"])
-        zvd = find_zero_vol_divisor(d["int_nums"], d["curve"])
-        cox = get_coxeter_reflection(zvd, d["curve"])
+        gv_eff_1, gv_eff_3 = gv_eff(d["gv_series"])
+        zvd = zero_vol_divisor(d["int_nums"], d["curve"])
+        cox = coxeter_reflection(zvd, d["curve"])
         assert is_symmetric_flop(
             d["int_nums"], d["c2"], d["curve"],
             gv_eff_1, gv_eff_3, cox
