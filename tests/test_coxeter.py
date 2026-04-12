@@ -170,15 +170,6 @@ class TestCoxeterElement:
         with pytest.raises(ValueError, match="Cannot compute"):
             coxeter_element([])
 
-    def test_deprecated_alias_via_util(self):
-        """coxeter_matrix via util.py delegates to coxeter_element."""
-        from cybir.core.util import coxeter_matrix
-        M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
-        M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            result = coxeter_matrix([M1, M2])
-        np.testing.assert_array_equal(result, M1 @ M2)
 
 
 # ============================================================
@@ -389,43 +380,6 @@ class TestEnumerateCoxeterGroup:
                 a2_reflections, expected_order=10**9, max_memory_bytes=100
             ))
         assert any("memory" in r.message.lower() or "Memory" in r.message for r in caplog.records)
-
-
-# ============================================================
-# Deprecation re-exports from util.py
-# ============================================================
-
-class TestDeprecationReexports:
-    """Test that util.py re-exports with deprecation warnings."""
-
-    def test_matrix_period_deprecation(self):
-        """Importing matrix_period from util emits DeprecationWarning."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            from cybir.core.util import matrix_period as mp_util
-            result = mp_util(np.eye(2))
-            assert result == 1
-            assert any(issubclass(x.category, DeprecationWarning) for x in w)
-
-    def test_coxeter_reflection_deprecation(self):
-        """Importing coxeter_reflection from util emits DeprecationWarning."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            from cybir.core.util import coxeter_reflection as cr_util
-            M = cr_util(np.array([1.0, 0.0]), np.array([1.0, 0.0]))
-            assert M.shape == (2, 2)
-            assert any(issubclass(x.category, DeprecationWarning) for x in w)
-
-    def test_coxeter_matrix_deprecation(self):
-        """Importing coxeter_matrix from util emits DeprecationWarning."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            from cybir.core.util import coxeter_matrix as cm_util
-            M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
-            M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
-            result = cm_util([M1, M2])
-            np.testing.assert_array_equal(result, M1 @ M2)
-            assert any(issubclass(x.category, DeprecationWarning) for x in w)
 
 
 # ============================================================

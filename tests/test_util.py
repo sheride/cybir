@@ -248,26 +248,26 @@ class TestMatrixPeriod:
 
     def test_identity_period_is_one(self):
         """Identity matrix has period 1."""
-        from cybir.core.util import matrix_period
+        from cybir.core.coxeter import matrix_period
 
         assert matrix_period(np.eye(2)) == 1
 
     def test_90_degree_rotation(self):
         """90-degree rotation matrix has period 4."""
-        from cybir.core.util import matrix_period
+        from cybir.core.coxeter import matrix_period
 
         R = np.array([[0, -1], [1, 0]])
         assert matrix_period(R) == 4
 
     def test_negation_period_is_two(self):
         """-I has period 2."""
-        from cybir.core.util import matrix_period
+        from cybir.core.coxeter import matrix_period
 
         assert matrix_period(-np.eye(3)) == 2
 
     def test_raises_if_not_periodic(self):
         """Non-periodic matrix raises ValueError."""
-        from cybir.core.util import matrix_period
+        from cybir.core.coxeter import matrix_period
 
         # A matrix that won't return to identity
         M = np.array([[1, 1], [0, 1]])  # shear
@@ -285,7 +285,7 @@ class TestCoxeterReflection:
 
     def test_reflection_sends_curve_to_minus_curve(self):
         """M @ curve = -curve when D.C != 0."""
-        from cybir.core.util import coxeter_reflection
+        from cybir.core.coxeter import coxeter_reflection
 
         divisor = np.array([1, 0])
         curve = np.array([1, 0])
@@ -294,7 +294,7 @@ class TestCoxeterReflection:
 
     def test_zero_intersection_gives_identity(self):
         """When D.C = 0, return identity."""
-        from cybir.core.util import coxeter_reflection
+        from cybir.core.coxeter import coxeter_reflection
 
         divisor = np.array([0, 0])
         curve = np.array([1, 0])
@@ -303,7 +303,7 @@ class TestCoxeterReflection:
 
     def test_reflection_is_involution(self):
         """Coxeter reflection squared is identity (for D.C=1)."""
-        from cybir.core.util import coxeter_reflection
+        from cybir.core.coxeter import coxeter_reflection
 
         divisor = np.array([1, 0])
         curve = np.array([1, 0])
@@ -312,7 +312,7 @@ class TestCoxeterReflection:
 
     def test_orthogonal_divisor_identity(self):
         """When D.C = 0 (non-trivial divisor), returns identity."""
-        from cybir.core.util import coxeter_reflection
+        from cybir.core.coxeter import coxeter_reflection
 
         divisor = np.array([0, 1])
         curve = np.array([1, 0])
@@ -330,7 +330,7 @@ class TestCoxeterMatrix:
 
     def test_single_reflection(self):
         """Single reflection gives itself."""
-        from cybir.core.util import coxeter_matrix
+        from cybir.core.coxeter import coxeter_element as coxeter_matrix
 
         R = np.array([[-1, 0], [0, 1]])
         result = coxeter_matrix([R])
@@ -338,7 +338,7 @@ class TestCoxeterMatrix:
 
     def test_two_reflections(self):
         """Product of two reflections."""
-        from cybir.core.util import coxeter_matrix
+        from cybir.core.coxeter import coxeter_element as coxeter_matrix
 
         R1 = np.array([[-1, 0], [0, 1]])
         R2 = np.array([[1, 0], [0, -1]])
@@ -347,14 +347,14 @@ class TestCoxeterMatrix:
 
     def test_empty_list_gives_identity(self):
         """Empty list of reflections raises or returns identity."""
-        from cybir.core.util import coxeter_matrix
+        from cybir.core.coxeter import coxeter_element as coxeter_matrix
 
         with pytest.raises(ValueError, match="empty"):
             coxeter_matrix([])
 
     def test_composition_has_finite_period(self):
         """Coxeter element from reflections has finite period."""
-        from cybir.core.util import coxeter_matrix, coxeter_reflection, matrix_period
+        from cybir.core.coxeter import coxeter_element as coxeter_matrix, coxeter_reflection, matrix_period
 
         # Two reflections for known h11=2 case
         d1 = np.array([1, 0])

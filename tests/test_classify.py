@@ -16,7 +16,7 @@ from cybir.core.classify import (
     is_symmetric_flop,
 )
 from cybir.core.types import ContractionType, InsufficientGVError
-from cybir.core.util import coxeter_reflection
+from cybir.core.coxeter import coxeter_reflection
 
 
 # ---------------------------------------------------------------------------

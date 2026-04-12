@@ -39,7 +39,7 @@ class CYBirationalClass:
     1. ``ekc = CYBirationalClass(cy)`` -- cheap: wraps CY, creates empty graph
     2. ``ekc.setup_root(max_deg=10)`` -- moderate: computes GVs
     3. ``ekc.construct_phases(verbose=True)`` -- expensive: BFS
-    4. ``ekc.expand_weyl()`` -- optional: Weyl orbit expansion
+    4. ``ekc.apply_coxeter_orbit()`` -- optional: Coxeter orbit expansion
 
     Or use the convenience classmethod ``CYBirationalClass.from_gv(cy)``.
 
@@ -178,28 +178,12 @@ class CYBirationalClass:
         curves = [np.array(c) for _, c in self._sym_flop_pairs]
         return to_fundamental_domain(np.asarray(point), reflections, curves)
 
-    def expand_weyl(self):
-        """Expand to the hyperextended cone via Weyl orbit reflections.
-
-        .. deprecated::
-            Use :meth:`apply_coxeter_orbit` instead. This will be removed
-            in a future version.
-        """
-        import warnings
-
-        warnings.warn(
-            "expand_weyl is deprecated, use apply_coxeter_orbit instead",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.apply_coxeter_orbit(phases=True)
-
     @classmethod
     def from_gv(cls, cy, max_deg=10, verbose=True, limit=100, gvs=None):
         """Construct EKC from GV invariants (convenience classmethod).
 
         Runs ``setup_root`` -> ``construct_phases`` and returns the
-        populated ``CYBirationalClass``. Does NOT run ``expand_weyl``
+        populated ``CYBirationalClass``. Does NOT run ``apply_coxeter_orbit``
         automatically (call it separately if needed).
 
         Parameters
@@ -357,10 +341,10 @@ class CYBirationalClass:
         """
         if not self._coxeter_refs:
             return None
-        from .util import coxeter_matrix
+        from .coxeter import coxeter_element
 
         refs = [np.array(r) for r in self._coxeter_refs]
-        return coxeter_matrix(refs)
+        return coxeter_element(refs)
 
     @property
     def build_log(self):
