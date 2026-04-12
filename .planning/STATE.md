@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-04-12T19:13:57.239Z"
+status: verifying
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-04-12T19:22:21.621Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 13
-  completed_plans: 12
-  percent: 92
+  completed_plans: 13
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 Phase: 04 (coxeter-weyl) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-12
 
 Progress: [░░░░░░░░░░] 0%
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P04 | 2min | 2 tasks | 17 files |
 | Phase 04 P01 | 6min | 1 tasks | 5 files |
 | Phase 04 P02 | 7min | 2 tasks | 3 files |
+| Phase 04 P03 | 6min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,7 @@ Recent decisions affecting current work:
 - [Phase 04]: B_2 fixtures derived from Cartan matrix; coxeter_matrix kept as deprecated alias for coxeter_element
 - [Phase 04]: Reflected contraction curves use g @ curve (Mori space), Kahler rays use ray @ inv(g)
 - [Phase 04]: No deduplication of reflected phases -- each (g, fund_phase) pair is unique (D-11)
+- [Phase 04]: _sym_flop_curves stored during BFS for chamber walk; to_fundamental_domain returns (point, g); weyl.py deleted
 
 ### Roadmap Evolution
 
@@ -109,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T19:13:57.235Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-04-12T19:22:21.617Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
