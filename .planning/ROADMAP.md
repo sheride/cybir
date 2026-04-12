@@ -76,20 +76,22 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Foundation | 2/2 | Complete | 2026-04-12 |
 | 2. Core Mathematics | 4/4 | Complete | 2026-04-12 |
 | 3. Pipeline & Integration | 4/4 | Complete | 2026-04-12 |
-| 4. Coxeter Group & Weyl Expansion | 0/? | Planned | - |
+| 4. Coxeter Group & Weyl Expansion | 0/3 | Planned | - |
 
 ### Phase 4: Coxeter Group & Weyl Expansion
-**Goal**: Proper Coxeter group construction from symmetric-flop reflections with finite-type detection and memory-safe enumeration, full Weyl orbit expansion acting on all phase data with correct index conventions (g on Mori, (g⁻¹)ᵀ on Kahler), and generator accumulation from reflected phases
+**Goal**: Proper Coxeter group construction from symmetric-flop reflections with finite-type detection and memory-safe enumeration, full Weyl orbit expansion acting on all phase data with correct index conventions (g on Mori, (g^-1)^T on Kahler), and generator accumulation from reflected phases
 **Depends on**: Phase 3
-**Requirements**: TBD
+**Requirements**: SC-1, SC-2, SC-3, SC-4, SC-5, SC-6
 **Success Criteria** (what must be TRUE):
   1. `coxeter.py` constructs the Coxeter group from symmetric-flop reflection matrices using streaming BFS with memory estimation
   2. Finite type detection via positive definiteness of the bilinear form; infinite type stops and reports fundamental domain only
-  3. Weyl expansion applies every group element to every fundamental-domain phase with correct index conventions (g on Mori/κ/c2, (g⁻¹)ᵀ on Kahler)
+  3. Weyl expansion applies every group element to every fundamental-domain phase with correct index conventions (g on Mori/kappa/c2, (g^-1)^T on Kahler)
   4. Reflected phases carry properly oriented GV Invariants objects (reflected flop curve images)
   5. Infinity cone gens and effective cone gens are accumulated from all reflected phases (Kahler rays, zero-vol divisors, terminal wall curves)
   6. Only symmetric-flop Coxeter matrices are used (not su(2)); the birational geometry is the correct object
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 4 to break down)
+- [ ] 04-01-PLAN.md -- Coxeter group construction: order matrix, finite-type classification, streaming BFS enumeration, move functions from util.py
+- [ ] 04-02-PLAN.md -- Orbit expansion: apply_coxeter_orbit with correct index conventions, graph orbit, phases=False mode, generator accumulation
+- [ ] 04-03-PLAN.md -- invariants_for, to_fundamental_domain, delete weyl.py, update re-exports and tests
