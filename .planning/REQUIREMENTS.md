@@ -22,8 +22,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **MATH-02**: ExtremalContraction diagnosis — all 5 types (asymptotic, CFT, su(2), symmetric flop, generic flop)
 - [ ] **MATH-03**: GV series computation and effective GV
 - [ ] **MATH-04**: Potent/nilpotent curve classification and nop identification
-- [ ] **MATH-05**: Coxeter reflection computation
-- [ ] **MATH-06**: Equation citations in every math function docstring
+- [x] **MATH-05**: Coxeter reflection computation
+- [x] **MATH-06**: Equation citations in every math function docstring
 
 ### Pipeline
 
@@ -84,8 +84,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATH-02 | Phase 2 | Pending |
 | MATH-03 | Phase 2 | Pending |
 | MATH-04 | Phase 2 | Pending |
-| MATH-05 | Phase 2 | Pending |
-| MATH-06 | Phase 2 | Pending |
+| MATH-05 | Phase 2 | Complete |
+| MATH-06 | Phase 2 | Complete |
 | PIPE-01 | Phase 3 | Pending |
 | PIPE-02 | Phase 3 | Pending |
 | PIPE-03 | Phase 3 | Pending |

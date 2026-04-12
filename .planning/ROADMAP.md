@@ -44,7 +44,7 @@ Plans:
   4. Every math function docstring cites the relevant equation/section from arXiv:2212.10573 or arXiv:2303.00757
 **Plans:** 4 plans
 Plans:
-- [ ] 02-01-PLAN.md -- Utility additions (projected_int_nums, Coxeter functions) and ExtremalContraction field update
+- [x] 02-01-PLAN.md -- Utility additions (projected_int_nums, Coxeter functions) and ExtremalContraction field update
 - [ ] 02-02-PLAN.md -- Wall-crossing formula (flop.py) and GV series computation (gv.py)
 - [ ] 02-03-PLAN.md -- Contraction classification algorithm (classify.py)
 - [ ] 02-04-PLAN.md -- Re-exports, convenience methods, snapshot generation, and integration tests
