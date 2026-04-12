@@ -548,6 +548,22 @@ def _matrix_key(M):
     return M.astype(np.int64).tobytes()
 
 
+def _edges_snapshot(graph):
+    """Snapshot all edges in the graph as (label_a, label_b, edge_data) triples.
+
+    Parameters
+    ----------
+    graph : CYGraph
+        The phase graph.
+
+    Returns
+    -------
+    list of tuple
+        Each tuple is (label_a, label_b, edge_data_dict).
+    """
+    return list(graph._graph.edges(data=True))
+
+
 def enumerate_coxeter_group(generators, expected_order=None, max_memory_bytes=500_000_000):
     """Enumerate all elements of a finite Coxeter group via BFS.
 
@@ -617,3 +633,262 @@ def enumerate_coxeter_group(generators, expected_order=None, max_memory_bytes=50
                 seen.add(key)
                 queue.append(new)
                 yield new
+
+
+# ---------------------------------------------------------------------------
+# Phase reflection (D-08, D-09)
+# ---------------------------------------------------------------------------
+
+def reflect_phase_data(phase, g, label=None):
+    r"""Apply a Coxeter group element to a CalabiYauLite phase.
+
+    Transforms intersection numbers, second Chern class, and cones
+    according to the index conventions in D-08/D-09:
+
+    - :math:`\kappa'_{xyz} = g_{xa}\, g_{yb}\, g_{zc}\, \kappa_{abc}`
+      (g acts on Mori-space indices)
+    - :math:`c'_2 = g \cdot c_2`
+    - Kahler cone rays: ``old_rays @ inv(g)`` (row-vector convention)
+    - Mori cone: dual of the new Kahler cone
+
+    For individual reflections ``g^{-1} = g``, but for products
+    ``g^{-1} \neq g`` in general (D-09).
+
+    Parameters
+    ----------
+    phase : CalabiYauLite
+        Phase to reflect.
+    g : numpy.ndarray
+        Integer group element matrix of shape ``(h11, h11)``.
+    label : str, optional
+        Label for the new phase.
+
+    Returns
+    -------
+    CalabiYauLite
+        New phase with transformed data.
+
+    Raises
+    ------
+    AssertionError
+        If ``inv(g)`` is not an integer matrix (T-04-04 mitigation).
+
+    Notes
+    -----
+    See arXiv:2212.10573 Section 4.3 and D-08, D-09 in CONTEXT.md.
+    """
+    from .types import CalabiYauLite as CYL
+
+    g = np.asarray(g, dtype=np.int64)
+
+    # Compute g^{-1} and verify integrality (T-04-04)
+    g_inv_float = np.linalg.inv(g.astype(float))
+    g_inv_int = np.round(g_inv_float).astype(int)
+    assert np.allclose(g_inv_float, g_inv_int), (
+        f"inv(g) is not an integer matrix:\n{g_inv_float}"
+    )
+
+    # Transform intersection numbers: kappa'_xyz = g_xa g_yb g_zc kappa_abc
+    g_float = g.astype(float)
+    new_kappa = np.einsum("abc,xa,yb,zc", phase.int_nums, g_float, g_float, g_float)
+    new_kappa = np.round(new_kappa).astype(int)
+
+    # Transform c2
+    new_c2 = None
+    if phase.c2 is not None:
+        new_c2 = (g @ phase.c2.astype(int)).astype(int)
+
+    # Transform Kahler cone: rays @ inv(g) (D-08)
+    new_kc = None
+    new_mori = None
+    if phase.kahler_cone is not None:
+        import cytools
+        old_rays = phase.kahler_cone.rays()
+        new_rays = (old_rays @ g_inv_int)
+        new_kc = cytools.Cone(rays=new_rays)
+        new_mori = new_kc.dual()
+
+    return CYL(
+        int_nums=new_kappa,
+        c2=new_c2,
+        kahler_cone=new_kc,
+        mori_cone=new_mori,
+        label=label,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Orbit expansion (D-10 through D-14)
+# ---------------------------------------------------------------------------
+
+def apply_coxeter_orbit(ekc, phases=True):
+    r"""Expand the fundamental domain via Coxeter group orbit.
+
+    Enumerates the full Coxeter group from symmetric-flop reflections
+    and applies every non-identity group element to every fundamental-
+    domain phase and edge, producing the hyperextended Kahler cone.
+
+    Parameters
+    ----------
+    ekc : CYBirationalClass
+        Must have ``construct_phases`` completed. Modified in place.
+    phases : bool, optional
+        If ``True`` (default), create full reflected phase objects and
+        graph edges. If ``False``, only accumulate cone generators
+        (faster, less memory). See D-13.
+
+    Notes
+    -----
+    The algorithm (per D-10 through D-14):
+
+    1. Extract symmetric-flop reflections from ``ekc._sym_flop_refs``
+    2. Check finite type via positive definiteness (D-06)
+    3. Classify and compute expected order (D-05)
+    4. Memory estimation (D-07)
+    5. Streaming BFS: for each group element g (skip identity):
+       - Reflect each fundamental phase (phases=True only)
+       - Accumulate Kahler rays, terminal wall curves, zero-vol divisors
+       - Reflect each fundamental edge (D-12)
+
+    No deduplication of reflected phases (D-11).
+
+    See arXiv:2212.10573 Section 4.3.
+    """
+    from .types import CalabiYauLite, ContractionType, ExtremalContraction
+
+    reflections = [np.array(r) for r in ekc._sym_flop_refs]
+    if not reflections:
+        logger.info("No symmetric-flop reflections; skipping orbit expansion")
+        return
+
+    # Compute order matrix and check finiteness (D-06)
+    order_mat = coxeter_order_matrix(reflections)
+    if not is_finite_type(order_mat):
+        logger.warning(
+            "Infinite-type Coxeter group detected; skipping orbit expansion. "
+            "Only the fundamental domain is available."
+        )
+        return
+
+    # Classify and compute expected order (D-05)
+    type_list = classify_coxeter_type(order_mat)
+    expected_order = coxeter_group_order(type_list)
+
+    # Store on ekc
+    ekc._coxeter_type_info = type_list
+    ekc._coxeter_order = expected_order
+
+    # Memory estimation (D-07, T-04-05)
+    h11 = reflections[0].shape[0]
+    mem_estimate = expected_order * 8 * h11 * h11
+    if mem_estimate > 500_000_000:
+        logger.warning(
+            "Estimated memory %.1f MB for Coxeter group enumeration "
+            "(|W|=%d, h11=%d)",
+            mem_estimate / 1e6, expected_order, h11,
+        )
+
+    # Snapshot fundamental-domain phases and edges
+    fund_phases = list(ekc._graph.phases)
+    fund_edges = _edges_snapshot(ekc._graph)
+    phase_counter = ekc._graph.num_phases
+
+    # Build label mapping: fundamental label -> list of (g, new_label)
+    # for connecting reflected flop edges
+    label_map = {}  # (g_key, fund_label) -> new_label
+
+    for g in enumerate_coxeter_group(reflections, expected_order):
+        g = g.astype(np.int64)
+        if np.array_equal(g, np.eye(h11, dtype=np.int64)):
+            continue  # skip identity
+
+        g_inv_float = np.linalg.inv(g.astype(float))
+        g_inv_int = np.round(g_inv_float).astype(int)
+        g_key = _matrix_key(g)
+
+        for fund_phase in fund_phases:
+            if phases:
+                # Create reflected phase via reflect_phase_data
+                new_label = f"CY_{phase_counter}"
+                new_phase = reflect_phase_data(fund_phase, g, label=new_label)
+                ekc._graph.add_phase(new_phase)
+                ekc._weyl_phases.append(new_label)
+                label_map[(g_key, fund_phase.label)] = new_label
+                phase_counter += 1
+
+            # Accumulate eff_cone_gens: reflected Kahler rays (D-14)
+            if fund_phase.kahler_cone is not None:
+                for ray in fund_phase.kahler_cone.rays():
+                    reflected_ray = (ray @ g_inv_int)
+                    ekc._eff_cone_gens.add(
+                        tuple(int(x) for x in reflected_ray)
+                    )
+
+        # Reflect fundamental edges
+        for u, v, data in fund_edges:
+            contr = data["contraction"]
+            sign_a = data.get("curve_sign_a", 1)
+            ctype = contr.contraction_type
+
+            # Reflected contraction curve: g @ (sign * curve)
+            curve = np.asarray(contr.contraction_curve, dtype=int)
+            reflected_curve = (g @ curve).astype(int)
+
+            if phases:
+                # Build reflected ExtremalContraction
+                reflected_zvd = None
+                if contr.zero_vol_divisor is not None:
+                    reflected_zvd = (g @ np.asarray(contr.zero_vol_divisor, dtype=int)).astype(int)
+
+                reflected_contr = ExtremalContraction(
+                    contraction_curve=reflected_curve,
+                    contraction_type=ctype,
+                    gv_invariant=contr.gv_invariant,
+                    gv_series=contr.gv_series,
+                    zero_vol_divisor=reflected_zvd,
+                )
+
+                if ctype == ContractionType.FLOP and u != v:
+                    # Flop between two different phases: connect g(A) to g(B) (D-12)
+                    new_u = label_map.get((g_key, u))
+                    new_v = label_map.get((g_key, v))
+                    if new_u is not None and new_v is not None:
+                        ekc._graph.add_contraction(
+                            reflected_contr, new_u, new_v,
+                            curve_sign_a=data.get("curve_sign_a", 1),
+                            curve_sign_b=data.get("curve_sign_b", -1),
+                        )
+                else:
+                    # Terminal wall or self-loop: self-loop on reflected phase
+                    # For self-loops (u == v), map to g(u)
+                    fund_label = u
+                    new_label = label_map.get((g_key, fund_label))
+                    if new_label is not None:
+                        ekc._graph.add_contraction(
+                            reflected_contr, new_label, new_label,
+                            curve_sign_a=data.get("curve_sign_a", 1),
+                            curve_sign_b=data.get("curve_sign_b", -1),
+                        )
+
+            # Accumulate generators regardless of phases mode (D-13, D-14)
+            if ctype in (ContractionType.ASYMPTOTIC, ContractionType.CFT):
+                ekc._infinity_cone_gens.add(
+                    tuple(int(x) for x in reflected_curve)
+                )
+
+            if ctype in (ContractionType.CFT, ContractionType.SU2):
+                zvd = contr.zero_vol_divisor
+                if zvd is not None:
+                    reflected_zvd = (g @ np.asarray(zvd, dtype=int)).astype(int)
+                    ekc._eff_cone_gens.add(
+                        tuple(int(x) for x in reflected_zvd)
+                    )
+
+    logger.info(
+        "Coxeter orbit expansion: %d total phases (from %d fundamental), "
+        "|W| = %d, type = %s",
+        ekc._graph.num_phases,
+        len(fund_phases),
+        expected_order,
+        ", ".join(f"{t}_{r}" for t, r, _ in type_list),
+    )

@@ -830,6 +830,7 @@ class TestApplyCoxeterOrbit:
 
         # Check that flop edges exist between reflected phase pairs
         # Count FLOP type edges
+        from cybir.core.types import ContractionType
         flop_edges = 0
         for u, v, data in ekc._graph._graph.edges(data=True):
             contr = data["contraction"]
@@ -941,11 +942,12 @@ class TestApplyCoxeterOrbit:
         from cybir.core.types import CalabiYauLite
         from cybir.core.util import tuplify
 
-        # Affine A_2: 3 reflections forming a triangle (m_ij = 3 for all pairs)
-        # Use 3x3 reflections
-        M1 = np.array([[-1, 1, 0], [0, 1, 0], [0, 0, 1]], dtype=np.int64)
-        M2 = np.array([[1, 0, 0], [1, -1, 1], [0, 0, 1]], dtype=np.int64)
-        M3 = np.array([[1, 0, 0], [0, 1, 0], [0, 1, -1]], dtype=np.int64)
+        # Affine A_2: 3 permutation-matrix reflections in R^3
+        # All pairwise products have order 3, giving all m_ij = 3
+        # The bilinear form B has a zero eigenvalue => NOT positive definite
+        M1 = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]], dtype=np.int64)
+        M2 = np.array([[1, 0, 0], [0, 0, 1], [0, 1, 0]], dtype=np.int64)
+        M3 = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=np.int64)
 
         graph = CYGraph()
         phase = CalabiYauLite(int_nums=np.zeros((3, 3, 3)), label="CY_0")
