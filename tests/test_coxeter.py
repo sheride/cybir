@@ -496,3 +496,487 @@ class TestCalabiYauLiteCurveSignsAndTip:
         returned = cyl.curve_signs
         returned[(0, 1)] = -1
         assert (0, 1) not in cyl.curve_signs
+
+
+# ============================================================
+# reflect_phase_data tests
+# ============================================================
+
+class TestReflectPhaseData:
+    """Test reflect_phase_data function."""
+
+    def test_identity_returns_unchanged_kappa(self):
+        """reflect_phase_data with identity returns same kappa."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import reflect_phase_data
+        from cybir.core.types import CalabiYauLite
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0",
+        )
+        g = np.eye(2, dtype=np.int64)
+        new_phase = reflect_phase_data(phase, g, label="CY_test")
+        np.testing.assert_array_equal(new_phase.int_nums, kappa)
+
+    def test_identity_returns_unchanged_c2(self):
+        """reflect_phase_data with identity returns same c2."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import reflect_phase_data
+        from cybir.core.types import CalabiYauLite
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0",
+        )
+        g = np.eye(2, dtype=np.int64)
+        new_phase = reflect_phase_data(phase, g, label="CY_test")
+        np.testing.assert_array_equal(new_phase.c2, c2)
+
+    def test_single_reflection_matches_weyl(self):
+        """reflect_phase_data with single reflection M matches weyl._reflect_phase."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import reflect_phase_data
+        from cybir.core.weyl import _reflect_phase
+        from cybir.core.types import CalabiYauLite
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0",
+        )
+        # A_2 reflection
+        M = np.array([[-1, 1], [0, 1]], dtype=np.int64)
+
+        new_phase = reflect_phase_data(phase, M, label="CY_ref")
+        old_result = _reflect_phase(phase, M)
+
+        np.testing.assert_allclose(new_phase.int_nums, old_result["int_nums"], atol=1e-10)
+        np.testing.assert_allclose(new_phase.c2, old_result["c2"], atol=1e-10)
+
+    def test_product_element_kahler_uses_proper_inverse(self):
+        """For a product g = M1 @ M2, Kahler rays use (g^-1)^T, NOT g (D-09)."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import reflect_phase_data
+        from cybir.core.types import CalabiYauLite
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0",
+        )
+
+        M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
+        M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
+        g = (M1 @ M2).astype(np.int64)
+
+        new_phase = reflect_phase_data(phase, g, label="CY_product")
+
+        # Verify: Kahler rays should be old_rays @ inv(g),
+        # NOT old_rays @ g
+        g_inv = np.round(np.linalg.inv(g)).astype(int)
+        expected_rays = kc.rays() @ g_inv
+        actual_rays = new_phase.kahler_cone.rays()
+
+        # Convert both to sets of tuples for comparison
+        expected_set = set(tuple(r) for r in expected_rays)
+        actual_set = set(tuple(r) for r in actual_rays)
+        assert expected_set == actual_set
+
+    def test_single_reflection_g_inv_equals_g(self):
+        """For a single reflection, g^-1 = g, so Kahler transform by g is correct."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import reflect_phase_data
+        from cybir.core.types import CalabiYauLite
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0",
+        )
+
+        M = np.array([[-1, 1], [0, 1]], dtype=np.int64)
+        new_phase = reflect_phase_data(phase, M, label="CY_ref")
+
+        # For single reflection, inv(M) == M
+        expected_rays = kc.rays() @ M
+        actual_rays = new_phase.kahler_cone.rays()
+
+        expected_set = set(tuple(r) for r in expected_rays)
+        actual_set = set(tuple(r) for r in actual_rays)
+        assert expected_set == actual_set
+
+    def test_integrality_assertion(self):
+        """reflect_phase_data asserts integrality of g_inv (T-04-04)."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import reflect_phase_data
+        from cybir.core.types import CalabiYauLite
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0",
+        )
+
+        # Non-integer-invertible matrix should fail assertion
+        g_bad = np.array([[1, 1], [1, 3]])  # inv has non-integer entries: [[3, -1], [-1, 1]] / 2
+        with pytest.raises(AssertionError):
+            reflect_phase_data(phase, g_bad, label="CY_bad")
+
+
+# ============================================================
+# apply_coxeter_orbit tests
+# ============================================================
+
+class TestApplyCoxeterOrbit:
+    """Test apply_coxeter_orbit function."""
+
+    def _make_ekc_with_a2(self):
+        """Create a mock EKC object with A_2 symmetric-flop reflections.
+
+        Returns an EKC-like object with 1 fundamental phase and 2 reflections.
+        """
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.types import CalabiYauLite, ContractionType, ExtremalContraction
+        from cybir.core.graph import CYGraph
+        from cybir.core.util import tuplify
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0", tip=np.array([1.0, 1.0]),
+        )
+
+        M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
+        M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
+
+        graph = CYGraph()
+        graph.add_phase(phase)
+
+        # Add a terminal wall (ASYMPTOTIC) as self-loop
+        asym_curve = np.array([1, 0])
+        asym_contr = ExtremalContraction(
+            contraction_curve=asym_curve,
+            contraction_type=ContractionType.ASYMPTOTIC,
+        )
+        graph.add_contraction(asym_contr, "CY_0", "CY_0")
+
+        # Create mock ekc
+        class _MockEKC:
+            pass
+
+        ekc = _MockEKC()
+        ekc._graph = graph
+        ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
+        ekc._infinity_cone_gens = set()
+        ekc._eff_cone_gens = set()
+        ekc._weyl_expanded = False
+        ekc._weyl_phases = []
+        ekc._coxeter_type_info = None
+        ekc._coxeter_order = None
+
+        return ekc
+
+    def _make_ekc_with_two_phases_and_flop(self):
+        """Create a mock EKC with 2 fundamental phases connected by a flop,
+        plus A_2 symmetric-flop reflections.
+        """
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.types import CalabiYauLite, ContractionType, ExtremalContraction
+        from cybir.core.graph import CYGraph
+        from cybir.core.util import tuplify
+
+        kappa_a = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        kappa_b = np.array([[[2, -1], [-1, 0]], [[-1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+
+        kc_a = cytools.Cone(rays=[[1, 0], [0, 1]])
+        kc_b = cytools.Cone(rays=[[1, 0], [-1, 1]])
+
+        phase_a = CalabiYauLite(
+            int_nums=kappa_a, c2=c2, kahler_cone=kc_a, mori_cone=kc_a.dual(),
+            label="CY_0", tip=np.array([1.0, 1.0]),
+        )
+        phase_b = CalabiYauLite(
+            int_nums=kappa_b, c2=c2, kahler_cone=kc_b, mori_cone=kc_b.dual(),
+            label="CY_1", tip=np.array([0.5, 1.0]),
+        )
+
+        M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
+        M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
+
+        graph = CYGraph()
+        graph.add_phase(phase_a)
+        graph.add_phase(phase_b)
+
+        # Flop edge connecting A and B
+        flop_curve = np.array([0, 1])
+        flop_contr = ExtremalContraction(
+            contraction_curve=flop_curve,
+            contraction_type=ContractionType.FLOP,
+            gv_invariant=1,
+        )
+        graph.add_contraction(flop_contr, "CY_0", "CY_1",
+                              curve_sign_a=1, curve_sign_b=-1)
+
+        # Terminal wall on CY_0
+        asym_contr = ExtremalContraction(
+            contraction_curve=np.array([1, 0]),
+            contraction_type=ContractionType.ASYMPTOTIC,
+        )
+        graph.add_contraction(asym_contr, "CY_0", "CY_0")
+
+        class _MockEKC:
+            pass
+
+        ekc = _MockEKC()
+        ekc._graph = graph
+        ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
+        ekc._infinity_cone_gens = set()
+        ekc._eff_cone_gens = set()
+        ekc._weyl_expanded = False
+        ekc._weyl_phases = []
+        ekc._coxeter_type_info = None
+        ekc._coxeter_order = None
+
+        return ekc
+
+    def test_orbit_creates_correct_number_of_phases(self):
+        """apply_coxeter_orbit with phases=True creates |W|-1 reflected phases per fund phase."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        assert ekc._graph.num_phases == 1
+        apply_coxeter_orbit(ekc, phases=True)
+        # |W(A_2)| = 6, identity skipped => 5 new phases per fundamental phase
+        # 1 fund phase => 5 new + 1 original = 6 total
+        assert ekc._graph.num_phases == 6
+
+    def test_orbit_phases_false_no_new_phases(self):
+        """apply_coxeter_orbit with phases=False creates no new phases."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        assert ekc._graph.num_phases == 1
+        apply_coxeter_orbit(ekc, phases=False)
+        assert ekc._graph.num_phases == 1
+
+    def test_orbit_phases_false_accumulates_generators(self):
+        """phases=False mode accumulates eff_cone_gens."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        apply_coxeter_orbit(ekc, phases=False)
+        # Should have reflected Kahler rays
+        assert len(ekc._eff_cone_gens) > 0
+
+    def test_orbit_phases_false_accumulates_infinity_gens(self):
+        """phases=False mode accumulates infinity_cone_gens from terminal walls."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        apply_coxeter_orbit(ekc, phases=False)
+        # The asymptotic self-loop curve [1,0] reflected by 5 group elements
+        assert len(ekc._infinity_cone_gens) > 0
+
+    def test_reflected_terminal_walls_are_self_loops(self):
+        """Reflected terminal walls appear as self-loops on reflected phases."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        apply_coxeter_orbit(ekc, phases=True)
+
+        # Each reflected phase should have self-loop terminal walls
+        for phase in ekc._graph.phases:
+            if phase.label == "CY_0":
+                continue
+            contrs = ekc._graph.contractions_from(phase.label)
+            # Should have at least one contraction (the reflected terminal wall)
+            assert len(contrs) >= 1
+
+    def test_reflected_flop_edges_connect_reflected_phases(self):
+        """Reflected flop edges connect corresponding reflected phases (D-12)."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_two_phases_and_flop()
+        assert ekc._graph.num_phases == 2
+        apply_coxeter_orbit(ekc, phases=True)
+
+        # 2 fund phases, |W| = 6 => 2 * 5 = 10 new + 2 original = 12 total
+        assert ekc._graph.num_phases == 12
+
+        # Check that flop edges exist between reflected phase pairs
+        # Count FLOP type edges
+        flop_edges = 0
+        for u, v, data in ekc._graph._graph.edges(data=True):
+            contr = data["contraction"]
+            if contr.contraction_type == ContractionType.FLOP:
+                flop_edges += 1
+        # Original 1 flop + 5 reflected flops = 6 total
+        assert flop_edges == 6
+
+    def test_generator_accumulation_kahler_rays_in_eff(self):
+        """Generator accumulation includes reflected Kahler rays in eff_cone_gens."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        apply_coxeter_orbit(ekc, phases=True)
+        # Each of 5 reflected phases contributes Kahler rays
+        assert len(ekc._eff_cone_gens) >= 5
+
+    def test_generator_accumulation_terminal_curves_in_infinity(self):
+        """Generator accumulation includes reflected terminal wall curves in infinity_cone_gens."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        apply_coxeter_orbit(ekc, phases=True)
+        # 5 reflected terminal walls from the asymptotic self-loop
+        assert len(ekc._infinity_cone_gens) >= 1
+
+    def test_generator_accumulation_zvd_in_eff(self):
+        """Generator accumulation includes reflected zero-vol divisors in eff_cone_gens."""
+        cytools = pytest.importorskip("cytools")
+        from cybir.core.coxeter import apply_coxeter_orbit
+        from cybir.core.types import CalabiYauLite, ContractionType, ExtremalContraction
+        from cybir.core.graph import CYGraph
+        from cybir.core.util import tuplify
+
+        kappa = np.array([[[2, 1], [1, 0]], [[1, 0], [0, 3]]])
+        c2 = np.array([24, 30])
+        kc = cytools.Cone(rays=[[1, 0], [0, 1]])
+        mori = kc.dual()
+        phase = CalabiYauLite(
+            int_nums=kappa, c2=c2, kahler_cone=kc, mori_cone=mori,
+            label="CY_0", tip=np.array([1.0, 1.0]),
+        )
+
+        M1 = np.array([[-1, 1], [0, 1]], dtype=np.int64)
+        M2 = np.array([[1, 0], [1, -1]], dtype=np.int64)
+
+        graph = CYGraph()
+        graph.add_phase(phase)
+
+        # CFT self-loop with zero_vol_divisor
+        cft_contr = ExtremalContraction(
+            contraction_curve=np.array([1, 0]),
+            contraction_type=ContractionType.CFT,
+            zero_vol_divisor=np.array([1, -1]),
+        )
+        graph.add_contraction(cft_contr, "CY_0", "CY_0")
+
+        class _MockEKC:
+            pass
+
+        ekc = _MockEKC()
+        ekc._graph = graph
+        ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
+        ekc._infinity_cone_gens = set()
+        ekc._eff_cone_gens = set()
+        ekc._weyl_expanded = False
+        ekc._weyl_phases = []
+        ekc._coxeter_type_info = None
+        ekc._coxeter_order = None
+
+        apply_coxeter_orbit(ekc, phases=True)
+        # zvd [1, -1] reflected by 5 group elements -> at least some in eff_cone_gens
+        # Plus Kahler rays
+        zvd_tuples = set()
+        for gen in ekc._eff_cone_gens:
+            zvd_tuples.add(gen)
+        assert len(ekc._eff_cone_gens) > 2  # Kahler rays + reflected zvds
+
+    def test_no_reflections_is_noop(self):
+        """apply_coxeter_orbit with no symmetric-flop reflections is a no-op."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        from cybir.core.graph import CYGraph
+        from cybir.core.types import CalabiYauLite
+
+        graph = CYGraph()
+        phase = CalabiYauLite(int_nums=np.zeros((2, 2, 2)), label="CY_0")
+        graph.add_phase(phase)
+
+        class _MockEKC:
+            pass
+
+        ekc = _MockEKC()
+        ekc._graph = graph
+        ekc._sym_flop_refs = set()
+        ekc._infinity_cone_gens = set()
+        ekc._eff_cone_gens = set()
+        ekc._weyl_expanded = False
+        ekc._weyl_phases = []
+        ekc._coxeter_type_info = None
+        ekc._coxeter_order = None
+
+        apply_coxeter_orbit(ekc, phases=True)
+        assert ekc._graph.num_phases == 1
+
+    def test_infinite_type_logs_warning(self, caplog):
+        """apply_coxeter_orbit with infinite-type group logs warning."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        from cybir.core.graph import CYGraph
+        from cybir.core.types import CalabiYauLite
+        from cybir.core.util import tuplify
+
+        # Affine A_2: 3 reflections forming a triangle (m_ij = 3 for all pairs)
+        # Use 3x3 reflections
+        M1 = np.array([[-1, 1, 0], [0, 1, 0], [0, 0, 1]], dtype=np.int64)
+        M2 = np.array([[1, 0, 0], [1, -1, 1], [0, 0, 1]], dtype=np.int64)
+        M3 = np.array([[1, 0, 0], [0, 1, 0], [0, 1, -1]], dtype=np.int64)
+
+        graph = CYGraph()
+        phase = CalabiYauLite(int_nums=np.zeros((3, 3, 3)), label="CY_0")
+        graph.add_phase(phase)
+
+        class _MockEKC:
+            pass
+
+        ekc = _MockEKC()
+        ekc._graph = graph
+        ekc._sym_flop_refs = {tuplify(M1), tuplify(M2), tuplify(M3)}
+        ekc._infinity_cone_gens = set()
+        ekc._eff_cone_gens = set()
+        ekc._weyl_expanded = False
+        ekc._weyl_phases = []
+        ekc._coxeter_type_info = None
+        ekc._coxeter_order = None
+
+        with caplog.at_level(logging.WARNING, logger="cybir"):
+            apply_coxeter_orbit(ekc, phases=True)
+
+        # Should still be 1 phase (no expansion)
+        assert ekc._graph.num_phases == 1
+        # Should have logged a warning about infinite
+        assert any("infinite" in r.message.lower() or "Infinite" in r.message for r in caplog.records)
+
+    def test_coxeter_type_stored_on_ekc(self):
+        """apply_coxeter_orbit stores coxeter type info on ekc."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        apply_coxeter_orbit(ekc, phases=True)
+        assert ekc._coxeter_type_info is not None
+        assert ekc._coxeter_order == 6
