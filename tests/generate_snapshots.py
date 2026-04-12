@@ -10,7 +10,14 @@ The output is a JSON file per polytope in ``tests/fixtures/h11_2/``.
 
 Usage
 -----
+    # Pass the path to extended_kahler_cone.py explicitly:
+    conda run -n cytools python tests/generate_snapshots.py /path/to/extended_kahler_cone.py
+
+    # Or set the environment variable:
+    export CORNELL_DEV_EKC=/path/to/extended_kahler_cone.py
     conda run -n cytools python tests/generate_snapshots.py
+
+    # Other options:
     conda run -n cytools python tests/generate_snapshots.py --polytope-ids 0 1 5
     conda run -n cytools python tests/generate_snapshots.py --max-deg 12
 """
@@ -18,7 +25,9 @@ Usage
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
+import os
 import pathlib
 import sys
 import traceback
@@ -26,27 +35,43 @@ import traceback
 import numpy as np
 
 # ---------------------------------------------------------------------------
-# Add the original code's directory to sys.path so we can import from it.
-# ---------------------------------------------------------------------------
-_ORIGINAL_DIR = pathlib.Path(
-    "/Users/elijahsheridan/Research/string/cytools_code/cornell-dev/projects/vex/elijah"
-)
-_CORNELL_DEV_ROOT = pathlib.Path(
-    "/Users/elijahsheridan/Research/string/cytools_code/cornell-dev"
-)
-_ELIJAH_DIR = pathlib.Path(
-    "/Users/elijahsheridan/Research/string/cytools_code/cornell-dev/projects/Elijah"
-)
-for _p in (_ORIGINAL_DIR, _CORNELL_DEV_ROOT, _ELIJAH_DIR):
-    if str(_p) not in sys.path:
-        sys.path.insert(0, str(_p))
-
-import extended_kahler_cone as ekc  # noqa: E402
-
-# ---------------------------------------------------------------------------
 # Output directory
 # ---------------------------------------------------------------------------
 FIXTURES_DIR = pathlib.Path(__file__).resolve().parent / "fixtures" / "h11_2"
+
+# Default path (author's machine) — override via CLI arg or CORNELL_DEV_EKC env var
+_DEFAULT_EKC_PATH = (
+    "/Users/elijahsheridan/Research/string/cytools_code"
+    "/cornell-dev/projects/vex/elijah/extended_kahler_cone.py"
+)
+
+
+def _resolve_ekc_path(cli_path=None):
+    """Resolve the path to extended_kahler_cone.py from CLI arg, env var, or default."""
+    path_str = cli_path or os.environ.get("CORNELL_DEV_EKC") or _DEFAULT_EKC_PATH
+    path = pathlib.Path(path_str).resolve()
+    if not path.exists():
+        raise FileNotFoundError(
+            f"extended_kahler_cone.py not found at: {path}\n"
+            "Pass the path as the first argument or set CORNELL_DEV_EKC."
+        )
+    return path
+
+
+def _load_ekc(ekc_path):
+    """Import extended_kahler_cone.py and its dependencies from the resolved path."""
+    ekc_dir = ekc_path.parent
+    cornell_dev_root = ekc_dir.parents[2]  # .../cornell-dev
+    elijah_dir = cornell_dev_root / "projects" / "Elijah"
+
+    for p in (ekc_dir, cornell_dev_root, elijah_dir):
+        if p.exists() and str(p) not in sys.path:
+            sys.path.insert(0, str(p))
+
+    spec = importlib.util.spec_from_file_location("extended_kahler_cone", str(ekc_path))
+    ekc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ekc)
+    return ekc
 
 
 def _to_list(arr):
@@ -56,11 +81,13 @@ def _to_list(arr):
     return np.array(arr).tolist()
 
 
-def generate_snapshots(polytope_ids=None, max_deg=10, verbose=True):
+def generate_snapshots(ekc, polytope_ids=None, max_deg=10, verbose=True):
     """Run the original EKC pipeline on h11=2 polytopes and save snapshots.
 
     Parameters
     ----------
+    ekc : module
+        The imported extended_kahler_cone module.
     polytope_ids : list[int] | None
         Which polytope IDs to process.  ``None`` means all 36.
     max_deg : int
@@ -85,7 +112,7 @@ def generate_snapshots(polytope_ids=None, max_deg=10, verbose=True):
         if verbose:
             print(f"\n--- Polytope {pid} ---")
         try:
-            snapshot = _process_polytope(pid, poly, max_deg=max_deg, verbose=verbose)
+            snapshot = _process_polytope(ekc, pid, poly, max_deg=max_deg, verbose=verbose)
             results.append(snapshot)
 
             out_path = FIXTURES_DIR / f"polytope_{pid}.json"
@@ -104,7 +131,7 @@ def generate_snapshots(polytope_ids=None, max_deg=10, verbose=True):
     return results
 
 
-def _process_polytope(pid, poly, max_deg=10, verbose=False):
+def _process_polytope(ekc, pid, poly, max_deg=10, verbose=False):
     """Run EKC construction on one polytope and capture wall data."""
     ekc_obj = ekc.ExtendedKahlerCone(poly)
     ekc_obj.setup_root(max_deg=max_deg)
@@ -121,14 +148,14 @@ def _process_polytope(pid, poly, max_deg=10, verbose=False):
     }
 
     for wall in ekc_obj.walls:
-        wall_data = _extract_wall_data(wall)
+        wall_data = _extract_wall_data(ekc, wall)
         if wall_data is not None:
             snapshot["walls"].append(wall_data)
 
     return snapshot
 
 
-def _extract_wall_data(wall):
+def _extract_wall_data(ekc, wall):
     """Extract intermediate values from a diagnosed Wall object."""
     if wall.category is None:
         return None
@@ -189,6 +216,15 @@ if __name__ == "__main__":
         description="Generate snapshot fixtures from original EKC code."
     )
     parser.add_argument(
+        "ekc_path",
+        nargs="?",
+        default=None,
+        help=(
+            "Path to extended_kahler_cone.py. "
+            "Falls back to CORNELL_DEV_EKC env var, then built-in default."
+        ),
+    )
+    parser.add_argument(
         "--polytope-ids",
         type=int,
         nargs="*",
@@ -207,7 +243,13 @@ if __name__ == "__main__":
         help="Suppress progress messages.",
     )
     args = parser.parse_args()
+
+    ekc_path = _resolve_ekc_path(args.ekc_path)
+    print(f"Loading EKC from: {ekc_path}")
+    ekc_module = _load_ekc(ekc_path)
+
     generate_snapshots(
+        ekc_module,
         polytope_ids=args.polytope_ids,
         max_deg=args.max_deg,
         verbose=not args.quiet,
