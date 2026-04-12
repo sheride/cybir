@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-12T19:05:17.308Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-04-12T19:13:57.239Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 04 (coxeter-weyl) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P03 | 3min | 2 tasks | 4 files |
 | Phase 03 P04 | 2min | 2 tasks | 17 files |
 | Phase 04 P01 | 6min | 1 tasks | 5 files |
+| Phase 04 P02 | 7min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Mirrored dbrane-tools conf.py exactly for consistent documentation pattern
 - [Phase 04]: Positive definiteness tolerance 1e-10 (strict) to catch affine/semi-definite Coxeter groups
 - [Phase 04]: B_2 fixtures derived from Cartan matrix; coxeter_matrix kept as deprecated alias for coxeter_element
+- [Phase 04]: Reflected contraction curves use g @ curve (Mori space), Kahler rays use ray @ inv(g)
+- [Phase 04]: No deduplication of reflected phases -- each (g, fund_phase) pair is unique (D-11)
 
 ### Roadmap Evolution
 
@@ -106,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T19:05:17.305Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-12T19:13:57.235Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
