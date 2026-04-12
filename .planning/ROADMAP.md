@@ -92,6 +92,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 **Plans:** 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Coxeter group construction: order matrix, finite-type classification, streaming BFS enumeration, move functions from util.py
+- [x] 04-01-PLAN.md -- Coxeter group construction: order matrix, finite-type classification, streaming BFS enumeration, move functions from util.py
 - [ ] 04-02-PLAN.md -- Orbit expansion: apply_coxeter_orbit with correct index conventions, graph orbit, phases=False mode, generator accumulation
 - [ ] 04-03-PLAN.md -- invariants_for, to_fundamental_domain, delete weyl.py, update re-exports and tests

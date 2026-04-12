@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-04-12T08:15:29.661Z"
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-12T19:05:17.308Z"
 last_activity: 2026-04-12
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_plans: 13
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** A clean, well-documented, modular implementation of GV-based EKC construction that is easy to use, extend, and understand
-**Current focus:** Phase 03 — pipeline-integration
+**Current focus:** Phase 04 — coxeter-weyl
 
 ## Current Position
 
-Phase: 03 (pipeline-integration) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
+Phase: 04 (coxeter-weyl) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-12
 
 Progress: [░░░░░░░░░░] 0%
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P02 | 6min | 2 tasks | 3 files |
 | Phase 03 P03 | 3min | 2 tasks | 4 files |
 | Phase 03 P04 | 2min | 2 tasks | 17 files |
+| Phase 04 P01 | 6min | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Mori cone deduplication uses frozenset of integer-cast ray tuples for order-invariant comparison
 - [Phase 03]: Reflected phases get SYMMETRIC_FLOP contraction edges; terminal walls inherited as self-loops
 - [Phase 03]: Mirrored dbrane-tools conf.py exactly for consistent documentation pattern
+- [Phase 04]: Positive definiteness tolerance 1e-10 (strict) to catch affine/semi-definite Coxeter groups
+- [Phase 04]: B_2 fixtures derived from Cartan matrix; coxeter_matrix kept as deprecated alias for coxeter_element
 
 ### Roadmap Evolution
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T08:15:29.658Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-04-12T19:05:17.305Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
