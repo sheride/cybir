@@ -268,6 +268,7 @@ def construct_phases(ekc, verbose=True, limit=100):
     # Initialize from root
     root_tip = _compute_tip(root)
     tips["CY_0"] = root_tip
+    root._tip = root_tip
 
     # Initialize known curves from Mori cone generators
     for gen in mori_gens:
@@ -278,6 +279,7 @@ def construct_phases(ekc, verbose=True, limit=100):
     curve_signs["CY_0"] = {
         c: int(np.sign(root_tip @ np.array(c))) for c in known_curves
     }
+    root._curve_signs = dict(curve_signs["CY_0"])
 
     # Enqueue all Mori cone generators
     for gen in mori_gens:
@@ -407,7 +409,10 @@ def construct_phases(ekc, verbose=True, limit=100):
         existing_label = _find_matching_phase(curve_signs, flopped_signs)
 
         if existing_label is None:
-            # New phase
+            # New phase -- persist tip and curve_signs on the phase object (D-15)
+            flopped._tip = flopped_tip
+            flopped._curve_signs = dict(flopped_signs)
+
             ekc._graph.add_phase(flopped)
             ekc._graph.add_contraction(
                 contraction, source_label, new_label

@@ -118,6 +118,8 @@ class CalabiYauLite:
         fan=None,
         gv_invariants=None,
         label=None,
+        curve_signs=None,
+        tip=None,
     ):
         self._int_nums = np.asarray(int_nums)
         self._c2 = np.asarray(c2) if c2 is not None else None
@@ -131,6 +133,8 @@ class CalabiYauLite:
         self._fan = fan
         self._gv_invariants = gv_invariants
         self._label = label
+        self._curve_signs = dict(curve_signs) if curve_signs is not None else None
+        self._tip = np.asarray(tip) if tip is not None else None
         self._frozen = False
 
     def __setattr__(self, name, value):
@@ -203,6 +207,29 @@ class CalabiYauLite:
     def label(self):
         """Phase identifier for the adjacency graph."""
         return self._label
+
+    @property
+    def curve_signs(self):
+        """Curve-sign dictionary {curve_tuple: +1/-1}.
+
+        Records the sign of ``tip @ curve`` for each known flop curve.
+        Persisted during BFS construction for use in orbit expansion
+        and on-demand GV reconstruction (D-15).
+        """
+        if self._curve_signs is not None:
+            return dict(self._curve_signs)
+        return None
+
+    @property
+    def tip(self):
+        """Interior point of the Kahler cone.
+
+        Persisted during BFS construction for use in orbit expansion
+        and curve-sign computation (D-15).
+        """
+        if self._tip is not None:
+            return np.copy(self._tip)
+        return None
 
     # --- Freeze mechanism ---
 

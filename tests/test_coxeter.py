@@ -46,13 +46,13 @@ def a2_reflections():
 
 @pytest.fixture
 def b2_reflections():
-    """B_2 simple reflections in R^2.
+    """B_2 simple reflections in R^2 (from B_2 Cartan matrix).
 
-    M1 = [[-1, 0], [1, 1]], M2 = [[1, 1], [0, -1]]
+    M1 = [[-1, 0], [1, 1]], M2 = [[1, 2], [0, -1]]
     Product M1 @ M2 has order 4, |W(B_2)| = 8.
     """
     M1 = np.array([[-1, 0], [1, 1]], dtype=np.int64)
-    M2 = np.array([[1, 1], [0, -1]], dtype=np.int64)
+    M2 = np.array([[1, 2], [0, -1]], dtype=np.int64)
     return [M1, M2]
 
 

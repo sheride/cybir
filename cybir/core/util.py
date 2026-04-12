@@ -8,8 +8,6 @@ These replace the previous dependencies on cornell-dev's ``lib.util.lattice``
 and ``misc`` modules.
 """
 
-import functools
-
 import hsnf
 import numpy as np
 import sympy
@@ -275,105 +273,42 @@ def minimal_N(X, epsilon=1e-4, max_val=10000):
     )
 
 
-def matrix_period(M, max_iter=200):
-    """Compute the multiplicative period of a matrix.
 
-    Finds the smallest positive integer *k* such that
-    :math:`M^k = I`.
+# ---------------------------------------------------------------------------
+# Deprecated re-exports (moved to cybir.core.coxeter per D-02)
+# ---------------------------------------------------------------------------
 
-    Parameters
-    ----------
-    M : numpy.ndarray
-        Square matrix.
-    max_iter : int, optional
-        Maximum power to check (default ``200``).
-
-    Returns
-    -------
-    int
-        The period *k*.
-
-    Raises
-    ------
-    ValueError
-        If no period is found within *max_iter*.
-    """
-    M = np.asarray(M, dtype=float)
-    n = M.shape[0]
-    I = np.eye(n)
-    power = I.copy()
-    for k in range(1, max_iter + 1):
-        power = power @ M
-        if np.allclose(power, I, atol=1e-8):
-            return k
-    raise ValueError(
-        f"Matrix does not return to identity within {max_iter} multiplications."
+def matrix_period(*args, **kwargs):
+    """Deprecated: moved to :mod:`cybir.core.coxeter`."""
+    import warnings
+    warnings.warn(
+        "matrix_period moved to cybir.core.coxeter",
+        DeprecationWarning,
+        stacklevel=2,
     )
+    from .coxeter import matrix_period as _mp
+    return _mp(*args, **kwargs)
 
 
-def coxeter_reflection(divisor, curve):
-    r"""Compute the Coxeter reflection matrix for a given divisor and curve.
-
-    Implements the reflection
-
-    .. math::
-
-        M_{ab} = \delta_{ab}
-                 - 2 \frac{\mathcal{C}_a D_b}{\mathcal{C} \cdot D}
-
-    from arXiv:2212.10573 Eq. (4.6). The reflection satisfies
-    :math:`M \mathcal{C} = -\mathcal{C}`.
-
-    When :math:`\mathcal{C} \cdot D = 0` the reflection is undefined
-    and the identity matrix is returned.
-
-    Parameters
-    ----------
-    divisor : numpy.ndarray
-        Divisor class :math:`D_a`.
-    curve : numpy.ndarray
-        Curve class :math:`\mathcal{C}_a`.
-
-    Returns
-    -------
-    numpy.ndarray
-        Reflection matrix of shape ``(h11, h11)``.
-
-    Notes
-    -----
-    The outer product order is :math:`\mathcal{C}_a D_b` (curve (x) divisor),
-    **not** :math:`D_a \mathcal{C}_b`. Getting this wrong flips which
-    vector is reflected (Pitfall 2 in Phase 2 RESEARCH.md).
-    """
-    divisor = np.asarray(divisor, dtype=float)
-    curve = np.asarray(curve, dtype=float)
-    h11 = len(curve)
-    dot = curve @ divisor
-    if dot == 0:
-        return np.eye(h11, dtype=float)
-    return np.eye(h11) - 2.0 * np.outer(curve, divisor) / dot
+def coxeter_reflection(*args, **kwargs):
+    """Deprecated: moved to :mod:`cybir.core.coxeter`."""
+    import warnings
+    warnings.warn(
+        "coxeter_reflection moved to cybir.core.coxeter",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    from .coxeter import coxeter_reflection as _cr
+    return _cr(*args, **kwargs)
 
 
-def coxeter_matrix(reflections):
-    """Compute the Coxeter element from a list of reflection matrices.
-
-    The Coxeter element is the ordered product
-    :math:`M_1 M_2 \\cdots M_n` of the individual reflections
-    associated with the extremal contractions of a Kahler cone facet.
-    See arXiv:2212.10573 Section 4 for the role of the Coxeter element
-    in determining the extended Kahler cone structure.
-
-    Parameters
-    ----------
-    reflections : list of numpy.ndarray
-        Reflection matrices to multiply.
-
-    Returns
-    -------
-    numpy.ndarray
-        The Coxeter matrix (product of all reflections).
-        Returns a 0-d identity-like array if the list is empty.
-    """
-    if not reflections:
-        raise ValueError("Cannot compute Coxeter matrix from empty list of reflections")
-    return functools.reduce(np.matmul, reflections)
+def coxeter_matrix(*args, **kwargs):
+    """Deprecated: moved to :mod:`cybir.core.coxeter`."""
+    import warnings
+    warnings.warn(
+        "coxeter_matrix moved to cybir.core.coxeter, renamed to coxeter_element",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    from .coxeter import coxeter_element as _ce
+    return _ce(*args, **kwargs)
