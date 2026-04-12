@@ -1,5 +1,7 @@
 """Shared pytest fixtures for cybir tests."""
 
+import pathlib
+
 import numpy as np
 import pytest
 
@@ -26,3 +28,14 @@ def sample_cyl(sample_int_nums, sample_c2):
         c2=sample_c2,
         label="phase_0",
     )
+
+
+FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures" / "h11_2"
+
+
+@pytest.fixture
+def fixtures_available():
+    """Check if snapshot fixtures have been generated."""
+    if not FIXTURES_DIR.exists() or not list(FIXTURES_DIR.glob("*.json")):
+        pytest.skip("Snapshot fixtures not generated -- run tests/generate_snapshots.py")
+    return True
