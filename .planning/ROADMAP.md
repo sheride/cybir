@@ -28,7 +28,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Phase objects are immutable after construction (attempting mutation raises an error)
   4. All utility functions previously imported from cornell-dev `misc` and `lib.util.lattice` exist within cybir and pass tests against known inputs
   5. A test suite runs via pytest covering all data types and decoupled utilities
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 01-01-PLAN.md -- Package skeleton, core data types (CalabiYauLite, ExtremalContraction, ContractionType, InsufficientGVError), and type tests
+- [ ] 01-02-PLAN.md -- Utility functions (cornell-dev ports), PhaseGraph adjacency graph, and tests
 
 ### Phase 2: Core Mathematics
 **Goal**: All mathematical algorithms from the original script are ported into cybir, operating on the new data types, with verified correctness against the original code
@@ -60,6 +63,6 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/0 | Not started | - |
+| 1. Foundation | 0/2 | Planned | - |
 | 2. Core Mathematics | 0/0 | Not started | - |
 | 3. Pipeline & Integration | 0/0 | Not started | - |
