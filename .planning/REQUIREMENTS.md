@@ -9,12 +9,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Model
 
-- [ ] **DATA-01**: `CalabiYauLite` class for phase data (intersection numbers, c2, cones, charges) — own version, interface-compatible with dbrane-tools for future unification
-- [ ] **DATA-02**: `Contraction` class representing a birational contraction, holding a reference to the underlying cone face plus diagnosis metadata (type, flopping curve, linked phases, GV data)
-- [ ] **DATA-03**: `ContractionType` enum replacing string-based categories, with configurable display notation (Wilson vs 2212.10573 conventions)
-- [ ] **DATA-04**: `InsufficientGVError` exception for when GV series hasn't been computed to high enough degree
+- [x] **DATA-01**: `CalabiYauLite` class for phase data (intersection numbers, c2, cones, charges) — own version, interface-compatible with dbrane-tools for future unification
+- [x] **DATA-02**: `Contraction` class representing a birational contraction, holding a reference to the underlying cone face plus diagnosis metadata (type, flopping curve, linked phases, GV data)
+- [x] **DATA-03**: `ContractionType` enum replacing string-based categories, with configurable display notation (Wilson vs 2212.10573 conventions)
+- [x] **DATA-04**: `InsufficientGVError` exception for when GV series hasn't been computed to high enough degree
 - [ ] **DATA-05**: Phase adjacency graph as first-class object (phases as nodes, contractions as edges)
-- [ ] **DATA-06**: Immutable/frozen phase objects after construction
+- [x] **DATA-06**: Immutable/frozen phase objects after construction
 
 ### Core Mathematics
 
@@ -41,7 +41,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Package & Documentation
 
-- [ ] **PKG-01**: Proper Python package structure (`cybir/core/`, `cybir/phases/`, pyproject.toml with hatchling)
+- [x] **PKG-01**: Proper Python package structure (`cybir/core/`, `cybir/phases/`, pyproject.toml with hatchling)
 - [ ] **PKG-02**: Sphinx documentation with equation references to arXiv:2212.10573 and arXiv:2303.00757
 - [ ] **PKG-03**: Example notebooks for h11=2,3
 
@@ -74,12 +74,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
 | DATA-05 | Phase 1 | Pending |
-| DATA-06 | Phase 1 | Pending |
+| DATA-06 | Phase 1 | Complete |
 | MATH-01 | Phase 2 | Pending |
 | MATH-02 | Phase 2 | Pending |
 | MATH-03 | Phase 2 | Pending |
@@ -94,7 +94,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-02 | Phase 1 | Pending |
 | INTG-03 | Phase 3 | Pending |
 | INTG-04 | Phase 3 | Pending |
-| PKG-01 | Phase 1 | Pending |
+| PKG-01 | Phase 1 | Complete |
 | PKG-02 | Phase 3 | Pending |
 | PKG-03 | Phase 3 | Pending |
 

@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. A test suite runs via pytest covering all data types and decoupled utilities
 **Plans:** 2 plans
 Plans:
-- [ ] 01-01-PLAN.md -- Package skeleton, core data types (CalabiYauLite, ExtremalContraction, ContractionType, InsufficientGVError), and type tests
+- [x] 01-01-PLAN.md -- Package skeleton, core data types (CalabiYauLite, ExtremalContraction, ContractionType, InsufficientGVError), and type tests
 - [ ] 01-02-PLAN.md -- Utility functions (cornell-dev ports), PhaseGraph adjacency graph, and tests
 
 ### Phase 2: Core Mathematics
