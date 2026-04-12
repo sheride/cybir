@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cybir"
+version = "0.1.0"
+description = "GV-based extended Kahler cone construction for Calabi-Yau threefolds"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = [
+    "numpy>=1.24,<3",
+    "scipy>=1.10",
+    "python-flint>=0.7,<0.9",
+    "hsnf>=0.3",
+    "sympy>=1.12",
+    "networkx>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+]
