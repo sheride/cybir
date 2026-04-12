@@ -47,7 +47,7 @@ Plans:
 - [x] 02-01-PLAN.md -- Utility additions (projected_int_nums, Coxeter functions) and ExtremalContraction field update
 - [x] 02-02-PLAN.md -- Wall-crossing formula (flop.py) and GV series computation (gv.py)
 - [x] 02-03-PLAN.md -- Contraction classification algorithm (classify.py)
-- [ ] 02-04-PLAN.md -- Re-exports, convenience methods, snapshot generation, and integration tests
+- [x] 02-04-PLAN.md -- Re-exports, convenience methods, snapshot generation, and integration tests
 
 ### Phase 3: Pipeline & Integration
 **Goal**: Users can run the full EKC construction pipeline on a CYTools CalabiYau object and access results through a clean read-only API, with Sphinx docs and example notebooks
