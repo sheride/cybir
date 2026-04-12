@@ -694,6 +694,7 @@ class TestApplyCoxeterOrbit:
         ekc = _MockEKC()
         ekc._graph = graph
         ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
+        ekc._sym_flop_pairs = [(tuplify(M1), (1, 0)), (tuplify(M2), (0, 1))]
         ekc._infinity_cone_gens = set()
         ekc._eff_cone_gens = set()
         ekc._weyl_expanded = False
@@ -758,6 +759,7 @@ class TestApplyCoxeterOrbit:
         ekc = _MockEKC()
         ekc._graph = graph
         ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
+        ekc._sym_flop_pairs = [(tuplify(M1), (1, 0)), (tuplify(M2), (0, 1))]
         ekc._infinity_cone_gens = set()
         ekc._eff_cone_gens = set()
         ekc._weyl_expanded = False
@@ -897,6 +899,7 @@ class TestApplyCoxeterOrbit:
         ekc = _MockEKC()
         ekc._graph = graph
         ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
+        ekc._sym_flop_pairs = [(tuplify(M1), (1, 0)), (tuplify(M2), (0, 1))]
         ekc._infinity_cone_gens = set()
         ekc._eff_cone_gens = set()
         ekc._weyl_expanded = False
@@ -928,6 +931,7 @@ class TestApplyCoxeterOrbit:
         ekc = _MockEKC()
         ekc._graph = graph
         ekc._sym_flop_refs = set()
+        ekc._sym_flop_pairs = []
         ekc._infinity_cone_gens = set()
         ekc._eff_cone_gens = set()
         ekc._weyl_expanded = False
@@ -962,6 +966,11 @@ class TestApplyCoxeterOrbit:
         ekc = _MockEKC()
         ekc._graph = graph
         ekc._sym_flop_refs = {tuplify(M1), tuplify(M2), tuplify(M3)}
+        ekc._sym_flop_pairs = [
+            (tuplify(M1), (1, 0, 0)),
+            (tuplify(M2), (0, 1, 0)),
+            (tuplify(M3), (0, 0, 1)),
+        ]
         ekc._infinity_cone_gens = set()
         ekc._eff_cone_gens = set()
         ekc._weyl_expanded = False

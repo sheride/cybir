@@ -756,7 +756,7 @@ def apply_coxeter_orbit(ekc, phases=True):
     """
     from .types import CalabiYauLite, ContractionType, ExtremalContraction
 
-    reflections = [np.array(r) for r in ekc._sym_flop_refs]
+    reflections = [np.array(r) for r, _ in ekc._sym_flop_pairs]
     if not reflections:
         logger.info("No symmetric-flop reflections; skipping orbit expansion")
         return

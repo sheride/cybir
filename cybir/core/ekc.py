@@ -67,7 +67,7 @@ class CYBirationalClass:
         self._weyl_phases = []  # labels of Weyl-expanded phases
         self._coxeter_type_info = None
         self._coxeter_order = None
-        self._sym_flop_curves = []  # curves corresponding to sym_flop_refs for chamber walk
+        self._sym_flop_pairs = []  # list of (ref_tuple, curve_tuple) for chamber walk (WR-04 fix)
 
     # --- Step-by-step construction API ---
 
@@ -174,8 +174,8 @@ class CYBirationalClass:
         """
         from .coxeter import to_fundamental_domain
 
-        reflections = [np.array(r) for r in self._sym_flop_refs]
-        curves = [np.array(c) for c in self._sym_flop_curves]
+        reflections = [np.array(r) for r, _ in self._sym_flop_pairs]
+        curves = [np.array(c) for _, c in self._sym_flop_pairs]
         return to_fundamental_domain(np.asarray(point), reflections, curves)
 
     def expand_weyl(self):

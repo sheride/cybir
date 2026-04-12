@@ -117,7 +117,7 @@ class MockEKC:
     def __init__(self):
         self._coxeter_refs = set()
         self._sym_flop_refs = set()
-        self._sym_flop_curves = []
+        self._sym_flop_pairs = []
         self._infinity_cone_gens = set()
         self._eff_cone_gens = set()
 

@@ -111,21 +111,21 @@ def _accumulate_generators(ekc, ctype, result):
         if cox_ref is not None:
             ekc._coxeter_refs.add(tuplify(np.round(cox_ref).astype(int)))
 
-    # Symmetric flop reflections specifically
+    # Symmetric flop reflections specifically (WR-04 fix: paired storage)
     if ctype == ContractionType.SYMMETRIC_FLOP:
         cox_ref = result.get("coxeter_reflection")
         if cox_ref is not None:
             ref_key = tuplify(np.round(cox_ref).astype(int))
-            ekc._sym_flop_refs.add(ref_key)
-            # Store (reflection, curve) pair for chamber walk (D-18)
             contr_curve = result.get("contraction_curve")
-            if contr_curve is not None:
+            if contr_curve is not None and ref_key not in ekc._sym_flop_refs:
                 curve_arr = np.array(
                     [int(x) for x in contr_curve]
                     if not isinstance(contr_curve, np.ndarray)
                     else np.round(contr_curve).astype(int)
                 )
-                ekc._sym_flop_curves.append(tuple(int(x) for x in curve_arr))
+                curve_tuple = tuple(int(x) for x in curve_arr)
+                ekc._sym_flop_refs.add(ref_key)
+                ekc._sym_flop_pairs.append((ref_key, curve_tuple))
 
 
 def _update_all_curve_signs(ekc, curve_signs, new_curve, tips):
