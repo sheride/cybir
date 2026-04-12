@@ -166,29 +166,31 @@ class TestProjectedIntNums:
         assert np.isscalar(result) or result.ndim == 0
 
     def test_two_projected_gives_1d(self):
-        """n_projected=2 contracts two indices, giving 1D array."""
+        """n_projected=2 contracts two indices, leaving one free original index."""
         from cybir.core.util import projected_int_nums
 
         int_nums = np.array([[[0, 1], [1, 0]], [[1, 0], [0, 2]]])
         curve = np.array([1, 0])
         result = projected_int_nums(int_nums, curve, n_projected=2)
-        # Result shape: (h11-1,) = (1,)
+        # einsum('ai,bj,ijk->abk', P, P, kappa) with P=(1,2)
+        # gives (1,1,2) which squeezes to (2,)
         assert result.ndim == 1
-        assert result.shape[0] == 1
+        assert result.shape[0] == 2
 
     def test_one_projected_gives_2d(self):
-        """n_projected=1 contracts one index, giving 2D array."""
+        """n_projected=1 contracts one index, leaving two free original indices."""
         from cybir.core.util import projected_int_nums
 
         int_nums = np.array([[[0, 1], [1, 0]], [[1, 0], [0, 2]]])
         curve = np.array([1, 0])
         result = projected_int_nums(int_nums, curve, n_projected=1)
-        # Result shape: (h11-1, h11-1) = (1, 1)
+        # einsum('ai,ijk->ajk', P, kappa) with P=(1,2)
+        # gives (1,2,2) which squeezes to (2,2)
         assert result.ndim == 2
-        assert result.shape == (1, 1)
+        assert result.shape == (2, 2)
 
     def test_three_dim_full_projection(self):
-        """Full projection for h11=3 intersection numbers."""
+        """Full projection for h11=3 gives (h11-1)^3 = 2x2x2 tensor."""
         from cybir.core.util import projected_int_nums
 
         # 3x3x3 intersection numbers (simple diagonal-ish)
@@ -198,9 +200,8 @@ class TestProjectedIntNums:
         int_nums[2, 2, 2] = 3
         curve = np.array([1, 0, 0])
         result = projected_int_nums(int_nums, curve, n_projected=3)
-        # Projection removes first direction; projected result contracts
-        # the remaining components
-        assert np.isscalar(result) or result.ndim == 0
+        # P is (2,3), so result is (2,2,2)
+        assert result.shape == (2, 2, 2)
 
 
 # ============================================================
