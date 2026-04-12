@@ -270,6 +270,8 @@ class ExtremalContraction:
         effective_gv=None,
         zero_vol_divisor=None,
         coxeter_reflection=None,
+        gv_series=None,
+        gv_eff_1=None,
     ):
         self._flopping_curve = np.asarray(flopping_curve)
         self._start_phase = start_phase
@@ -279,6 +281,8 @@ class ExtremalContraction:
         self._effective_gv = effective_gv
         self._zero_vol_divisor = zero_vol_divisor
         self._coxeter_reflection = coxeter_reflection
+        self._gv_series = list(gv_series) if gv_series is not None else None
+        self._gv_eff_1 = gv_eff_1
         self._frozen = True
 
     def __setattr__(self, name, value):
@@ -330,10 +334,23 @@ class ExtremalContraction:
         """Coxeter reflection matrix for this contraction."""
         return self._coxeter_reflection
 
+    @property
+    def gv_series(self):
+        """GV series :math:`[n^0_{[\\mathcal{C}]}, n^0_{2[\\mathcal{C}]}, \\ldots]`."""
+        if self._gv_series is not None:
+            return list(self._gv_series)  # defensive copy
+        return None
+
+    @property
+    def gv_eff_1(self):
+        """Linear effective GV invariant :math:`\\sum_k k \\, n^0_{k[\\mathcal{C}]}`."""
+        return self._gv_eff_1
+
     # --- Dunder methods ---
 
     def __repr__(self):
+        gv_info = f", gv_series_len={len(self._gv_series)}" if self._gv_series else ""
         return (
             f"ExtremalContraction(flopping_curve={self._flopping_curve},"
-            f" type={self._contraction_type})"
+            f" type={self._contraction_type}{gv_info})"
         )

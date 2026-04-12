@@ -196,6 +196,40 @@ class TestExtremalContractionConstruction:
             ec._new_attr = "test"
 
 
+class TestExtremalContractionGVFields:
+    """Test gv_series and gv_eff_1 fields."""
+
+    def test_construction_with_gv_series_and_gv_eff_1(self):
+        """ExtremalContraction can be constructed with gv_series and gv_eff_1."""
+        ec = ExtremalContraction(
+            flopping_curve=np.array([1, 0]),
+            gv_series=[1, 0, 0],
+            gv_eff_1=5,
+        )
+        assert ec.gv_series == [1, 0, 0]
+        assert ec.gv_eff_1 == 5
+
+    def test_gv_series_returns_defensive_copy(self):
+        """Mutating the returned gv_series does not affect the object."""
+        ec = ExtremalContraction(
+            flopping_curve=np.array([1, 0]),
+            gv_series=[1, 0, 0],
+        )
+        returned = ec.gv_series
+        returned[0] = 999
+        assert ec.gv_series == [1, 0, 0]
+
+    def test_gv_series_defaults_to_none(self):
+        """gv_series defaults to None when not provided."""
+        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        assert ec.gv_series is None
+
+    def test_gv_eff_1_defaults_to_none(self):
+        """gv_eff_1 defaults to None when not provided."""
+        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        assert ec.gv_eff_1 is None
+
+
 class TestExtremalContractionRepr:
     """Test __repr__."""
 
@@ -208,6 +242,21 @@ class TestExtremalContractionRepr:
         r = repr(ec)
         assert "flopping_curve" in r
         assert "FLOP" in r
+
+    def test_repr_includes_gv_series_len(self):
+        """__repr__ includes gv_series_len when gv_series is provided."""
+        ec = ExtremalContraction(
+            flopping_curve=np.array([1, 0]),
+            gv_series=[1, 0, 0, 2],
+        )
+        r = repr(ec)
+        assert "gv_series_len=4" in r
+
+    def test_repr_no_gv_series_len_when_none(self):
+        """__repr__ omits gv_series_len when gv_series is None."""
+        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        r = repr(ec)
+        assert "gv_series_len" not in r
 
 
 # ============================================================
