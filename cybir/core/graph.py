@@ -2,6 +2,9 @@
 
 The :class:`CYGraph` stores CalabiYauLite phases as nodes and
 ExtremalContraction objects as edges, backed by a ``networkx.Graph``.
+
+Topology (which phases a contraction connects, and with what curve
+orientation) is owned by the graph, not by the contraction object.
 """
 
 import networkx as nx
@@ -15,16 +18,15 @@ class CYGraph:
 
     Uses an undirected ``networkx.Graph`` internally. Contractions
     connect two phases symmetrically (you can flop in either
-    direction). The start/end distinction is stored on the
-    :class:`~cybir.core.types.ExtremalContraction` object, not the
-    graph edge.
+    direction). The graph edge stores which phase was ``phase_a``
+    and ``phase_b``, along with signed curve orientations.
 
     Examples
     --------
     >>> g = CYGraph()
     >>> g.add_phase(phase_a)
     >>> g.add_phase(phase_b)
-    >>> g.add_contraction(contraction_ab)
+    >>> g.add_contraction(contraction_ab, "A", "B")
     >>> g.neighbors("A")
     [CalabiYauLite(label='B')]
     """
@@ -42,18 +44,32 @@ class CYGraph:
         """
         self._graph.add_node(phase.label, phase=phase)
 
-    def add_contraction(self, contraction):
+    def add_contraction(self, contraction, phase_a_label, phase_b_label,
+                        curve_sign_a=1, curve_sign_b=-1):
         """Add a contraction edge between two phases.
+
+        The graph owns the topology: which two phases a contraction
+        connects, and the signed curve orientation in each phase.
 
         Parameters
         ----------
         contraction : ExtremalContraction
-            Contraction with ``start_phase`` and ``end_phase`` labels set.
+            The contraction object (no phase references needed).
+        phase_a_label : str
+            Label of the first phase.
+        phase_b_label : str
+            Label of the second phase.
+        curve_sign_a : int, optional
+            Curve sign in phase_a (default +1).
+        curve_sign_b : int, optional
+            Curve sign in phase_b (default -1).
         """
         self._graph.add_edge(
-            contraction.start_phase,
-            contraction.end_phase,
+            phase_a_label, phase_b_label,
             contraction=contraction,
+            phase_a=phase_a_label,
+            curve_sign_a=curve_sign_a,
+            curve_sign_b=curve_sign_b,
         )
 
     @property
@@ -116,6 +132,54 @@ class CYGraph:
         CalabiYauLite
         """
         return self._graph.nodes[label]["phase"]
+
+    def contractions_from(self, label):
+        """Contractions incident to a phase, with curve orientation signs.
+
+        For each edge incident to *label*, returns the contraction
+        and the signed curve orientation appropriate for that phase.
+
+        Parameters
+        ----------
+        label : str
+            Phase label.
+
+        Returns
+        -------
+        list of (ExtremalContraction, int)
+            Pairs of (contraction, sign) where sign is ``curve_sign_a``
+            if *label* was ``phase_a`` when the edge was added, or
+            ``curve_sign_b`` otherwise.
+        """
+        results = []
+        for neighbor in self._graph.neighbors(label):
+            edge = self._graph.edges[label, neighbor]
+            contraction = edge["contraction"]
+            if edge["phase_a"] == label:
+                sign = edge.get("curve_sign_a", 1)
+            else:
+                sign = edge.get("curve_sign_b", -1)
+            results.append((contraction, sign))
+        return results
+
+    def phases_adjacent_to(self, contraction):
+        """Find the two phases connected by a contraction.
+
+        Parameters
+        ----------
+        contraction : ExtremalContraction
+            The contraction to look up (identity comparison).
+
+        Returns
+        -------
+        tuple of (CalabiYauLite, CalabiYauLite) or None
+            The two phase objects, or None if the contraction is
+            not in the graph.
+        """
+        for u, v, data in self._graph.edges(data=True):
+            if data["contraction"] is contraction:
+                return (self.get_phase(u), self.get_phase(v))
+        return None
 
     def __repr__(self):
         return (

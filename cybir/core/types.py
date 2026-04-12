@@ -273,10 +273,6 @@ class ExtremalContraction:
     ----------
     flopping_curve : numpy.ndarray
         The curve class that shrinks at this wall.
-    start_phase : CalabiYauLite, optional
-        Phase on one side of the wall.
-    end_phase : CalabiYauLite, optional
-        Phase on the other side of the wall.
     contraction_type : ContractionType, optional
         Classification of this contraction.
     gv_invariant : int, optional
@@ -287,13 +283,17 @@ class ExtremalContraction:
         Divisor that shrinks at this wall.
     coxeter_reflection : numpy.ndarray, optional
         Coxeter reflection matrix for this contraction.
+    gv_series : list of int, optional
+        GV series :math:`[n^0_{[\\mathcal{C}]}, n^0_{2[\\mathcal{C}]}, \\ldots]`.
+    gv_eff_1 : int, optional
+        Linear effective GV invariant :math:`\\sum_k k \\, n^0_{k[\\mathcal{C}]}`.
+    cone_face : optional
+        Reference to the Mori cone face associated with this contraction.
     """
 
     def __init__(
         self,
         flopping_curve,
-        start_phase=None,
-        end_phase=None,
         contraction_type=None,
         gv_invariant=None,
         effective_gv=None,
@@ -301,10 +301,9 @@ class ExtremalContraction:
         coxeter_reflection=None,
         gv_series=None,
         gv_eff_1=None,
+        cone_face=None,
     ):
         self._flopping_curve = np.asarray(flopping_curve)
-        self._start_phase = start_phase
-        self._end_phase = end_phase
         self._contraction_type = contraction_type
         self._gv_invariant = gv_invariant
         self._effective_gv = effective_gv
@@ -312,6 +311,7 @@ class ExtremalContraction:
         self._coxeter_reflection = coxeter_reflection
         self._gv_series = list(gv_series) if gv_series is not None else None
         self._gv_eff_1 = gv_eff_1
+        self._cone_face = cone_face
         self._frozen = True
 
     def __setattr__(self, name, value):
@@ -329,14 +329,9 @@ class ExtremalContraction:
         return self._flopping_curve
 
     @property
-    def start_phase(self):
-        """Phase on one side of the wall."""
-        return self._start_phase
-
-    @property
-    def end_phase(self):
-        """Phase on the other side of the wall."""
-        return self._end_phase
+    def cone_face(self):
+        """Mori cone face associated with this contraction."""
+        return self._cone_face
 
     @property
     def contraction_type(self):

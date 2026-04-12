@@ -175,13 +175,12 @@ class TestExtremalContractionConstruction:
     def test_optional_fields_default_none(self):
         """All optional fields default to None."""
         ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
-        assert ec.start_phase is None
-        assert ec.end_phase is None
         assert ec.contraction_type is None
         assert ec.gv_invariant is None
         assert ec.effective_gv is None
         assert ec.zero_vol_divisor is None
         assert ec.coxeter_reflection is None
+        assert ec.cone_face is None
 
     def test_frozen_by_default(self):
         """ExtremalContraction is frozen immediately after construction."""
