@@ -64,7 +64,7 @@ Plans:
 - [x] 03-01-PLAN.md -- CYGraph API update, ExtremalContraction cleanup, CYBirationalClass orchestrator
 - [x] 03-02-PLAN.md -- BFS builder (build_gv.py) and CYTools Invariants monkey-patches (patch.py)
 - [x] 03-03-PLAN.md -- Weyl expansion (weyl.py) and package re-exports
-- [ ] 03-04-PLAN.md -- Sphinx documentation and example notebooks
+- [x] 03-04-PLAN.md -- Sphinx documentation and example notebooks
 
 ## Progress
 

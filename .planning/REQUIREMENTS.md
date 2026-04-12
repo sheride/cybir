@@ -42,8 +42,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Package & Documentation
 
 - [x] **PKG-01**: Proper Python package structure (`cybir/core/`, `cybir/phases/`, pyproject.toml with hatchling)
-- [ ] **PKG-02**: Sphinx documentation with equation references to arXiv:2212.10573 and arXiv:2303.00757
-- [ ] **PKG-03**: Example notebooks for h11=2,3
+- [x] **PKG-02**: Sphinx documentation with equation references to arXiv:2212.10573 and arXiv:2303.00757
+- [x] **PKG-03**: Example notebooks for h11=2,3
 
 ## v2 Requirements
 
@@ -95,8 +95,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-03 | Phase 3 | Complete |
 | INTG-04 | Phase 3 | Complete |
 | PKG-01 | Phase 1 | Complete |
-| PKG-02 | Phase 3 | Pending |
-| PKG-03 | Phase 3 | Pending |
+| PKG-02 | Phase 3 | Complete |
+| PKG-03 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total
