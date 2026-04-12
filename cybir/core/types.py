@@ -215,6 +215,31 @@ class CalabiYauLite:
         """
         self._frozen = True
 
+    # --- Convenience methods ---
+
+    def flop(self, curve, gv_series, label=None):
+        """Create a new phase by flopping across a wall.
+
+        Thin wrapper around :func:`cybir.core.flop.flop_phase`.
+
+        Parameters
+        ----------
+        curve : numpy.ndarray
+            Flopping curve class.
+        gv_series : list[int]
+            GV series for the flopping curve.
+        label : str, optional
+            Label for the new phase.
+
+        Returns
+        -------
+        CalabiYauLite
+            New phase with transformed intersection numbers and c2.
+        """
+        from .flop import flop_phase
+
+        return flop_phase(self, curve, gv_series, label=label)
+
     # --- Dunder methods ---
 
     def __eq__(self, other):
