@@ -701,6 +701,7 @@ class TestApplyCoxeterOrbit:
         ekc._weyl_phases = []
         ekc._coxeter_type_info = None
         ekc._coxeter_order = None
+        ekc._root_label = "CY_0"
 
         return ekc
 
@@ -766,6 +767,7 @@ class TestApplyCoxeterOrbit:
         ekc._weyl_phases = []
         ekc._coxeter_type_info = None
         ekc._coxeter_order = None
+        ekc._root_label = "CY_0"
 
         return ekc
 
@@ -906,6 +908,7 @@ class TestApplyCoxeterOrbit:
         ekc._weyl_phases = []
         ekc._coxeter_type_info = None
         ekc._coxeter_order = None
+        ekc._root_label = "CY_0"
 
         apply_coxeter_orbit(ekc, phases=True)
         # zvd [1, -1] reflected by 5 group elements -> at least some in eff_cone_gens
@@ -938,6 +941,7 @@ class TestApplyCoxeterOrbit:
         ekc._weyl_phases = []
         ekc._coxeter_type_info = None
         ekc._coxeter_order = None
+        ekc._root_label = "CY_0"
 
         apply_coxeter_orbit(ekc, phases=True)
         assert ekc._graph.num_phases == 1
@@ -977,6 +981,7 @@ class TestApplyCoxeterOrbit:
         ekc._weyl_phases = []
         ekc._coxeter_type_info = None
         ekc._coxeter_order = None
+        ekc._root_label = "CY_0"
 
         with caplog.at_level(logging.WARNING, logger="cybir"):
             apply_coxeter_orbit(ekc, phases=True)
@@ -994,6 +999,102 @@ class TestApplyCoxeterOrbit:
         apply_coxeter_orbit(ekc, phases=True)
         assert ekc._coxeter_type_info is not None
         assert ekc._coxeter_order == 6
+
+    def test_reflected_phase_has_curve_signs(self):
+        """Reflected phases from apply_coxeter_orbit have non-None curve_signs (SC-4)."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        # Set curve_signs on root phase (simulates what construct_phases does)
+        root = ekc._graph.get_phase("CY_0")
+        root._curve_signs = {(1, 0): 1, (0, 1): 1}
+        ekc._root_label = "CY_0"
+
+        apply_coxeter_orbit(ekc, phases=True)
+
+        # Every Weyl-expanded phase should have curve_signs
+        for label in ekc._weyl_phases:
+            phase = ekc._graph.get_phase(label)
+            assert phase.curve_signs is not None, (
+                f"Phase {label} has curve_signs=None"
+            )
+            # Keys should match root's curve_signs keys
+            assert set(phase.curve_signs.keys()) == set(root.curve_signs.keys()), (
+                f"Phase {label} curve_signs keys mismatch"
+            )
+
+    def test_reflected_phase_has_tip(self):
+        """Reflected phases from apply_coxeter_orbit have non-None tip (SC-4)."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        root = ekc._graph.get_phase("CY_0")
+        root._curve_signs = {(1, 0): 1, (0, 1): 1}
+        ekc._root_label = "CY_0"
+
+        apply_coxeter_orbit(ekc, phases=True)
+
+        for label in ekc._weyl_phases:
+            phase = ekc._graph.get_phase(label)
+            assert phase.tip is not None, f"Phase {label} has tip=None"
+
+    def test_reflected_phase_curve_signs_differ_from_root(self):
+        """At least some reflected phases have different curve_signs than root."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+
+        ekc = self._make_ekc_with_a2()
+        root = ekc._graph.get_phase("CY_0")
+        root._curve_signs = {(1, 0): 1, (0, 1): 1}
+        ekc._root_label = "CY_0"
+
+        apply_coxeter_orbit(ekc, phases=True)
+
+        root_signs = root.curve_signs
+        any_different = False
+        for label in ekc._weyl_phases:
+            phase = ekc._graph.get_phase(label)
+            if phase.curve_signs != root_signs:
+                any_different = True
+                break
+        assert any_different, (
+            "All reflected phases have identical curve_signs to root; "
+            "expected at least one to differ"
+        )
+
+    def test_invariants_for_weyl_phase_warns_on_missing_signs(self, caplog):
+        """_invariants_for_impl warns when Weyl phase has no curve_signs (IN-06)."""
+        from cybir.core.coxeter import _invariants_for_impl
+        from cybir.core.types import CalabiYauLite
+        from cybir.core.graph import CYGraph
+
+        graph = CYGraph()
+        root = CalabiYauLite(
+            int_nums=np.zeros((2, 2, 2)), label="CY_0",
+            tip=np.array([1.0, 1.0]),
+        )
+        root._curve_signs = {(1, 0): 1, (0, 1): 1}
+        # Create a Weyl-expanded phase WITHOUT curve_signs
+        weyl_phase = CalabiYauLite(
+            int_nums=np.zeros((2, 2, 2)), label="CY_1",
+        )
+        graph.add_phase(root)
+        graph.add_phase(weyl_phase)
+
+        class _MockEKC:
+            pass
+
+        ekc = _MockEKC()
+        ekc._graph = graph
+        ekc._root_label = "CY_0"
+        ekc._root_invariants = "mock_invariants"
+        ekc._weyl_phases = ["CY_1"]
+
+        with caplog.at_level(logging.WARNING, logger="cybir"):
+            result = _invariants_for_impl(ekc, "CY_1")
+
+        assert result == "mock_invariants"
+        assert any("Weyl-expanded" in r.message or "curve_signs" in r.message
+                    for r in caplog.records)
 
 
 # ============================================================

@@ -811,6 +811,21 @@ def apply_coxeter_orbit(ekc, phases=True):
                 # Create reflected phase via reflect_phase_data
                 new_label = f"CY_{phase_counter}"
                 new_phase = reflect_phase_data(fund_phase, g, label=new_label)
+
+                # Compute curve_signs for reflected phase (SC-4 gap fix)
+                # tip in Kahler space transforms as g_inv^T @ fund_tip (D-08)
+                if fund_phase.tip is not None:
+                    reflected_tip = g_inv_int.T.astype(float) @ fund_phase.tip.astype(float)
+                    new_phase._tip = reflected_tip
+
+                    # Use root phase's curve_signs keys as canonical curve set
+                    root_phase = ekc._graph.get_phase(ekc._root_label)
+                    if root_phase.curve_signs is not None:
+                        new_phase._curve_signs = {
+                            c: int(np.sign(reflected_tip @ np.array(c)))
+                            for c in root_phase.curve_signs
+                        }
+
                 ekc._graph.add_phase(new_phase)
                 ekc._weyl_phases.append(new_label)
                 label_map[(g_key, fund_phase.label)] = new_label
@@ -1019,6 +1034,12 @@ def _invariants_for_impl(ekc, phase_label):
 
     # If same phase or no curve_signs data, return root invariants
     if root_signs is None or target_signs is None:
+        if target_signs is None and phase_label in getattr(ekc, "_weyl_phases", []):
+            logger.warning(
+                "invariants_for: phase %s is Weyl-expanded but has no "
+                "curve_signs; returning root invariants (may be incorrect)",
+                phase_label,
+            )
         return root_invariants
     if phase_label == ekc._root_label:
         return root_invariants
