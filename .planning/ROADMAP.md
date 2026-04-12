@@ -42,7 +42,12 @@ Plans:
   2. ExtremalContraction diagnosis correctly classifies all 5 types (asymptotic, CFT, su(2), symmetric flop, generic flop) on known examples
   3. GV series computation, potent/nilpotent classification, nop identification, and Coxeter reflection all produce identical results to the original on test cases
   4. Every math function docstring cites the relevant equation/section from arXiv:2212.10573 or arXiv:2303.00757
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 02-01-PLAN.md -- Utility additions (projected_int_nums, Coxeter functions) and ExtremalContraction field update
+- [ ] 02-02-PLAN.md -- Wall-crossing formula (flop.py) and GV series computation (gv.py)
+- [ ] 02-03-PLAN.md -- Contraction classification algorithm (classify.py)
+- [ ] 02-04-PLAN.md -- Re-exports, convenience methods, snapshot generation, and integration tests
 
 ### Phase 3: Pipeline & Integration
 **Goal**: Users can run the full EKC construction pipeline on a CYTools CalabiYau object and access results through a clean read-only API, with Sphinx docs and example notebooks
@@ -63,6 +68,6 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Planned | - |
-| 2. Core Mathematics | 0/0 | Not started | - |
+| 1. Foundation | 2/2 | Complete | 2026-04-12 |
+| 2. Core Mathematics | 0/4 | Planned | - |
 | 3. Pipeline & Integration | 0/0 | Not started | - |
