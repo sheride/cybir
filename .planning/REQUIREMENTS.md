@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Data Model
 
 - [x] **DATA-01**: `CalabiYauLite` class for phase data (intersection numbers, c2, cones, charges) — own version, interface-compatible with dbrane-tools for future unification
-- [x] **DATA-02**: `Contraction` class representing a birational contraction, holding a reference to the underlying cone face plus diagnosis metadata (type, flopping curve, linked phases, GV data)
+- [x] **DATA-02**: `ExtremalContraction` class representing a birational contraction, holding a reference to the underlying cone face plus diagnosis metadata (type, flopping curve, linked phases, GV data)
 - [x] **DATA-03**: `ContractionType` enum replacing string-based categories, with configurable display notation (Wilson vs 2212.10573 conventions)
 - [x] **DATA-04**: `InsufficientGVError` exception for when GV series hasn't been computed to high enough degree
 - [x] **DATA-05**: Phase adjacency graph as first-class object (phases as nodes, contractions as edges)
@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Core Mathematics
 
 - [ ] **MATH-01**: Wall-crossing formula for intersection numbers and second Chern class (Eq. from 2212.10573)
-- [ ] **MATH-02**: Contraction diagnosis — all 5 types (asymptotic, CFT, su(2), symmetric flop, generic flop)
+- [ ] **MATH-02**: ExtremalContraction diagnosis — all 5 types (asymptotic, CFT, su(2), symmetric flop, generic flop)
 - [ ] **MATH-03**: GV series computation and effective GV
 - [ ] **MATH-04**: Potent/nilpotent curve classification and nop identification
 - [ ] **MATH-05**: Coxeter reflection computation

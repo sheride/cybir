@@ -24,7 +24,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05, DATA-06, PKG-01, INTG-02
 **Success Criteria** (what must be TRUE):
   1. `pip install -e .` succeeds and `import cybir` works in the cytools conda environment
-  2. `CalabiYauLite`, `Contraction`, `ContractionType`, `InsufficientGVError`, and phase adjacency graph classes exist with documented interfaces and can be instantiated with test data
+  2. `CalabiYauLite`, `ExtremalContraction`, `ContractionType`, `InsufficientGVError`, and phase adjacency graph classes exist with documented interfaces and can be instantiated with test data
   3. Phase objects are immutable after construction (attempting mutation raises an error)
   4. All utility functions previously imported from cornell-dev `misc` and `lib.util.lattice` exist within cybir and pass tests against known inputs
   5. A test suite runs via pytest covering all data types and decoupled utilities
@@ -39,7 +39,7 @@ Plans:
 **Requirements**: MATH-01, MATH-02, MATH-03, MATH-04, MATH-05, MATH-06
 **Success Criteria** (what must be TRUE):
   1. Wall-crossing formula produces bit-for-bit identical intersection numbers and second Chern class values as the original code on test cases
-  2. Contraction diagnosis correctly classifies all 5 types (asymptotic, CFT, su(2), symmetric flop, generic flop) on known examples
+  2. ExtremalContraction diagnosis correctly classifies all 5 types (asymptotic, CFT, su(2), symmetric flop, generic flop) on known examples
   3. GV series computation, potent/nilpotent classification, nop identification, and Coxeter reflection all produce identical results to the original on test cases
   4. Every math function docstring cites the relevant equation/section from arXiv:2212.10573 or arXiv:2303.00757
 **Plans**: TBD
