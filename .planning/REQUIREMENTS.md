@@ -13,7 +13,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DATA-02**: `Contraction` class representing a birational contraction, holding a reference to the underlying cone face plus diagnosis metadata (type, flopping curve, linked phases, GV data)
 - [x] **DATA-03**: `ContractionType` enum replacing string-based categories, with configurable display notation (Wilson vs 2212.10573 conventions)
 - [x] **DATA-04**: `InsufficientGVError` exception for when GV series hasn't been computed to high enough degree
-- [ ] **DATA-05**: Phase adjacency graph as first-class object (phases as nodes, contractions as edges)
+- [x] **DATA-05**: Phase adjacency graph as first-class object (phases as nodes, contractions as edges)
 - [x] **DATA-06**: Immutable/frozen phase objects after construction
 
 ### Core Mathematics
@@ -35,7 +35,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Integration
 
 - [ ] **INTG-01**: CYTools Invariants monkey-patching (gv_series, gv_eff, ensure_nilpotency, flop_gvs)
-- [ ] **INTG-02**: Decouple from cornell-dev — copy/refactor `misc` and `lib.util.lattice` into cybir
+- [x] **INTG-02**: Decouple from cornell-dev — copy/refactor `misc` and `lib.util.lattice` into cybir
 - [ ] **INTG-03**: Monkey-patching at Polytope, Triangulation, CalabiYau levels
 - [ ] **INTG-04**: Version guards on monkey-patches
 
@@ -78,7 +78,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 1 | Complete |
 | DATA-04 | Phase 1 | Complete |
-| DATA-05 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Complete |
 | DATA-06 | Phase 1 | Complete |
 | MATH-01 | Phase 2 | Pending |
 | MATH-02 | Phase 2 | Pending |
@@ -91,7 +91,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PIPE-03 | Phase 3 | Pending |
 | PIPE-04 | Phase 3 | Pending |
 | INTG-01 | Phase 3 | Pending |
-| INTG-02 | Phase 1 | Pending |
+| INTG-02 | Phase 1 | Complete |
 | INTG-03 | Phase 3 | Pending |
 | INTG-04 | Phase 3 | Pending |
 | PKG-01 | Phase 1 | Complete |

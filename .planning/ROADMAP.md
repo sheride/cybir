@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 Plans:
 - [x] 01-01-PLAN.md -- Package skeleton, core data types (CalabiYauLite, ExtremalContraction, ContractionType, InsufficientGVError), and type tests
-- [ ] 01-02-PLAN.md -- Utility functions (cornell-dev ports), PhaseGraph adjacency graph, and tests
+- [x] 01-02-PLAN.md -- Utility functions (cornell-dev ports), PhaseGraph adjacency graph, and tests
 
 ### Phase 2: Core Mathematics
 **Goal**: All mathematical algorithms from the original script are ported into cybir, operating on the new data types, with verified correctness against the original code
