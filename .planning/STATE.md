@@ -89,13 +89,16 @@ Recent decisions affecting current work:
 - [Phase 03]: Reflected phases get SYMMETRIC_FLOP contraction edges; terminal walls inherited as self-loops
 - [Phase 03]: Mirrored dbrane-tools conf.py exactly for consistent documentation pattern
 
+### Roadmap Evolution
+
+- Phase 4 added: Coxeter Group & Weyl Expansion — proper group construction, streaming BFS, full orbit expansion with correct index conventions
+
 ### Pending Todos
 
 None yet.
 
 ### Blockers/Concerns
 
-- Weyl orbit expansion (PIPE-02) has known quality issues in the original code -- may need careful review during Phase 3
 - ENH-02 (tuned complex structure mode) deferred to v2 -- user wants to discuss during implementation, not now
 
 ## Session Continuity
