@@ -15,7 +15,7 @@ def _make_contraction(curve=None):
     """Create a minimal ExtremalContraction for testing."""
     if curve is None:
         curve = np.array([1, 0])
-    return ExtremalContraction(flopping_curve=curve)
+    return ExtremalContraction(contraction_curve=curve)
 
 
 class TestCYGraphEmpty:

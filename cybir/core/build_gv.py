@@ -94,8 +94,8 @@ def _accumulate_generators(ekc, ctype, result):
 
     # Infinity cone generators: asymptotic and CFT walls
     if ctype in (ContractionType.ASYMPTOTIC, ContractionType.CFT):
-        if "flopping_curve" in result:
-            ekc._infinity_cone_gens.add(result["flopping_curve"])
+        if "contraction_curve" in result:
+            ekc._infinity_cone_gens.add(result["contraction_curve"])
 
     # Effective cone generators: CFT and su(2) walls
     if ctype in (ContractionType.CFT, ContractionType.SU2):
@@ -194,28 +194,22 @@ def setup_root(ekc, max_deg=10):
     c2 = cy.second_chern_class(in_basis=True)
     h11 = cy.h11()
 
-    # Get Kahler cone and Mori cone
-    kahler_cone = cy.toric_kahler_cone()
-    mori_cone = cy.mori_cone_cap(in_basis=True)
-
-    # Compute GV grading vector
-    grading = mori_cone.find_grading_vector()
+    # Compute GV grading vector from toric Mori cone
+    toric_mori = cy.mori_cone_cap(in_basis=True)
+    grading = toric_mori.find_grading_vector()
     grading = np.array(grading).astype(int)
 
-    # Compute GV invariants
-    gvs = cy.compute_gvs(grading_vec=grading, max_deg=max_deg)
+    # Compute GV invariants (or use pre-computed ones)
+    if ekc._root_invariants is not None:
+        gvs = ekc._root_invariants
+    else:
+        gvs = cy.compute_gvs(grading_vec=grading, max_deg=max_deg)
     gvs.flop_curves = []
     gvs.precompose = np.eye(h11)
 
-    # Compute Kahler cone tip (with retry)
-    c = 1.0
-    tip = None
-    for _ in range(20):
-        tip = kahler_cone.tip_of_stretched_cone(c)
-        if tip is not None:
-            tip = tip / c
-            break
-        c /= 10
+    # Use GV-reconstructed Mori cone (cone_incl_flop), matching original
+    mori_cone = gvs.cone_incl_flop()
+    kahler_cone = mori_cone.dual()
 
     # Create root CalabiYauLite
     root = CalabiYauLite(
@@ -260,8 +254,8 @@ def construct_phases(ekc, verbose=True, limit=100):
 
     root = ekc._graph.get_phase(ekc._root_label)
 
-    # Get Mori cone generators as initial walls
-    mori_gens = root.mori_cone.rays()
+    # Get Mori cone extremal rays as initial walls (matching original)
+    mori_gens = root.mori_cone.extremal_rays()
 
     # Data structures
     known_curves = set()
@@ -322,7 +316,7 @@ def construct_phases(ekc, verbose=True, limit=100):
 
         # Build ExtremalContraction
         contraction = ExtremalContraction(
-            flopping_curve=np.array(normalize_curve(wall_curve)),
+            contraction_curve=np.array(normalize_curve(wall_curve)),
             contraction_type=ctype,
             gv_invariant=result.get("gv_invariant"),
             effective_gv=result.get("effective_gv"),
@@ -340,8 +334,9 @@ def construct_phases(ekc, verbose=True, limit=100):
             "type": ctype.value,
         })
 
-        # Accumulate generators (D-06) -- pass curve info in result
-        result["flopping_curve"] = normalize_curve(wall_curve)
+        # Accumulate generators (D-06) -- use raw curve for gens
+        # (matching original: infinity/eff gens store the raw Mori ray direction)
+        result["contraction_curve"] = tuple(int(x) for x in wall_curve)
         _accumulate_generators(ekc, ctype, result)
 
         # Terminal walls: asymptotic, CFT, su(2)
@@ -421,8 +416,8 @@ def construct_phases(ekc, verbose=True, limit=100):
             flop_chains[new_label] = flopped_chain
             tips[new_label] = flopped_tip
 
-            # Enqueue new phase's Mori cone walls
-            for gen in flopped_mori.rays():
+            # Enqueue new phase's Mori cone walls (extremal rays only)
+            for gen in flopped_mori.extremal_rays():
                 undiagnosed.append((np.asarray(gen), new_label))
 
             logger.info(

@@ -168,13 +168,13 @@ class TestExtremalContractionConstruction:
     """Test ExtremalContraction instantiation and frozen-by-default."""
 
     def test_minimal_construction(self):
-        """ExtremalContraction can be created with only flopping_curve."""
-        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
-        assert np.array_equal(ec.flopping_curve, np.array([1, 0]))
+        """ExtremalContraction can be created with only contraction_curve."""
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
+        assert np.array_equal(ec.contraction_curve, np.array([1, 0]))
 
     def test_optional_fields_default_none(self):
         """All optional fields default to None."""
-        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         assert ec.contraction_type is None
         assert ec.gv_invariant is None
         assert ec.effective_gv is None
@@ -184,13 +184,13 @@ class TestExtremalContractionConstruction:
 
     def test_frozen_by_default(self):
         """ExtremalContraction is frozen immediately after construction."""
-        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         with pytest.raises(AttributeError, match="frozen"):
-            ec._flopping_curve = np.array([0, 1])
+            ec._contraction_curve = np.array([0, 1])
 
     def test_frozen_prevents_new_attributes(self):
         """Cannot add new attributes after construction."""
-        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         with pytest.raises(AttributeError, match="frozen"):
             ec._new_attr = "test"
 
@@ -201,7 +201,7 @@ class TestExtremalContractionGVFields:
     def test_construction_with_gv_series_and_gv_eff_1(self):
         """ExtremalContraction can be constructed with gv_series and gv_eff_1."""
         ec = ExtremalContraction(
-            flopping_curve=np.array([1, 0]),
+            contraction_curve=np.array([1, 0]),
             gv_series=[1, 0, 0],
             gv_eff_1=5,
         )
@@ -211,7 +211,7 @@ class TestExtremalContractionGVFields:
     def test_gv_series_returns_defensive_copy(self):
         """Mutating the returned gv_series does not affect the object."""
         ec = ExtremalContraction(
-            flopping_curve=np.array([1, 0]),
+            contraction_curve=np.array([1, 0]),
             gv_series=[1, 0, 0],
         )
         returned = ec.gv_series
@@ -220,32 +220,32 @@ class TestExtremalContractionGVFields:
 
     def test_gv_series_defaults_to_none(self):
         """gv_series defaults to None when not provided."""
-        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         assert ec.gv_series is None
 
     def test_gv_eff_1_defaults_to_none(self):
         """gv_eff_1 defaults to None when not provided."""
-        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         assert ec.gv_eff_1 is None
 
 
 class TestExtremalContractionRepr:
     """Test __repr__."""
 
-    def test_repr_includes_flopping_curve_and_type(self):
-        """__repr__ includes flopping_curve and contraction_type."""
+    def test_repr_includes_contraction_curve_and_type(self):
+        """__repr__ includes contraction_curve and contraction_type."""
         ec = ExtremalContraction(
-            flopping_curve=np.array([1, 0]),
+            contraction_curve=np.array([1, 0]),
             contraction_type=ContractionType.FLOP,
         )
         r = repr(ec)
-        assert "flopping_curve" in r
+        assert "contraction_curve" in r
         assert "FLOP" in r
 
     def test_repr_includes_gv_series_len(self):
         """__repr__ includes gv_series_len when gv_series is provided."""
         ec = ExtremalContraction(
-            flopping_curve=np.array([1, 0]),
+            contraction_curve=np.array([1, 0]),
             gv_series=[1, 0, 0, 2],
         )
         r = repr(ec)
@@ -253,7 +253,7 @@ class TestExtremalContractionRepr:
 
     def test_repr_no_gv_series_len_when_none(self):
         """__repr__ omits gv_series_len when gv_series is None."""
-        ec = ExtremalContraction(flopping_curve=np.array([1, 0]))
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         r = repr(ec)
         assert "gv_series_len" not in r
 

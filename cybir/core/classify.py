@@ -298,7 +298,9 @@ def classify_contraction(int_nums, c2, curve, gv_series):
 
     # 2. CFT check
     if is_cft(int_nums, curve):
-        return _make_result(ContractionType.CFT)
+        # CFT walls still have a zero-vol divisor needed for eff cone gens
+        zvd = zero_vol_divisor(int_nums, curve)
+        return _make_result(ContractionType.CFT, zero_vol=zvd)
 
     # 3. Compute effective GV invariants
     gv_eff_1, gv_eff_3 = gv_eff(gv_series)

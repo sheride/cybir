@@ -271,7 +271,7 @@ class ExtremalContraction:
 
     Parameters
     ----------
-    flopping_curve : numpy.ndarray
+    contraction_curve : numpy.ndarray
         The curve class that shrinks at this wall.
     contraction_type : ContractionType, optional
         Classification of this contraction.
@@ -293,7 +293,7 @@ class ExtremalContraction:
 
     def __init__(
         self,
-        flopping_curve,
+        contraction_curve,
         contraction_type=None,
         gv_invariant=None,
         effective_gv=None,
@@ -303,7 +303,7 @@ class ExtremalContraction:
         gv_eff_1=None,
         cone_face=None,
     ):
-        self._flopping_curve = np.asarray(flopping_curve)
+        self._contraction_curve = np.asarray(contraction_curve)
         self._contraction_type = contraction_type
         self._gv_invariant = gv_invariant
         self._effective_gv = effective_gv
@@ -324,9 +324,9 @@ class ExtremalContraction:
     # --- Properties ---
 
     @property
-    def flopping_curve(self):
+    def contraction_curve(self):
         """The curve class that shrinks at this wall."""
-        return self._flopping_curve
+        return self._contraction_curve
 
     @property
     def cone_face(self):
@@ -375,6 +375,6 @@ class ExtremalContraction:
     def __repr__(self):
         gv_info = f", gv_series_len={len(self._gv_series)}" if self._gv_series else ""
         return (
-            f"ExtremalContraction(flopping_curve={self._flopping_curve},"
+            f"ExtremalContraction(contraction_curve={self._contraction_curve},"
             f" type={self._contraction_type}{gv_info})"
         )

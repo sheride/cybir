@@ -27,6 +27,10 @@ class CYBirationalClass:
     ----------
     cy : cytools.calabiyau.CalabiYau
         The root Calabi-Yau threefold.
+    gvs : cytools.calabiyau.Invariants, optional
+        Pre-computed GV invariants. If provided, ``setup_root`` skips
+        the expensive ``compute_gvs`` call. Useful for caching GVs
+        across multiple runs on the same geometry.
 
     Notes
     -----
@@ -48,11 +52,11 @@ class CYBirationalClass:
     array([[...]])
     """
 
-    def __init__(self, cy):
+    def __init__(self, cy, gvs=None):
         self._cy = cy
         self._graph = CYGraph()
         self._root_label = None
-        self._root_invariants = None  # CYTools Invariants object
+        self._root_invariants = gvs  # pre-computed CYTools Invariants, or None
         self._coxeter_refs = set()
         self._sym_flop_refs = set()
         self._infinity_cone_gens = set()
@@ -110,7 +114,7 @@ class CYBirationalClass:
         self._weyl_expanded = True
 
     @classmethod
-    def from_gv(cls, cy, max_deg=10, verbose=True, limit=100):
+    def from_gv(cls, cy, max_deg=10, verbose=True, limit=100, gvs=None):
         """Construct EKC from GV invariants (convenience classmethod).
 
         Runs ``setup_root`` -> ``construct_phases`` and returns the
@@ -127,13 +131,17 @@ class CYBirationalClass:
             Enable info-level logging. Default True.
         limit : int, optional
             Maximum number of phases. Default 100.
+        gvs : cytools.calabiyau.Invariants, optional
+            Pre-computed GV invariants. If provided, skips the expensive
+            ``compute_gvs`` call in ``setup_root``. Useful for caching
+            GVs across multiple runs.
 
         Returns
         -------
         CYBirationalClass
             Populated result object.
         """
-        ekc = cls(cy)
+        ekc = cls(cy, gvs=gvs)
         ekc.setup_root(max_deg=max_deg)
         ekc.construct_phases(verbose=verbose, limit=limit)
         return ekc

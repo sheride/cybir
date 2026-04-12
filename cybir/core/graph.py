@@ -1,10 +1,13 @@
 """Phase adjacency graph for extended Kahler cone construction.
 
 The :class:`CYGraph` stores CalabiYauLite phases as nodes and
-ExtremalContraction objects as edges, backed by a ``networkx.Graph``.
+ExtremalContraction objects as edges, backed by a ``networkx.MultiGraph``.
 
 Topology (which phases a contraction connects, and with what curve
 orientation) is owned by the graph, not by the contraction object.
+A MultiGraph is used because a pair of phases (or a single phase via
+self-loops) can have multiple contractions (e.g. multiple terminal
+walls of different types).
 """
 
 import networkx as nx
@@ -16,9 +19,11 @@ class CYGraph:
     """Adjacency graph with CalabiYauLite phases as nodes and
     ExtremalContraction objects as edges.
 
-    Uses an undirected ``networkx.Graph`` internally. Contractions
-    connect two phases symmetrically (you can flop in either
-    direction). The graph edge stores which phase was ``phase_a``
+    Uses an undirected ``networkx.MultiGraph`` internally so that
+    parallel edges (multiple contractions between the same pair of
+    phases, or multiple self-loop terminal walls) are preserved.
+    Contractions connect two phases symmetrically (you can flop in
+    either direction). Each edge stores which phase was ``phase_a``
     and ``phase_b``, along with signed curve orientations.
 
     Examples
@@ -32,7 +37,7 @@ class CYGraph:
     """
 
     def __init__(self):
-        self._graph = nx.Graph()
+        self._graph = nx.MultiGraph()
 
     def add_phase(self, phase):
         """Add a phase node.
@@ -152,13 +157,12 @@ class CYGraph:
             ``curve_sign_b`` otherwise.
         """
         results = []
-        for neighbor in self._graph.neighbors(label):
-            edge = self._graph.edges[label, neighbor]
-            contraction = edge["contraction"]
-            if edge["phase_a"] == label:
-                sign = edge.get("curve_sign_a", 1)
+        for u, v, data in self._graph.edges(label, data=True):
+            contraction = data["contraction"]
+            if data["phase_a"] == label:
+                sign = data.get("curve_sign_a", 1)
             else:
-                sign = edge.get("curve_sign_b", -1)
+                sign = data.get("curve_sign_b", -1)
             results.append((contraction, sign))
         return results
 

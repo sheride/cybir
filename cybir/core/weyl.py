@@ -222,7 +222,7 @@ def expand_weyl(ekc):
 
             # Add symmetric-flop contraction edge between original and reflected
             contraction = ExtremalContraction(
-                flopping_curve=np.zeros(reflected["int_nums"].shape[0]),
+                contraction_curve=np.zeros(reflected["int_nums"].shape[0]),
                 contraction_type=ContractionType.SYMMETRIC_FLOP,
             )
             ekc._graph.add_contraction(
@@ -283,11 +283,11 @@ def _inherit_contractions(ekc, parent_phase, reflected_phase, reflection_matrix)
             continue
 
         # Transform the flopping curve
-        reflected_curve = M @ (sign * parent_contraction.flopping_curve)
+        reflected_curve = M @ (sign * parent_contraction.contraction_curve)
 
         # Create inherited contraction with same type as self-loop on reflected phase
         inherited = ExtremalContraction(
-            flopping_curve=reflected_curve,
+            contraction_curve=reflected_curve,
             contraction_type=parent_contraction.contraction_type,
             gv_invariant=parent_contraction.gv_invariant,
             gv_series=parent_contraction.gv_series,

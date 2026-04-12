@@ -127,7 +127,7 @@ class TestAccumulateGenerators:
     def test_asymptotic_adds_infinity_gen(self):
         ekc = MockEKC()
         result = {
-            "flopping_curve": (1, 0, 0),
+            "contraction_curve": (1, 0, 0),
             "zero_vol_divisor": None,
             "coxeter_reflection": None,
         }
@@ -137,7 +137,7 @@ class TestAccumulateGenerators:
     def test_cft_adds_infinity_and_eff_gens(self):
         ekc = MockEKC()
         result = {
-            "flopping_curve": (1, 0, 0),
+            "contraction_curve": (1, 0, 0),
             "zero_vol_divisor": np.array([0, 1, 0]),
             "coxeter_reflection": None,
         }
@@ -150,7 +150,7 @@ class TestAccumulateGenerators:
         M = np.eye(3)
         M[0, 1] = -2
         result = {
-            "flopping_curve": (1, 0, 0),
+            "contraction_curve": (1, 0, 0),
             "zero_vol_divisor": np.array([0, 1, 0]),
             "coxeter_reflection": M,
         }
@@ -164,7 +164,7 @@ class TestAccumulateGenerators:
         M = np.eye(3)
         M[0, 1] = -2
         result = {
-            "flopping_curve": (1, 0, 0),
+            "contraction_curve": (1, 0, 0),
             "zero_vol_divisor": None,
             "coxeter_reflection": M,
         }
@@ -175,7 +175,7 @@ class TestAccumulateGenerators:
     def test_generic_flop_adds_nothing(self):
         ekc = MockEKC()
         result = {
-            "flopping_curve": (1, 0, 0),
+            "contraction_curve": (1, 0, 0),
             "zero_vol_divisor": None,
             "coxeter_reflection": None,
         }
