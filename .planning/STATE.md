@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-04-12T08:06:36.214Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-04-12T08:11:14.991Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 03 (pipeline-integration) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02 P04 | 6min | 2 tasks | 6 files |
 | Phase 03 P01 | 4min | 2 tasks | 5 files |
 | Phase 03 P02 | 6min | 2 tasks | 3 files |
+| Phase 03 P03 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 03]: CYBirationalClass uses lazy imports for build_gv/weyl to avoid circular dependencies
 - [Phase 03]: Used toric_kahler_cone() and mori_cone_cap(in_basis=True) as CYTools cone API
 - [Phase 03]: Terminal walls and symmetric flops stored as self-loop edges in graph
+- [Phase 03]: Mori cone deduplication uses frozenset of integer-cast ray tuples for order-invariant comparison
+- [Phase 03]: Reflected phases get SYMMETRIC_FLOP contraction edges; terminal walls inherited as self-loops
 
 ### Pending Todos
 
@@ -95,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T08:06:36.210Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-04-12T08:11:14.988Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None

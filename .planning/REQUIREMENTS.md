@@ -28,7 +28,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Pipeline
 
 - [x] **PIPE-01**: `construct_phases` BFS loop with dictionary-keyed phase deduplication
-- [ ] **PIPE-02**: Weyl orbit expansion for hyperextended cone
+- [x] **PIPE-02**: Weyl orbit expansion for hyperextended cone
 - [x] **PIPE-03**: Clean read-only post-construction API (`ekc.phases`, `ekc.contractions`, `ekc.coxeter_matrix`, etc.)
 - [x] **PIPE-04**: Verbose logging replacing scattered print statements
 
@@ -36,8 +36,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INTG-01**: CYTools Invariants monkey-patching (gv_series, gv_eff, ensure_nilpotency, flop_gvs)
 - [x] **INTG-02**: Decouple from cornell-dev — copy/refactor `misc` and `lib.util.lattice` into cybir
-- [ ] **INTG-03**: Monkey-patching at Polytope, Triangulation, CalabiYau levels
-- [ ] **INTG-04**: Version guards on monkey-patches
+- [x] **INTG-03**: Monkey-patching at Polytope, Triangulation, CalabiYau levels
+- [x] **INTG-04**: Version guards on monkey-patches
 
 ### Package & Documentation
 
@@ -87,13 +87,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATH-05 | Phase 2 | Complete |
 | MATH-06 | Phase 2 | Complete |
 | PIPE-01 | Phase 3 | Complete |
-| PIPE-02 | Phase 3 | Pending |
+| PIPE-02 | Phase 3 | Complete |
 | PIPE-03 | Phase 3 | Complete |
 | PIPE-04 | Phase 3 | Complete |
 | INTG-01 | Phase 3 | Complete |
 | INTG-02 | Phase 1 | Complete |
-| INTG-03 | Phase 3 | Pending |
-| INTG-04 | Phase 3 | Pending |
+| INTG-03 | Phase 3 | Complete |
+| INTG-04 | Phase 3 | Complete |
 | PKG-01 | Phase 1 | Complete |
 | PKG-02 | Phase 3 | Pending |
 | PKG-03 | Phase 3 | Pending |
