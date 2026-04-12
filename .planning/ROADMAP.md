@@ -59,7 +59,12 @@ Plans:
   3. Post-construction API (`ekc.phases`, `ekc.contractions`, `ekc.coxeter_matrix`, etc.) provides read-only access to all results without ad-hoc attribute hunting
   4. CYTools monkey-patching works at Invariants, Polytope, Triangulation, and CalabiYau levels with version guards, and `cy.construct_phases()` triggers the full pipeline
   5. Sphinx documentation builds cleanly with equation references, and example notebooks for h11=2 and h11=3 run end-to-end
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 03-01-PLAN.md -- CYGraph API update, ExtremalContraction cleanup, CYBirationalClass orchestrator
+- [ ] 03-02-PLAN.md -- BFS builder (build_gv.py) and CYTools Invariants monkey-patches (patch.py)
+- [ ] 03-03-PLAN.md -- Weyl expansion (weyl.py) and package re-exports
+- [ ] 03-04-PLAN.md -- Sphinx documentation and example notebooks
 
 ## Progress
 
@@ -70,4 +75,4 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-04-12 |
 | 2. Core Mathematics | 0/4 | Planned | - |
-| 3. Pipeline & Integration | 0/0 | Not started | - |
+| 3. Pipeline & Integration | 0/4 | Planned | - |
