@@ -62,6 +62,7 @@ class CYBirationalClass:
         self._infinity_cone_gens = set()
         self._eff_cone_gens = set()
         self._build_log = []
+        self._unresolved_walls = []  # walls that could not be classified
         self._constructed = False
         self._weyl_expanded = False
         self._weyl_phases = []  # labels of Weyl-expanded phases
@@ -71,7 +72,7 @@ class CYBirationalClass:
 
     # --- Step-by-step construction API ---
 
-    def setup_root(self, max_deg=10):
+    def setup_root(self, max_deg=4):
         """Set up the root phase from the CYTools CalabiYau.
 
         Computes GV invariants and creates the first CalabiYauLite
@@ -80,18 +81,22 @@ class CYBirationalClass:
         Parameters
         ----------
         max_deg : int, optional
-            Maximum degree for GV computation. Default 10.
+            Initial maximum degree for GV computation. Default 4.
+            The BFS will adaptively recompute to higher degrees if
+            needed.
         """
         from .build_gv import setup_root
 
         setup_root(self, max_deg=max_deg)
 
-    def construct_phases(self, verbose=True, limit=100):
+    def construct_phases(self, verbose=True, limit=100,
+                         max_deg_ceiling=20, deg_step=2):
         """Run BFS construction of the extended Kahler cone.
 
         Iterates over undiagnosed Mori cone walls, classifies each,
         flops when appropriate, and deduplicates phases by curve-sign
-        dictionaries.
+        dictionaries. Adaptively recomputes GVs to higher degree when
+        walls cannot be classified at the current degree.
 
         Parameters
         ----------
@@ -99,10 +104,15 @@ class CYBirationalClass:
             Enable info-level logging. Default True.
         limit : int, optional
             Maximum number of phases. Default 100.
+        max_deg_ceiling : int, optional
+            Maximum degree to recompute GVs to. Default 20.
+        deg_step : int, optional
+            Degree increment per retry round. Default 2.
         """
         from .build_gv import construct_phases
 
-        construct_phases(self, verbose=verbose, limit=limit)
+        construct_phases(self, verbose=verbose, limit=limit,
+                         max_deg_ceiling=max_deg_ceiling, deg_step=deg_step)
         self._constructed = True
 
     def apply_coxeter_orbit(self, phases=True):
@@ -179,7 +189,8 @@ class CYBirationalClass:
         return to_fundamental_domain(np.asarray(point), reflections, curves)
 
     @classmethod
-    def from_gv(cls, cy, max_deg=10, verbose=True, limit=100, gvs=None):
+    def from_gv(cls, cy, max_deg=4, verbose=True, limit=100, gvs=None,
+                max_deg_ceiling=20, deg_step=2):
         """Construct EKC from GV invariants (convenience classmethod).
 
         Runs ``setup_root`` -> ``construct_phases`` and returns the
@@ -191,7 +202,8 @@ class CYBirationalClass:
         cy : cytools.calabiyau.CalabiYau
             The root Calabi-Yau.
         max_deg : int, optional
-            Maximum degree for GV computation. Default 10.
+            Initial maximum degree for GV computation. Default 4.
+            The BFS adaptively recomputes to higher degrees if needed.
         verbose : bool, optional
             Enable info-level logging. Default True.
         limit : int, optional
@@ -200,6 +212,10 @@ class CYBirationalClass:
             Pre-computed GV invariants. If provided, skips the expensive
             ``compute_gvs`` call in ``setup_root``. Useful for caching
             GVs across multiple runs.
+        max_deg_ceiling : int, optional
+            Maximum degree to recompute GVs to. Default 20.
+        deg_step : int, optional
+            Degree increment per retry round. Default 2.
 
         Returns
         -------
@@ -208,7 +224,9 @@ class CYBirationalClass:
         """
         ekc = cls(cy, gvs=gvs)
         ekc.setup_root(max_deg=max_deg)
-        ekc.construct_phases(verbose=verbose, limit=limit)
+        ekc.construct_phases(verbose=verbose, limit=limit,
+                             max_deg_ceiling=max_deg_ceiling,
+                             deg_step=deg_step)
         return ekc
 
     # --- Read-only API ---

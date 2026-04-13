@@ -19,7 +19,9 @@ import numpy as np
 
 from .classify import classify_contraction
 from .flop import flop_phase
-from .types import CalabiYauLite, ContractionType, ExtremalContraction
+from .types import (
+    CalabiYauLite, ContractionType, ExtremalContraction, InsufficientGVError,
+)
 from .util import normalize_curve, tuplify
 
 logger = logging.getLogger("cybir")
@@ -174,7 +176,7 @@ def _find_matching_phase(curve_signs, target_signs):
 # Main builder functions
 # ---------------------------------------------------------------------------
 
-def setup_root(ekc, max_deg=10):
+def setup_root(ekc, max_deg=4):
     """Set up the root phase from the CYTools CalabiYau.
 
     Computes GV invariants, creates the first ``CalabiYauLite``
@@ -185,7 +187,9 @@ def setup_root(ekc, max_deg=10):
     ekc : CYBirationalClass
         The orchestrator to populate.
     max_deg : int, optional
-        Maximum degree for GV computation. Default 10.
+        Initial maximum degree for GV computation. Default 4.
+        The BFS will adaptively recompute to higher degrees if
+        needed for wall classification.
     """
     from .patch import patch_cytools
 
@@ -234,39 +238,24 @@ def setup_root(ekc, max_deg=10):
     logger.info("Root phase CY_0 set up with %d GV invariants", n_gvs)
 
 
-def construct_phases(ekc, verbose=True, limit=100):
-    """Run BFS construction of the extended Kahler cone.
+def _run_bfs(ekc, verbose, limit):
+    """Run one pass of BFS construction. Returns (phase_counter, deferred).
 
-    Iterates over undiagnosed Mori cone walls, classifies each,
-    flops when appropriate, and deduplicates phases by curve-sign
-    dictionaries.
-
-    This is a faithful translation of the original BFS loop
-    (lines 871-1073).
-
-    Parameters
-    ----------
-    ekc : CYBirationalClass
-        The orchestrator (must have root set up via ``setup_root``).
-    verbose : bool, optional
-        Enable info-level logging. Default True.
-    limit : int, optional
-        Maximum number of phases. Default 100.
+    The deferred list contains (wall_curve, source_label, series_len) tuples
+    for walls that could not be classified at the current GV degree.
+    series_len is the number of nonzero GV entries seen, used to detect
+    potent curves across retries.
     """
-    if verbose:
-        logger.setLevel(logging.INFO)
-
     root = ekc._graph.get_phase(ekc._root_label)
-
-    # Get Mori cone extremal rays as initial walls (matching original)
     mori_gens = root.mori_cone.extremal_rays()
 
     # Data structures
     known_curves = set()
-    curve_signs = {}  # {phase_label: {curve_tuple: +1/-1}}
-    flop_chains = {"CY_0": []}  # {phase_label: [curves flopped]}
-    tips = {}  # {phase_label: ndarray}
+    curve_signs = {}
+    flop_chains = {"CY_0": []}
+    tips = {}
     undiagnosed = deque()
+    deferred = []
     phase_counter = 1
 
     # Initialize from root
@@ -274,22 +263,17 @@ def construct_phases(ekc, verbose=True, limit=100):
     tips["CY_0"] = root_tip
     root._tip = root_tip
 
-    # Initialize known curves from Mori cone generators
     for gen in mori_gens:
-        nc = normalize_curve(gen)
-        known_curves.add(nc)
+        known_curves.add(normalize_curve(gen))
 
-    # Initialize curve signs for root
     curve_signs["CY_0"] = {
         c: int(np.sign(root_tip @ np.array(c))) for c in known_curves
     }
     root._curve_signs = dict(curve_signs["CY_0"])
 
-    # Enqueue all Mori cone generators
     for gen in mori_gens:
         undiagnosed.append((np.asarray(gen), "CY_0"))
 
-    # BFS loop
     while undiagnosed and ekc._graph.num_phases < limit:
         wall_curve, source_label = undiagnosed.popleft()
         source = ekc._graph.get_phase(source_label)
@@ -300,10 +284,7 @@ def construct_phases(ekc, verbose=True, limit=100):
         series = gvs_local.gv_series_cybir(wall_curve)
 
         if not series:
-            logger.warning(
-                "  Empty GV series for curve %s from %s, skipping",
-                normalize_curve(wall_curve), source_label,
-            )
+            deferred.append((np.array(wall_curve), source_label, 0))
             continue
 
         # Classify
@@ -311,6 +292,9 @@ def construct_phases(ekc, verbose=True, limit=100):
             result = classify_contraction(
                 source.int_nums, source.c2, wall_curve, series
             )
+        except InsufficientGVError:
+            deferred.append((np.array(wall_curve), source_label, len(series)))
+            continue
         except Exception as exc:
             logger.warning(
                 "  Classification failed for curve %s from %s: %s",
@@ -332,7 +316,7 @@ def construct_phases(ekc, verbose=True, limit=100):
             gv_eff_1=result.get("gv_eff_1"),
         )
 
-        # Log (PIPE-04 / D-05)
+        # Log
         ekc._build_log.append({
             "action": "classify",
             "source": source_label,
@@ -340,8 +324,7 @@ def construct_phases(ekc, verbose=True, limit=100):
             "type": ctype.value,
         })
 
-        # Accumulate generators (D-06) -- use raw curve for gens
-        # (matching original: infinity/eff gens store the raw Mori ray direction)
+        # Accumulate generators — use raw curve direction
         result["contraction_curve"] = tuple(int(x) for x in wall_curve)
         _accumulate_generators(ekc, ctype, result)
 
@@ -351,7 +334,6 @@ def construct_phases(ekc, verbose=True, limit=100):
             ContractionType.CFT,
             ContractionType.SU2,
         ):
-            # Self-loop for terminal walls
             ekc._graph.add_contraction(
                 contraction, source_label, source_label
             )
@@ -374,7 +356,6 @@ def construct_phases(ekc, verbose=True, limit=100):
         new_label = f"CY_{phase_counter}"
         flopped = flop_phase(source, wall_curve, series, label=new_label)
 
-        # Compute the flopped Mori cone from flop-adjusted Invariants
         flopped_chain = chain + [wall_curve]
         flopped_gvs = ekc._root_invariants.flop_gvs(flopped_chain)
         try:
@@ -386,17 +367,14 @@ def construct_phases(ekc, verbose=True, limit=100):
             )
             continue
 
-        # Set cones on the flopped phase (it was created without them)
         flopped._kahler_cone = flopped_mori.dual()
         flopped._mori_cone = flopped_mori
 
-        # Curve-sign deduplication
         tuple_curve = normalize_curve(wall_curve)
         if tuple_curve not in known_curves:
             known_curves.add(tuple_curve)
             _update_all_curve_signs(ekc, curve_signs, tuple_curve, tips)
 
-        # Compute flopped phase tip and curve signs
         try:
             flopped_tip = _compute_tip(flopped)
         except RuntimeError:
@@ -413,7 +391,6 @@ def construct_phases(ekc, verbose=True, limit=100):
         existing_label = _find_matching_phase(curve_signs, flopped_signs)
 
         if existing_label is None:
-            # New phase -- persist tip and curve_signs on the phase object (D-15)
             flopped._tip = flopped_tip
             flopped._curve_signs = dict(flopped_signs)
 
@@ -425,7 +402,6 @@ def construct_phases(ekc, verbose=True, limit=100):
             flop_chains[new_label] = flopped_chain
             tips[new_label] = flopped_tip
 
-            # Enqueue new phase's Mori cone walls (extremal rays only)
             for gen in flopped_mori.extremal_rays():
                 undiagnosed.append((np.asarray(gen), new_label))
 
@@ -435,13 +411,11 @@ def construct_phases(ekc, verbose=True, limit=100):
             )
             phase_counter += 1
 
-            # Add Kahler cone rays to effective cone gens
             for ray in flopped._kahler_cone.rays():
                 ekc._eff_cone_gens.add(
                     tuple(np.round(ray).astype(int).tolist())
                 )
         else:
-            # Existing phase: just add edge
             ekc._graph.add_contraction(
                 contraction, source_label, existing_label
             )
@@ -450,12 +424,136 @@ def construct_phases(ekc, verbose=True, limit=100):
                 existing_label, tuple_curve,
             )
 
-    # Also add root Kahler cone rays to effective cone gens
+    # Add root Kahler cone rays to effective cone gens
     if root.kahler_cone is not None:
         for ray in root.kahler_cone.rays():
             ekc._eff_cone_gens.add(
                 tuple(np.round(ray).astype(int).tolist())
             )
+
+    return phase_counter, deferred
+
+
+# Minimum number of populated GV multiples (C, 2C, 3C, 4C) to conclude potency
+_POTENCY_THRESHOLD = 4
+
+
+def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
+                     deg_step=2):
+    """Run BFS construction of the extended Kahler cone.
+
+    Uses adaptive GV degree: starts with the initial degree from
+    ``setup_root``, runs a full BFS, and if any walls could not be
+    classified (empty series or insufficient GVs), bumps the degree
+    and **restarts the entire BFS from scratch** with the new GVs.
+
+    Potent curves are detected by tracking series length across retries.
+    If a wall's GV series has >= 4 populated multiples (C, 2C, 3C, 4C)
+    and still doesn't terminate, it is flagged as potent and not retried.
+
+    Parameters
+    ----------
+    ekc : CYBirationalClass
+        The orchestrator (must have root set up via ``setup_root``).
+    verbose : bool, optional
+        Enable info-level logging. Default True.
+    limit : int, optional
+        Maximum number of phases. Default 100.
+    max_deg_ceiling : int, optional
+        Maximum degree to recompute GVs to. Default 20.
+    deg_step : int, optional
+        Degree increment per retry round. Default 2.
+    """
+    if verbose:
+        logger.setLevel(logging.INFO)
+
+    current_deg = ekc._root_invariants.cutoff if hasattr(
+        ekc._root_invariants, "cutoff") else 10
+
+    # Track potent curves across retries: {(curve_tuple, source_label): series_len}
+    potent_candidates = {}
+
+    while True:
+        # Clear graph and rebuild from scratch (root phase is preserved
+        # in setup_root; we need to reset everything else)
+        # Save root phase data before clearing
+        from .graph import CYGraph
+        root_phase = ekc._graph.get_phase(ekc._root_label)
+        ekc._graph = CYGraph()
+        ekc._graph.add_phase(root_phase)
+        ekc._coxeter_refs = set()
+        ekc._sym_flop_refs = set()
+        ekc._sym_flop_pairs = []
+        ekc._infinity_cone_gens = set()
+        ekc._eff_cone_gens = set()
+        ekc._build_log = []
+
+        phase_counter, deferred = _run_bfs(ekc, verbose, limit)
+
+        if not deferred:
+            break  # all walls classified successfully
+
+        # Check for potent curves: if series_len >= threshold, flag and remove
+        still_deferred = []
+        for wall_curve, source_label, series_len in deferred:
+            key = (normalize_curve(wall_curve), source_label)
+            prev_len = potent_candidates.get(key, 0)
+
+            if series_len >= _POTENCY_THRESHOLD:
+                logger.warning(
+                    "  Potent curve detected: %s from %s "
+                    "(series length %d >= %d, not retrying)",
+                    normalize_curve(wall_curve), source_label,
+                    series_len, _POTENCY_THRESHOLD,
+                )
+                continue  # drop this wall — it's potent
+
+            if series_len > 0 and series_len == prev_len:
+                # Series didn't grow despite higher degree — also likely potent
+                logger.warning(
+                    "  Potent curve suspected: %s from %s "
+                    "(series length unchanged at %d after degree bump)",
+                    normalize_curve(wall_curve), source_label, series_len,
+                )
+                continue
+
+            potent_candidates[key] = series_len
+            still_deferred.append((wall_curve, source_label, series_len))
+
+        if not still_deferred or current_deg >= max_deg_ceiling:
+            # Report unresolved walls
+            if still_deferred:
+                logger.warning(
+                    "%d wall(s) unresolved at max_deg=%d:",
+                    len(still_deferred), current_deg,
+                )
+                for wc, sl, _ in still_deferred:
+                    logger.warning("  curve %s from %s", normalize_curve(wc), sl)
+                ekc._unresolved_walls = [
+                    (normalize_curve(wc), sl) for wc, sl, _ in still_deferred
+                ]
+            break
+
+        # Bump degree, recompute GVs, restart BFS
+        new_deg = min(current_deg + deg_step, max_deg_ceiling)
+        logger.info(
+            "Adaptive GV: deg %d -> %d, restarting BFS (%d deferred walls)",
+            current_deg, new_deg, len(still_deferred),
+        )
+
+        cy = ekc._cy
+        grading = ekc._root_invariants.grading_vec
+        new_gvs = cy.compute_gvs(grading_vec=grading, max_deg=new_deg)
+        new_gvs.flop_curves = []
+        new_gvs.precompose = np.eye(len(grading))
+        ekc._root_invariants = new_gvs
+
+        # Update root phase's Mori/Kahler cones from new GVs
+        new_mori = new_gvs.cone_incl_flop()
+        root_phase._mori_cone = new_mori
+        root_phase._kahler_cone = new_mori.dual()
+
+        current_deg = new_deg
 
     logger.info(
         "Construction complete: %d phases, %d contractions",
