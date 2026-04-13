@@ -32,10 +32,11 @@ logger = logging.getLogger("cybir")
 def _compute_tip(phase):
     """Compute an interior point of the Kahler (dual Mori) cone.
 
-    Uses the CYTools ``tip_of_stretched_cone`` method with a retry
-    loop (dividing ``c`` by 10) if it returns ``None``.
-
-    This replicates the original pattern from lines 2212-2218.
+    Takes the sum of all extremal rays of the Kahler cone, which is
+    guaranteed to lie in the strict interior (since the cone is
+    strictly convex and full-dimensional). This matches the original
+    code's approach and avoids the convex optimization overhead of
+    ``tip_of_stretched_cone``.
 
     Parameters
     ----------
@@ -50,7 +51,7 @@ def _compute_tip(phase):
     Raises
     ------
     RuntimeError
-        If no valid tip is found after retries.
+        If the phase has no Kahler cone or it has no rays.
     """
     cone = phase.kahler_cone
     if cone is None:
@@ -58,17 +59,12 @@ def _compute_tip(phase):
             f"Phase {phase.label} has no Kahler cone; "
             "cannot compute tip"
         )
-    c = 1.0
-    tip = None
-    for _ in range(20):  # max 20 retries (c down to 1e-20)
-        tip = cone.tip_of_stretched_cone(c)
-        if tip is not None:
-            return tip / c  # scale back as in original: tip *= 1/c
-        c /= 10
-    raise RuntimeError(
-        f"tip_of_stretched_cone returned None for phase {phase.label} "
-        f"after all retries"
-    )
+    rays = cone.rays()
+    if len(rays) == 0:
+        raise RuntimeError(
+            f"Phase {phase.label} Kahler cone has no rays"
+        )
+    return np.sum(rays, axis=0).astype(float)
 
 
 def _accumulate_generators(ekc, ctype, result):
