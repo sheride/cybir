@@ -1,7 +1,6 @@
-cybir.core.flop
-===============
+flop --- Wall-crossing formulas and flop construction
+=====================================================
 
 .. automodule:: cybir.core.flop
    :members:
-   :undoc-members:
    :show-inheritance:

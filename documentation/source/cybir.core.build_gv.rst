@@ -1,7 +1,6 @@
-cybir.core.build_gv
-===================
+build_gv --- BFS pipeline builder for EKC construction
+=======================================================
 
 .. automodule:: cybir.core.build_gv
    :members:
-   :undoc-members:
    :show-inheritance:

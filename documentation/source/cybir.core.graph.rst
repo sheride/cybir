@@ -1,7 +1,6 @@
-cybir.core.graph
-================
+graph --- Phase adjacency graph
+================================
 
 .. automodule:: cybir.core.graph
    :members:
-   :undoc-members:
    :show-inheritance:

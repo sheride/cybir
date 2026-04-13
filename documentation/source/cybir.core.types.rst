@@ -1,7 +1,6 @@
-cybir.core.types
-================
+types --- CalabiYauLite, ExtremalContraction, and ContractionType
+=================================================================
 
 .. automodule:: cybir.core.types
    :members:
-   :undoc-members:
    :show-inheritance:

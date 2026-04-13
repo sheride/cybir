@@ -1,7 +1,6 @@
-cybir.core.util
-===============
+util --- Projection, normalization, and lattice utilities
+=========================================================
 
 .. automodule:: cybir.core.util
    :members:
-   :undoc-members:
    :show-inheritance:

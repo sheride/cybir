@@ -1,6 +1,10 @@
 cybir.core
 ==========
 
+.. currentmodule:: cybir.core
+
+Core library modules for EKC construction and birational geometry.
+
 .. toctree::
    :maxdepth: 1
 

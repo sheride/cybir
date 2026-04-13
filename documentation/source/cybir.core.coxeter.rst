@@ -1,7 +1,6 @@
-cybir.core.coxeter
-==================
+coxeter --- Coxeter group construction and orbit expansion
+==========================================================
 
 .. automodule:: cybir.core.coxeter
    :members:
-   :undoc-members:
    :show-inheritance:

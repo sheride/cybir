@@ -1,7 +1,6 @@
-cybir.core.gv
-=============
+gv --- Gopakumar-Vafa invariant utilities
+=========================================
 
 .. automodule:: cybir.core.gv
    :members:
-   :undoc-members:
    :show-inheritance:

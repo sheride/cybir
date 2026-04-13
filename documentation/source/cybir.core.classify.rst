@@ -1,7 +1,6 @@
-cybir.core.classify
-===================
+classify --- Contraction classification algorithm
+=================================================
 
 .. automodule:: cybir.core.classify
    :members:
-   :undoc-members:
    :show-inheritance:

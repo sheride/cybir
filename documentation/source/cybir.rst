@@ -1,7 +1,17 @@
-cybir
-=====
+.. currentmodule:: cybir
+
+
+cybir API
+=========
 
 .. automodule:: cybir
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :no-members:
+
+
+Modules
+-------
+
+.. toctree::
+   :maxdepth: 1
+
+   cybir.core
