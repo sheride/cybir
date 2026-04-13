@@ -121,7 +121,7 @@ pytest tests/ -q
 
 ## Disclaimer
 
-This package was developed using [Claude Code](https://claude.ai/claude-code) (Anthropic's AI coding assistant), with human direction on physics, design decisions, and correctness validation.
+This package was developed using [Claude Code](https://claude.ai/claude-code) (Anthropic's AI coding assistant), with human direction on physics, design decisions, and correctness validation. Development was managed with the [Get Shit Done (GSD)](https://github.com/atrisdotai/get-shit-done) workflow system for Claude Code, which provides phase-based planning, automated code review, verification loops, and structured execution.
 
 ## References
 
