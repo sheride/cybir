@@ -119,6 +119,10 @@ conda activate cytools
 pytest tests/ -q
 ```
 
+## Disclaimer
+
+This package was developed using [Claude Code](https://claude.ai/claude-code) (Anthropic's AI coding assistant), with human direction on physics, design decisions, and correctness validation.
+
 ## References
 
 - N. Gendler, B. Heidenreich, L. McAllister, J. Moritz, T. Rudelius, *Counting Calabi-Yau Threefolds*, [arXiv:2212.10573](https://arxiv.org/abs/2212.10573)
