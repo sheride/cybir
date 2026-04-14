@@ -149,7 +149,7 @@ class TestCalabiYauLiteEquality:
 
 
 class TestCalabiYauLiteRepr:
-    """Test __repr__."""
+    """Test __repr__ and __str__."""
 
     def test_repr_includes_class_name_and_label(self):
         """__repr__ includes CalabiYauLite and the label."""
@@ -157,6 +157,32 @@ class TestCalabiYauLiteRepr:
         r = repr(cyl)
         assert "CalabiYauLite" in r
         assert "phase_0" in r
+
+    def test_repr_small_h11_shows_details(self):
+        """For h11<=3, repr shows intersection numbers and c2."""
+        int_nums = np.array([[[0, 1], [1, 0]], [[1, 0], [0, 2]]])
+        cyl = CalabiYauLite(int_nums=int_nums, c2=np.array([24, 44]), label="CY_0")
+        r = repr(cyl)
+        assert "kappa=" in r
+        assert "c2=" in r
+        assert "24" in r
+        assert "44" in r
+
+    def test_repr_large_h11_shows_short_form(self):
+        """For h11>3, repr shows only label and h11."""
+        cyl = CalabiYauLite(int_nums=np.zeros((5, 5, 5)), label="CY_big")
+        r = repr(cyl)
+        assert "h11=5" in r
+        assert "kappa=" not in r
+
+    def test_str_always_shows_details(self):
+        """__str__ shows full details regardless of h11."""
+        cyl = CalabiYauLite(
+            int_nums=np.zeros((5, 5, 5)), c2=np.ones(5), label="CY_big"
+        )
+        s = str(cyl)
+        assert "kappa=" in s
+        assert "c2=" in s
 
 
 # ============================================================
@@ -232,30 +258,50 @@ class TestExtremalContractionGVFields:
 class TestExtremalContractionRepr:
     """Test __repr__."""
 
-    def test_repr_includes_contraction_curve_and_type(self):
-        """__repr__ includes contraction_curve and contraction_type."""
+    def test_repr_includes_type_display_name(self):
+        """__repr__ shows type display name (paper notation)."""
         ec = ExtremalContraction(
             contraction_curve=np.array([1, 0]),
             contraction_type=ContractionType.FLOP,
         )
         r = repr(ec)
-        assert "contraction_curve" in r
-        assert "FLOP" in r
+        assert "generic flop" in r
 
-    def test_repr_includes_gv_series_len(self):
-        """__repr__ includes gv_series_len when gv_series is provided."""
+    def test_repr_includes_curve_as_list(self):
+        """__repr__ shows curve as list of ints."""
         ec = ExtremalContraction(
-            contraction_curve=np.array([1, 0]),
-            gv_series=[1, 0, 0, 2],
+            contraction_curve=np.array([0, 1, -1]),
+            contraction_type=ContractionType.SYMMETRIC_FLOP,
         )
         r = repr(ec)
-        assert "gv_series_len=4" in r
+        assert "curve=[0, 1, -1]" in r
+        assert "symmetric flop" in r
 
-    def test_repr_no_gv_series_len_when_none(self):
-        """__repr__ omits gv_series_len when gv_series is None."""
+    def test_repr_includes_zvd(self):
+        """__repr__ shows zero_vol_divisor when present."""
+        ec = ExtremalContraction(
+            contraction_curve=np.array([1, 0]),
+            contraction_type=ContractionType.CFT,
+            zero_vol_divisor=np.array([0, 1]),
+        )
+        r = repr(ec)
+        assert "zvd=[0, 1]" in r
+
+    def test_repr_includes_gv_series(self):
+        """__repr__ shows gv_series for small h11 (short curve)."""
+        ec = ExtremalContraction(
+            contraction_curve=np.array([1, 0]),
+            contraction_type=ContractionType.FLOP,
+            gv_series=[480, 480, 1054],
+        )
+        r = repr(ec)
+        assert "gv=[480, 480, 1054]" in r
+
+    def test_repr_unclassified(self):
+        """__repr__ shows 'unclassified' when type is None."""
         ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         r = repr(ec)
-        assert "gv_series_len" not in r
+        assert "unclassified" in r
 
 
 # ============================================================

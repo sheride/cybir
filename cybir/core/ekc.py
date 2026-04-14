@@ -222,6 +222,17 @@ class CYBirationalClass:
         CYBirationalClass
             Populated result object.
         """
+        # Guard: non-favorable polytopes cannot compute GV-based EKC
+        if hasattr(cy, 'polytope') and callable(cy.polytope):
+            poly = cy.polytope()
+            if hasattr(poly, 'is_favorable') and not poly.is_favorable('M'):
+                poly_id = poly.id() if hasattr(poly, 'id') else "unknown"
+                raise ValueError(
+                    f"Non-favorable polytope (polytope ID {poly_id}): cannot "
+                    "compute GV-based EKC. The M-lattice is not equal to the "
+                    "N-lattice."
+                )
+
         ekc = cls(cy, gvs=gvs)
         ekc.setup_root(max_deg=max_deg)
         ekc.construct_phases(verbose=verbose, limit=limit,
@@ -395,10 +406,32 @@ class CYBirationalClass:
         return self._weyl_expanded
 
     def __repr__(self):
-        status = "constructed" if self._constructed else "empty"
-        orbit = ", orbit-expanded" if self._weyl_expanded else ""
-        return (
-            f"CYBirationalClass({status}{orbit}, "
-            f"phases={self._graph.num_phases}, "
-            f"contractions={self._graph.num_contractions})"
-        )
+        if not self._constructed:
+            return "CYBirationalClass(empty)"
+
+        total = self._graph.num_phases
+        n_weyl = len(self._weyl_phases)
+        fundamental = total - n_weyl
+
+        if self._weyl_expanded and self._coxeter_type_info:
+            # Format Coxeter type string, e.g. "A2" or "A1 x B2"
+            type_parts = []
+            for t, rank, _order in self._coxeter_type_info:
+                type_parts.append(f"{t}{rank}")
+            type_str = " x ".join(type_parts)
+            order = self._coxeter_order or "?"
+            return (
+                f"CYBirationalClass({total} phases "
+                f"({fundamental} fundamental), "
+                f"orbit={type_str} |W|={order})"
+            )
+        elif self._weyl_expanded:
+            return (
+                f"CYBirationalClass({total} phases "
+                f"({fundamental} fundamental), orbit expanded)"
+            )
+        else:
+            return (
+                f"CYBirationalClass({total} phases, "
+                f"no orbit expansion)"
+            )

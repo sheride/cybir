@@ -287,7 +287,45 @@ class CalabiYauLite:
         return hash(self._int_nums.tobytes())
 
     def __repr__(self):
-        return f"CalabiYauLite(label={self._label!r})"
+        h11 = self._int_nums.shape[0]
+        if h11 <= 3:
+            return self.__str__()
+        return f"CalabiYauLite(label={self._label!r}, h11={h11})"
+
+    def __str__(self):
+        h11 = self._int_nums.shape[0]
+        # Collect nonzero intersection numbers (upper triangular)
+        indices = np.triu_indices(h11, m=h11)  # not quite right for rank-3 tensor
+        # Flatten the symmetric rank-3 tensor: collect unique entries
+        nonzero_entries = []
+        for i in range(h11):
+            for j in range(i, h11):
+                for k in range(j, h11):
+                    val = self._int_nums[i, j, k]
+                    if val != 0:
+                        nonzero_entries.append(int(val))
+
+        if h11 > 10:
+            display_entries = nonzero_entries[:20]
+            suffix = ", ..." if len(nonzero_entries) > 20 else ""
+        else:
+            display_entries = nonzero_entries
+            suffix = ""
+
+        parts = [f"label={self._label!r}", f"h11={h11}"]
+        parts.append(f"kappa={display_entries}{suffix}")
+
+        if self._c2 is not None:
+            parts.append(f"c2={self._c2.tolist()}")
+
+        if self._kahler_cone is not None:
+            try:
+                n_rays = len(self._kahler_cone.rays())
+                parts.append(f"kahler_rays={n_rays}")
+            except Exception:
+                pass
+
+        return f"CalabiYauLite({', '.join(parts)})"
 
 
 class ExtremalContraction:
@@ -400,8 +438,24 @@ class ExtremalContraction:
     # --- Dunder methods ---
 
     def __repr__(self):
-        gv_info = f", gv_series_len={len(self._gv_series)}" if self._gv_series else ""
-        return (
-            f"ExtremalContraction(contraction_curve={self._contraction_curve},"
-            f" type={self._contraction_type}{gv_info})"
-        )
+        parts = []
+        # Type display name
+        if self._contraction_type is not None:
+            parts.append(self._contraction_type.display_name())
+        else:
+            parts.append("unclassified")
+
+        # Curve as list of ints
+        curve_list = [int(x) for x in self._contraction_curve]
+        parts.append(f"curve={curve_list}")
+
+        # Zero-vol divisor
+        if self._zero_vol_divisor is not None:
+            zvd_list = [int(x) for x in self._zero_vol_divisor]
+            parts.append(f"zvd={zvd_list}")
+
+        # GV series (only for small h11, i.e. short curves)
+        if self._gv_series is not None and len(self._contraction_curve) <= 10:
+            parts.append(f"gv={self._gv_series}")
+
+        return f"ExtremalContraction({', '.join(parts)})"

@@ -197,6 +197,17 @@ def setup_root(ekc, max_deg=4):
 
     cy = ekc._cy
 
+    # Guard: non-favorable polytopes cannot compute GV-based EKC
+    if hasattr(cy, 'polytope') and callable(cy.polytope):
+        poly = cy.polytope()
+        if hasattr(poly, 'is_favorable') and not poly.is_favorable('M'):
+            poly_id = poly.id() if hasattr(poly, 'id') else "unknown"
+            raise ValueError(
+                f"Non-favorable polytope (polytope ID {poly_id}): cannot "
+                "compute GV-based EKC. The M-lattice is not equal to the "
+                "N-lattice."
+            )
+
     # Extract geometric data
     int_nums = cy.intersection_numbers(in_basis=True, format="dense")
     c2 = cy.second_chern_class(in_basis=True)
