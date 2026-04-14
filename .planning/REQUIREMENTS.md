@@ -47,10 +47,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Polish & Validation
 
-- [ ] **POL-01**: Rich `__repr__`/`__str__` on CalabiYauLite (h11-dependent detail level), CYBirationalClass (phase counts, orbit status), ExtremalContraction (type, curve, GV series)
-- [ ] **POL-02**: Non-favorable polytope guard — `from_gv` raises ValueError before GV computation
-- [ ] **POL-03**: Error handling — non-favorable raises, potent retries via adaptive mechanism, other errors propagate
-- [ ] **POL-04**: Stability check mode (`validate_stability=True`) — re-run BFS at higher degree to confirm convergence
+- [x] **POL-01**: Rich `__repr__`/`__str__` on CalabiYauLite (h11-dependent detail level), CYBirationalClass (phase counts, orbit status), ExtremalContraction (type, curve, GV series)
+- [x] **POL-02**: Non-favorable polytope guard — `from_gv` raises ValueError before GV computation
+- [x] **POL-03**: Error handling — non-favorable raises, potent retries via adaptive mechanism, other errors propagate
+- [x] **POL-04**: Stability check mode (`validate_stability=True`) — re-run BFS at higher degree to confirm convergence
 - [ ] **POL-05**: `SU2_NONGENERIC_CS` contraction type for symmetric flops at non-generic complex structure
 - [ ] **POL-06**: Non-generic CS detection — re-tag symmetric flops whose zero-vol divisor matches a GLSM column
 - [ ] **POL-07**: `SU2_NONGENERIC_CS` walls excluded from orbit expansion generators (sym_flop_refs)
