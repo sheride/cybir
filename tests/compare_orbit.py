@@ -64,7 +64,7 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None):
     print(f"{'='*60}")
 
     # Check favorability
-    if not polytope.is_favorable('M'):
+    if not polytope.is_favorable('N'):
         print("  SKIP: non-favorable polytope")
         if outfile:
             outfile.write(json.dumps({

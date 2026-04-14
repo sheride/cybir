@@ -233,12 +233,12 @@ class CYBirationalClass:
         # Guard: non-favorable polytopes cannot compute GV-based EKC
         if hasattr(cy, 'polytope') and callable(cy.polytope):
             poly = cy.polytope()
-            if hasattr(poly, 'is_favorable') and not poly.is_favorable('M'):
+            if hasattr(poly, 'is_favorable') and not poly.is_favorable('N'):
                 poly_id = poly.id() if hasattr(poly, 'id') else "unknown"
                 raise ValueError(
                     f"Non-favorable polytope (polytope ID {poly_id}): cannot "
-                    "compute GV-based EKC. The M-lattice is not equal to the "
-                    "N-lattice."
+                    "compute GV-based EKC. The polytope is not favorable in "
+                    "the N-lattice."
                 )
 
         ekc = cls(cy, gvs=gvs)

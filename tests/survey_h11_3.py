@@ -120,10 +120,10 @@ def main():
     # Filter to favorable polytopes, tracking non-favorable
     favorable_indices = []
     for i, p in enumerate(polys):
-        if p.is_favorable("M"):
+        if p.is_favorable("N"):
             favorable_indices.append(i)
         else:
-            print(f"  SKIP polytope #{i}: non-favorable (is_favorable('M') = False)")
+            print(f"  SKIP polytope #{i}: non-favorable (is_favorable('N') = False)")
 
     print(f"  Favorable: {len(favorable_indices)} / {len(polys)}")
 
