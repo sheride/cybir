@@ -31,6 +31,65 @@ logger = logging.getLogger("cybir")
 # Helper functions
 # ---------------------------------------------------------------------------
 
+def _check_nongeneric_cs(ekc, result):
+    """Re-tag symmetric flops whose zero-vol divisor is a prime toric divisor.
+
+    At non-generic complex structure, some walls classified as symmetric
+    flops are actually su(2) enhancements. Detection: if the zero-vol
+    divisor matches (up to sign and proportionality) any row of the GLSM
+    charge matrix, re-tag as SU2_NONGENERIC_CS.
+
+    See D-16 through D-19 in 05-CONTEXT.md.
+
+    Parameters
+    ----------
+    ekc : CYBirationalClass
+        The orchestrator (provides access to ``ekc._cy``).
+    result : dict
+        Classification result from ``classify_contraction``.
+
+    Returns
+    -------
+    dict
+        The result dict, possibly with contraction_type changed.
+    """
+    if result["contraction_type"] != ContractionType.SYMMETRIC_FLOP:
+        return result
+
+    zvd = result.get("zero_vol_divisor")
+    if zvd is None:
+        return result
+
+    # Get GLSM charge matrix from the CYTools CalabiYau
+    cy = ekc._cy
+    try:
+        charges = cy.glsm_charge_matrix(include_origin=False)
+    except Exception:
+        return result
+
+    zvd_arr = np.round(np.array(zvd)).astype(int)
+    zvd_norm = np.linalg.norm(zvd_arr.astype(float))
+    if zvd_norm < 1e-12:
+        return result
+
+    # Each row of charges is a point/divisor; columns are the h11+1 GLSM charges.
+    # The zero-vol divisor is in the h11-dimensional basis, so compare against
+    # the first h11 columns (dropping the last column which is the origin/linear relation).
+    h11 = len(zvd_arr)
+    for row in charges:
+        row_basis = np.array(row[:h11], dtype=float)
+        row_norm = np.linalg.norm(row_basis)
+        if row_norm < 1e-12:
+            continue
+        # Check if zvd is proportional to this row (scalar multiple)
+        cross = np.abs(np.dot(zvd_arr.astype(float), row_basis))
+        if np.abs(cross - zvd_norm * row_norm) < 1e-8:
+            result["contraction_type"] = ContractionType.SU2_NONGENERIC_CS
+            return result
+
+    return result
+
+
 def _compute_tip(phase):
     """Compute an interior point of the Kahler (dual Mori) cone.
 
@@ -106,6 +165,17 @@ def _accumulate_generators(ekc, ctype, result):
         cox_ref = result.get("coxeter_reflection")
         if cox_ref is not None:
             ekc._coxeter_refs.add(tuplify(np.round(cox_ref).astype(int)))
+
+    # SU2_NONGENERIC_CS: treat like su(2) for generator accumulation
+    if ctype == ContractionType.SU2_NONGENERIC_CS:
+        cox_ref = result.get("coxeter_reflection")
+        if cox_ref is not None:
+            ekc._coxeter_refs.add(tuplify(np.round(cox_ref).astype(int)))
+        zvd = result.get("zero_vol_divisor")
+        if zvd is not None:
+            ekc._eff_cone_gens.add(
+                tuple(np.round(zvd).astype(int).tolist())
+            )
 
     # Symmetric flop reflections specifically (WR-04 fix: paired storage)
     if ctype == ContractionType.SYMMETRIC_FLOP:
@@ -313,6 +383,9 @@ def _run_bfs(ekc, verbose, limit):
             )
             continue
 
+        # Check for non-generic complex structure re-tagging
+        result = _check_nongeneric_cs(ekc, result)
+
         ctype = result["contraction_type"]
 
         # Build ExtremalContraction
@@ -339,11 +412,12 @@ def _run_bfs(ekc, verbose, limit):
         result["contraction_curve"] = tuple(int(x) for x in wall_curve)
         _accumulate_generators(ekc, ctype, result)
 
-        # Terminal walls: asymptotic, CFT, su(2)
+        # Terminal walls: asymptotic, CFT, su(2), su(2) non-generic CS
         if ctype in (
             ContractionType.ASYMPTOTIC,
             ContractionType.CFT,
             ContractionType.SU2,
+            ContractionType.SU2_NONGENERIC_CS,
         ):
             ekc._graph.add_contraction(
                 contraction, source_label, source_label

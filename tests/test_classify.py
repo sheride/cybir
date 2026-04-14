@@ -17,6 +17,7 @@ from cybir.core.classify import (
 )
 from cybir.core.types import ContractionType, InsufficientGVError
 from cybir.core.coxeter import coxeter_reflection
+from cybir.core.build_gv import _accumulate_generators
 
 
 # ---------------------------------------------------------------------------
@@ -332,3 +333,64 @@ class TestClassifyContraction:
             "gv_series",
         }
         assert set(result.keys()) == expected_keys
+
+
+# ---------------------------------------------------------------------------
+# SU2_NONGENERIC_CS accumulation tests
+# ---------------------------------------------------------------------------
+
+
+class _FakeEkc:
+    """Minimal mock of CYBirationalClass for _accumulate_generators tests."""
+
+    def __init__(self):
+        self._coxeter_refs = set()
+        self._sym_flop_refs = set()
+        self._sym_flop_pairs = []
+        self._infinity_cone_gens = set()
+        self._eff_cone_gens = set()
+
+
+class TestSu2NongenericCsAccumulation:
+    """Test that SU2_NONGENERIC_CS does NOT add to sym_flop_refs/pairs."""
+
+    def test_su2_nongeneric_cs_not_in_sym_flop(self):
+        """SU2_NONGENERIC_CS walls must not contribute to _sym_flop_refs."""
+        ekc = _FakeEkc()
+        result = {
+            "contraction_type": ContractionType.SU2_NONGENERIC_CS,
+            "contraction_curve": (1, 0),
+            "zero_vol_divisor": np.array([-2.0, 1.0]),
+            "coxeter_reflection": np.array([[-1.0, 1.0], [0.0, 1.0]]),
+        }
+        _accumulate_generators(ekc, ContractionType.SU2_NONGENERIC_CS, result)
+
+        assert len(ekc._sym_flop_refs) == 0
+        assert len(ekc._sym_flop_pairs) == 0
+
+    def test_su2_nongeneric_cs_adds_coxeter_ref(self):
+        """SU2_NONGENERIC_CS walls should add coxeter ref (like su(2))."""
+        ekc = _FakeEkc()
+        cox_ref = np.array([[-1.0, 1.0], [0.0, 1.0]])
+        result = {
+            "contraction_type": ContractionType.SU2_NONGENERIC_CS,
+            "contraction_curve": (1, 0),
+            "zero_vol_divisor": np.array([-2.0, 1.0]),
+            "coxeter_reflection": cox_ref,
+        }
+        _accumulate_generators(ekc, ContractionType.SU2_NONGENERIC_CS, result)
+
+        assert len(ekc._coxeter_refs) == 1
+
+    def test_su2_nongeneric_cs_adds_eff_cone_gen(self):
+        """SU2_NONGENERIC_CS walls should add zero-vol divisor to eff cone gens."""
+        ekc = _FakeEkc()
+        result = {
+            "contraction_type": ContractionType.SU2_NONGENERIC_CS,
+            "contraction_curve": (1, 0),
+            "zero_vol_divisor": np.array([-2.0, 1.0]),
+            "coxeter_reflection": np.array([[-1.0, 1.0], [0.0, 1.0]]),
+        }
+        _accumulate_generators(ekc, ContractionType.SU2_NONGENERIC_CS, result)
+
+        assert (-2, 1) in ekc._eff_cone_gens

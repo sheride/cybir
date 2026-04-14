@@ -312,15 +312,16 @@ class TestExtremalContractionRepr:
 class TestContractionType:
     """Test ContractionType enum."""
 
-    def test_exactly_5_members(self):
-        """ContractionType has exactly 5 members."""
-        assert len(ContractionType) == 5
+    def test_exactly_6_members(self):
+        """ContractionType has exactly 6 members."""
+        assert len(ContractionType) == 6
 
     def test_values(self):
         """Enum values match expected strings."""
         assert ContractionType.ASYMPTOTIC.value == "asymptotic"
         assert ContractionType.CFT.value == "CFT"
         assert ContractionType.SU2.value == "su2"
+        assert ContractionType.SU2_NONGENERIC_CS.value == "su2_nongeneric_cs"
         assert ContractionType.SYMMETRIC_FLOP.value == "symmetric_flop"
         assert ContractionType.FLOP.value == "flop"
 
@@ -328,6 +329,7 @@ class TestContractionType:
         """Paper notation display names are correct."""
         assert ContractionType.FLOP.display_name("paper") == "generic flop"
         assert ContractionType.SU2.display_name("paper") == "su(2) enhancement"
+        assert ContractionType.SU2_NONGENERIC_CS.display_name("paper") == "su(2) enhancement (non-generic CS)"
         assert ContractionType.SYMMETRIC_FLOP.display_name("paper") == "symmetric flop"
         assert ContractionType.CFT.display_name("paper") == "CFT"
         assert ContractionType.ASYMPTOTIC.display_name("paper") == "asymptotic"
@@ -336,6 +338,7 @@ class TestContractionType:
         """Wilson notation display names are correct."""
         assert ContractionType.FLOP.display_name("wilson") == "Flop"
         assert ContractionType.SU2.display_name("wilson") == "Type I"
+        assert ContractionType.SU2_NONGENERIC_CS.display_name("wilson") == "Type I (non-generic CS)"
         assert ContractionType.CFT.display_name("wilson") == "Type II"
         assert ContractionType.ASYMPTOTIC.display_name("wilson") == "Type III"
         assert ContractionType.SYMMETRIC_FLOP.display_name("wilson") == "Symmetric Flop"
@@ -344,6 +347,13 @@ class TestContractionType:
         """Default notation (no arg) returns paper notation."""
         assert ContractionType.FLOP.display_name() == "generic flop"
         assert ContractionType.ASYMPTOTIC.display_name() == "asymptotic"
+
+    def test_su2_nongeneric_cs_enum(self):
+        """SU2_NONGENERIC_CS exists and has correct display names."""
+        ct = ContractionType.SU2_NONGENERIC_CS
+        assert ct.value == "su2_nongeneric_cs"
+        assert ct.display_name("paper") == "su(2) enhancement (non-generic CS)"
+        assert ct.display_name("wilson") == "Type I (non-generic CS)"
 
 
 # ============================================================

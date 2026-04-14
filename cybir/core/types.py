@@ -15,6 +15,7 @@ _WILSON_NOTATION = {
     "ASYMPTOTIC": "Type III",
     "CFT": "Type II",
     "SU2": "Type I",
+    "SU2_NONGENERIC_CS": "Type I (non-generic CS)",
     "SYMMETRIC_FLOP": "Symmetric Flop",
     "FLOP": "Flop",
 }
@@ -23,6 +24,7 @@ _PAPER_NOTATION = {
     "ASYMPTOTIC": "asymptotic",
     "CFT": "CFT",
     "SU2": "su(2) enhancement",
+    "SU2_NONGENERIC_CS": "su(2) enhancement (non-generic CS)",
     "SYMMETRIC_FLOP": "symmetric flop",
     "FLOP": "generic flop",
 }
@@ -37,13 +39,15 @@ class InsufficientGVError(RuntimeError):
 class ContractionType(enum.Enum):
     """Type of extremal birational contraction.
 
-    Five types following the classification in arXiv:2212.10573:
-    asymptotic, CFT, su(2) enhancement, symmetric flop, generic flop.
+    Six types following the classification in arXiv:2212.10573:
+    asymptotic, CFT, su(2) enhancement, su(2) enhancement at
+    non-generic complex structure, symmetric flop, generic flop.
     """
 
     ASYMPTOTIC = "asymptotic"
     CFT = "CFT"
     SU2 = "su2"
+    SU2_NONGENERIC_CS = "su2_nongeneric_cs"
     SYMMETRIC_FLOP = "symmetric_flop"
     FLOP = "flop"
 
