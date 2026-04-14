@@ -450,7 +450,7 @@ _POTENCY_THRESHOLD = 4
 
 
 def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
-                     deg_step=2):
+                     deg_step=2, validate_stability=False):
     """Run BFS construction of the extended Kahler cone.
 
     Uses adaptive GV degree: starts with the initial degree from
@@ -474,6 +474,11 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
         Maximum degree to recompute GVs to. Default 20.
     deg_step : int, optional
         Degree increment per retry round. Default 2.
+    validate_stability : bool, optional
+        If True, after the main BFS completes, bump degree by
+        ``deg_step`` and re-run the full BFS to verify that results
+        are unchanged. If results differ, keep the higher-degree
+        result and log a warning. Default False.
     """
     if verbose:
         logger.setLevel(logging.INFO)
@@ -565,6 +570,79 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
         root_phase._kahler_cone = new_mori.dual()
 
         current_deg = new_deg
+
+    # --- Stability check (opt-in) ---
+    if validate_stability:
+        if current_deg >= max_deg_ceiling:
+            logger.warning(
+                "Cannot validate stability: already at max_deg_ceiling=%d",
+                max_deg_ceiling,
+            )
+        else:
+            # 1. Snapshot current results
+            snapshot_phases = ekc._graph.num_phases
+            snapshot_inf = frozenset(ekc._infinity_cone_gens)
+            snapshot_eff = frozenset(ekc._eff_cone_gens)
+            snapshot_refs = frozenset(ekc._coxeter_refs)
+
+            # 2. Bump degree
+            new_deg = min(current_deg + deg_step, max_deg_ceiling)
+            logger.info(
+                "Stability check: bumping deg %d -> %d",
+                current_deg, new_deg,
+            )
+
+            # 3. Recompute GVs at new degree
+            cy = ekc._cy
+            grading = ekc._root_invariants.grading_vec
+            new_gvs = cy.compute_gvs(grading_vec=grading, max_deg=new_deg)
+            new_gvs.flop_curves = []
+            new_gvs.precompose = np.eye(len(grading))
+            ekc._root_invariants = new_gvs
+
+            # Update root phase cones
+            root_phase = ekc._graph.get_phase(ekc._root_label)
+            new_mori = new_gvs.cone_incl_flop()
+            root_phase._mori_cone = new_mori
+            root_phase._kahler_cone = new_mori.dual()
+
+            # 4. Clear graph and re-run full BFS
+            from .graph import CYGraph
+            ekc._graph = CYGraph()
+            ekc._graph.add_phase(root_phase)
+            ekc._coxeter_refs = set()
+            ekc._sym_flop_refs = set()
+            ekc._sym_flop_pairs = []
+            ekc._infinity_cone_gens = set()
+            ekc._eff_cone_gens = set()
+            ekc._build_log = []
+
+            _run_bfs(ekc, verbose, limit)
+
+            # 5. Compare
+            stable = (
+                ekc._graph.num_phases == snapshot_phases
+                and frozenset(ekc._infinity_cone_gens) == snapshot_inf
+                and frozenset(ekc._eff_cone_gens) == snapshot_eff
+                and frozenset(ekc._coxeter_refs) == snapshot_refs
+            )
+
+            if stable:
+                logger.info(
+                    "Stability check passed: results unchanged at deg %d",
+                    new_deg,
+                )
+            else:
+                logger.warning(
+                    "Stability check FAILED: results changed at deg %d "
+                    "(phases: %d->%d, inf_gens: %d->%d, eff_gens: %d->%d). "
+                    "Keeping higher-degree result. Consider running with "
+                    "higher max_deg.",
+                    new_deg,
+                    snapshot_phases, ekc._graph.num_phases,
+                    len(snapshot_inf), len(ekc._infinity_cone_gens),
+                    len(snapshot_eff), len(ekc._eff_cone_gens),
+                )
 
     logger.info(
         "Construction complete: %d phases, %d contractions",

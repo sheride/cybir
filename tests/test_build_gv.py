@@ -235,3 +235,47 @@ class TestImports:
     def test_construct_phases_importable(self):
         from cybir.core.build_gv import construct_phases
         assert callable(construct_phases)
+
+
+# ---------------------------------------------------------------------------
+# Stability check parameter
+# ---------------------------------------------------------------------------
+
+
+class TestValidateStability:
+    """Tests for validate_stability parameter on construct_phases."""
+
+    def test_validate_stability_parameter_exists(self):
+        """construct_phases accepts validate_stability kwarg."""
+        import inspect
+        from cybir.core.build_gv import construct_phases
+
+        sig = inspect.signature(construct_phases)
+        assert "validate_stability" in sig.parameters
+
+    def test_validate_stability_default_false(self):
+        """Default value of validate_stability is False."""
+        import inspect
+        from cybir.core.build_gv import construct_phases
+
+        sig = inspect.signature(construct_phases)
+        param = sig.parameters["validate_stability"]
+        assert param.default is False
+
+    def test_validate_stability_on_ekc_class(self):
+        """CYBirationalClass.construct_phases also accepts validate_stability."""
+        import inspect
+        from cybir.core.ekc import CYBirationalClass
+
+        sig = inspect.signature(CYBirationalClass.construct_phases)
+        assert "validate_stability" in sig.parameters
+        assert sig.parameters["validate_stability"].default is False
+
+    def test_validate_stability_on_from_gv(self):
+        """CYBirationalClass.from_gv also accepts validate_stability."""
+        import inspect
+        from cybir.core.ekc import CYBirationalClass
+
+        sig = inspect.signature(CYBirationalClass.from_gv)
+        assert "validate_stability" in sig.parameters
+        assert sig.parameters["validate_stability"].default is False

@@ -90,7 +90,8 @@ class CYBirationalClass:
         setup_root(self, max_deg=max_deg)
 
     def construct_phases(self, verbose=True, limit=100,
-                         max_deg_ceiling=20, deg_step=2):
+                         max_deg_ceiling=20, deg_step=2,
+                         validate_stability=False):
         """Run BFS construction of the extended Kahler cone.
 
         Iterates over undiagnosed Mori cone walls, classifies each,
@@ -108,11 +109,15 @@ class CYBirationalClass:
             Maximum degree to recompute GVs to. Default 20.
         deg_step : int, optional
             Degree increment per retry round. Default 2.
+        validate_stability : bool, optional
+            If True, after BFS completes, bump degree and re-run to
+            verify results are unchanged. Default False.
         """
         from .build_gv import construct_phases
 
         construct_phases(self, verbose=verbose, limit=limit,
-                         max_deg_ceiling=max_deg_ceiling, deg_step=deg_step)
+                         max_deg_ceiling=max_deg_ceiling, deg_step=deg_step,
+                         validate_stability=validate_stability)
         self._constructed = True
 
     def apply_coxeter_orbit(self, phases=True):
@@ -190,7 +195,7 @@ class CYBirationalClass:
 
     @classmethod
     def from_gv(cls, cy, max_deg=4, verbose=True, limit=100, gvs=None,
-                max_deg_ceiling=20, deg_step=2):
+                max_deg_ceiling=20, deg_step=2, validate_stability=False):
         """Construct EKC from GV invariants (convenience classmethod).
 
         Runs ``setup_root`` -> ``construct_phases`` and returns the
@@ -216,6 +221,9 @@ class CYBirationalClass:
             Maximum degree to recompute GVs to. Default 20.
         deg_step : int, optional
             Degree increment per retry round. Default 2.
+        validate_stability : bool, optional
+            If True, after BFS completes, bump degree and re-run to
+            verify results are unchanged. Default False.
 
         Returns
         -------
@@ -237,7 +245,8 @@ class CYBirationalClass:
         ekc.setup_root(max_deg=max_deg)
         ekc.construct_phases(verbose=verbose, limit=limit,
                              max_deg_ceiling=max_deg_ceiling,
-                             deg_step=deg_step)
+                             deg_step=deg_step,
+                             validate_stability=validate_stability)
         return ekc
 
     # --- Read-only API ---
