@@ -51,9 +51,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **POL-02**: Non-favorable polytope guard — `from_gv` raises ValueError before GV computation
 - [x] **POL-03**: Error handling — non-favorable raises, potent retries via adaptive mechanism, other errors propagate
 - [x] **POL-04**: Stability check mode (`validate_stability=True`) — re-run BFS at higher degree to confirm convergence
-- [ ] **POL-05**: `SU2_NONGENERIC_CS` contraction type for symmetric flops at non-generic complex structure
-- [ ] **POL-06**: Non-generic CS detection — re-tag symmetric flops whose zero-vol divisor matches a GLSM column
-- [ ] **POL-07**: `SU2_NONGENERIC_CS` walls excluded from orbit expansion generators (sym_flop_refs)
+- [x] **POL-05**: `SU2_NONGENERIC_CS` contraction type for symmetric flops at non-generic complex structure
+- [x] **POL-06**: Non-generic CS detection — re-tag symmetric flops whose zero-vol divisor matches a GLSM column
+- [x] **POL-07**: `SU2_NONGENERIC_CS` walls excluded from orbit expansion generators (sym_flop_refs)
 - [ ] **POL-08**: h11=3 survey script running all 243 favorable polytopes with incremental JSONL output
 - [ ] **POL-09**: Survey collects phase counts, contraction types, Coxeter groups, cone generators, timing, errors
 - [ ] **POL-10**: h11=3 survey statistics notebook with distribution plots and summary tables

@@ -114,5 +114,5 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md -- Rich repr/str, non-favorable guard, stability check mode
-- [ ] 05-02-PLAN.md -- SU2_NONGENERIC_CS contraction type, GLSM detection, orbit validation script
+- [x] 05-02-PLAN.md -- SU2_NONGENERIC_CS contraction type, GLSM detection, orbit validation script
 - [ ] 05-03-PLAN.md -- h11=3 survey script and statistics notebook

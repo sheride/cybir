@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-04-14T23:08:50.395Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-04-14T23:14:52.770Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 17
-  completed_plans: 15
-  percent: 88
+  completed_plans: 16
+  percent: 94
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 05 (polish-validate-h11-3) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-14
 
@@ -69,6 +69,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04 P03 | 6min | 2 tasks | 8 files |
 | Phase 04-coxeter-weyl P04 | 6min | 2 tasks | 5 files |
 | Phase 05 P01 | 3min | 2 tasks | 5 files |
+| Phase 05 P02 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,8 @@ Recent decisions affecting current work:
 - [Phase 04-coxeter-weyl]: Kept _sym_flop_refs set for O(1) dedup alongside _sym_flop_pairs authoritative list
 - [Phase 05]: CalabiYauLite repr threshold at h11<=3 (detailed) vs h11>3 (short)
 - [Phase 05]: validate_stability does full BFS restart for clean comparison
+- [Phase 05]: SU2_NONGENERIC_CS treated as terminal wall; adds coxeter refs and eff cone gens but NOT sym_flop_refs/pairs
+- [Phase 05]: compare_orbit.py skips polytopes without symmetric flops (nothing to validate)
 
 ### Roadmap Evolution
 
@@ -118,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-14T23:08:50.391Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-04-14T23:14:52.764Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
