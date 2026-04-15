@@ -857,7 +857,7 @@ def apply_coxeter_orbit(ekc, phases=True):
                 # Build reflected ExtremalContraction
                 reflected_zvd = None
                 if contr.zero_vol_divisor is not None:
-                    reflected_zvd = (g @ np.asarray(contr.zero_vol_divisor, dtype=int)).astype(int)
+                    reflected_zvd = (g_inv_int.T @ np.asarray(contr.zero_vol_divisor, dtype=int)).astype(int)
 
                 reflected_contr = ExtremalContraction(
                     contraction_curve=reflected_curve,
@@ -898,7 +898,7 @@ def apply_coxeter_orbit(ekc, phases=True):
             if ctype in (ContractionType.CFT, ContractionType.SU2):
                 zvd = contr.zero_vol_divisor
                 if zvd is not None:
-                    reflected_zvd = (g @ np.asarray(zvd, dtype=int)).astype(int)
+                    reflected_zvd = (g_inv_int.T @ np.asarray(zvd, dtype=int)).astype(int)
                     ekc._eff_cone_gens.add(
                         tuple(int(x) for x in reflected_zvd)
                     )
