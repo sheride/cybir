@@ -647,7 +647,9 @@ class TestApplyCoxeterOrbit:
         ekc._graph = graph
         ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
         ekc._sym_flop_pairs = [(tuplify(M1), (1, 0)), (tuplify(M2), (0, 1))]
-        ekc._infinity_cone_gens = set()
+        # Pre-populate cone generators as construct_phases would
+        # (orbit expansion reflects these snapshots).
+        ekc._infinity_cone_gens = {(1, 0)}  # from the ASYMPTOTIC self-loop
         ekc._eff_cone_gens = set()
         ekc._weyl_expanded = False
         ekc._weyl_phases = []
@@ -713,7 +715,9 @@ class TestApplyCoxeterOrbit:
         ekc._graph = graph
         ekc._sym_flop_refs = {tuplify(M1), tuplify(M2)}
         ekc._sym_flop_pairs = [(tuplify(M1), (1, 0)), (tuplify(M2), (0, 1))]
-        ekc._infinity_cone_gens = set()
+        # Pre-populate cone generators as construct_phases would
+        # (orbit expansion reflects these snapshots).
+        ekc._infinity_cone_gens = {(1, 0)}  # from the ASYMPTOTIC self-loop
         ekc._eff_cone_gens = set()
         ekc._weyl_expanded = False
         ekc._weyl_phases = []

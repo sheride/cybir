@@ -788,9 +788,16 @@ def apply_coxeter_orbit(ekc, phases=True):
             mem_estimate / 1e6, expected_order, h11,
         )
 
-    # Snapshot fundamental-domain phases and edges
+    # Snapshot fundamental-domain phases, edges, and cone generators.
+    # We snapshot cone generators here because the edge data stores
+    # normalized curves (first nonzero positive) which may differ in
+    # sign from the raw curves stored in _infinity_cone_gens by the
+    # BFS accumulator.  Reflecting the stored generators directly
+    # preserves the correct sign convention.
     fund_phases = list(ekc._graph.phases)
     fund_edges = _edges_snapshot(ekc._graph)
+    fund_inf_gens = set(ekc._infinity_cone_gens)
+    fund_eff_zvds = set(ekc._eff_cone_gens)  # includes both zvds and Kahler rays
     phase_counter = ekc._graph.num_phases
 
     # Build label mapping: fundamental label -> list of (g, new_label)
@@ -889,19 +896,16 @@ def apply_coxeter_orbit(ekc, phases=True):
                             curve_sign_b=data.get("curve_sign_b", -1),
                         )
 
-            # Accumulate generators regardless of phases mode (D-13, D-14)
-            if ctype in (ContractionType.ASYMPTOTIC, ContractionType.CFT):
-                ekc._infinity_cone_gens.add(
-                    tuple(int(x) for x in reflected_curve)
-                )
+        # Accumulate reflected cone generators from fundamental-domain
+        # snapshots (not edge data, which uses normalized curve signs).
+        # Curves (N-lattice) transform as g @; divisors (M-lattice) as g^{-T} @.
+        for gen in fund_inf_gens:
+            reflected = (g @ np.asarray(gen, dtype=int)).astype(int)
+            ekc._infinity_cone_gens.add(tuple(int(x) for x in reflected))
 
-            if ctype in (ContractionType.CFT, ContractionType.SU2):
-                zvd = contr.zero_vol_divisor
-                if zvd is not None:
-                    reflected_zvd = (g_inv_int.T @ np.asarray(zvd, dtype=int)).astype(int)
-                    ekc._eff_cone_gens.add(
-                        tuple(int(x) for x in reflected_zvd)
-                    )
+        for gen in fund_eff_zvds:
+            reflected = (g_inv_int.T @ np.asarray(gen, dtype=int)).astype(int)
+            ekc._eff_cone_gens.add(tuple(int(x) for x in reflected))
 
     logger.info(
         "Coxeter orbit expansion: %d total phases (from %d fundamental), "
