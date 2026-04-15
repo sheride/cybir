@@ -42,10 +42,28 @@ def _to_plain_set_of_tuples(s):
     return {tuple(tuple(int(x) for x in row) for row in m) for m in s}
 
 
-def run_original_full(polytope, max_deg=10, limit=500):
-    """Run original ExtendedKahlerCone with ignore_sym=False (full BFS)."""
+def run_original_full(polytope, max_deg=10, limit=500, gvs=None):
+    """Run original ExtendedKahlerCone with ignore_sym=False (full BFS).
+
+    If *gvs* is provided, inject them into the root instead of recomputing.
+    """
     ekc = ExtendedKahlerCone(polytope)
-    ekc.setup_root(max_deg=max_deg)
+    if gvs is not None:
+        # Inject pre-computed GVs: replicate what setup_root does
+        # but skip the expensive compute_gvs call.
+        cy = ekc.polytope.triangulate().cy()
+        gvs_copy = gvs.copy()
+        gvs_copy.flop_curves = []
+        gvs_copy.precompose = np.eye(cy.h11())
+        from extended_kahler_cone import CY_GV
+        ekc.root = CY_GV(cy=cy, gvs=gvs_copy, cob=ekc.cob)
+        ekc.root.toric = True
+        ekc.gvs = gvs_copy
+        ekc.walls.extend(ekc.root.walls)
+        ekc.root.curve_signs = dict()
+        ekc.cys.append(ekc.root)
+    else:
+        ekc.setup_root(max_deg=max_deg)
     ekc.construct_phases(weyl=False, ignore_sym=False, verbose=False, limit=limit)
     return ekc
 
@@ -114,27 +132,11 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None):
 
     print(f"  Symmetric flop refs: {len(ekc_fund.sym_flop_refs)}")
 
-    # Run original with ignore_sym=False
+    # Run cybir first (faster), then pass its GVs to the original
     t0 = time.time()
     try:
-        orig = run_original_full(polytope, max_deg=max_deg)
-    except Exception as e:
-        print(f"  Original (ignore_sym=False) FAILED: {e}")
-        if outfile:
-            outfile.write(json.dumps({
-                "id": poly_id, "status": "skip",
-                "reason": f"original: {e}",
-            }) + "\n")
-            outfile.flush()
-        return None
-    t_orig = time.time() - t0
-
-    # Run cybir fundamental + orbit expansion, sharing GVs
-    t0 = time.time()
-    try:
-        gvs = orig.root._gvs
         ekc_cybir = CYBirationalClass.from_gv(
-            cy, max_deg=max_deg, verbose=False, gvs=gvs)
+            cy, max_deg=max_deg, verbose=False)
         ekc_cybir.apply_coxeter_orbit(phases=True)
     except Exception as e:
         print(f"  Cybir orbit expansion FAILED: {e}")
@@ -146,6 +148,22 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None):
             outfile.flush()
         return False
     t_cybir = time.time() - t0
+
+    # Run original with ignore_sym=False, reusing cybir's GVs
+    t0 = time.time()
+    try:
+        shared_gvs = ekc_cybir._root_invariants
+        orig = run_original_full(polytope, max_deg=max_deg, gvs=shared_gvs)
+    except Exception as e:
+        print(f"  Original (ignore_sym=False) FAILED: {e}")
+        if outfile:
+            outfile.write(json.dumps({
+                "id": poly_id, "status": "skip",
+                "reason": f"original: {e}",
+            }) + "\n")
+            outfile.flush()
+        return None
+    t_orig = time.time() - t0
 
     # Compare phase counts
     n_orig = len(orig.cys)
