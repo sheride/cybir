@@ -388,9 +388,25 @@ def _run_bfs(ekc, verbose, limit):
 
         ctype = result["contraction_type"]
 
-        # Build ExtremalContraction
+        # Build ExtremalContraction.
+        # Terminal walls (asymptotic, CFT, su2, symmetric flop) have a
+        # canonical curve orientation — we never cross them, so the raw
+        # BFS direction is definitive.  Flop edges are bidirectional, so
+        # they use the normalized form (first nonzero positive).
+        is_terminal = ctype in (
+            ContractionType.ASYMPTOTIC,
+            ContractionType.CFT,
+            ContractionType.SU2,
+            ContractionType.SU2_NONGENERIC_CS,
+            ContractionType.SYMMETRIC_FLOP,
+        )
+        curve_for_edge = (
+            np.array([int(x) for x in wall_curve])
+            if is_terminal
+            else np.array(normalize_curve(wall_curve))
+        )
         contraction = ExtremalContraction(
-            contraction_curve=np.array(normalize_curve(wall_curve)),
+            contraction_curve=curve_for_edge,
             contraction_type=ctype,
             gv_invariant=result.get("gv_invariant"),
             effective_gv=result.get("effective_gv"),
