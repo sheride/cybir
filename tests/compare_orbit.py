@@ -49,8 +49,6 @@ def run_original_full(polytope, max_deg=10, limit=500, gvs=None):
     """
     ekc = ExtendedKahlerCone(polytope)
     if gvs is not None:
-        # Inject pre-computed GVs: replicate what setup_root does
-        # but skip the expensive compute_gvs call.
         cy = ekc.polytope.triangulate().cy()
         gvs_copy = gvs.copy()
         gvs_copy.flop_curves = []
@@ -230,6 +228,10 @@ def main():
                         help="h11 value (default: 3)")
     parser.add_argument("--limit", type=int, default=0,
                         help="Max polytopes to test (0=all, default: all)")
+    parser.add_argument("--start", type=int, default=0,
+                        help="Start from polytope index N (default: 0)")
+    parser.add_argument("--count", type=int, default=0,
+                        help="Process N polytopes from start (0=all, default: all)")
     parser.add_argument("--no-nongeneric-cs", action="store_true",
                         help="Disable SU2_NONGENERIC_CS re-tagging for "
                              "apples-to-apples comparison with old code")
@@ -254,8 +256,15 @@ def main():
           + (f" (limit={args.limit})" if args.limit > 0 else ""))
     print(f"{'#'*60}")
 
-    with open(outpath, "w") as f:
+    end = args.start + args.count if args.count > 0 else len(polys)
+    end = min(end, len(polys))
+
+    mode = "a" if args.start > 0 else "w"
+    with open(outpath, mode) as f:
         for i, p in enumerate(polys):
+            if i < args.start or i >= end:
+                results.append((i, None))
+                continue
             ok = compare_orbit(
                 f"h11={args.h11} #{i}", p, max_deg=10, outfile=f)
             results.append((i, ok))
