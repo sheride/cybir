@@ -1196,3 +1196,170 @@ class TestCYBirationalClassNewMethods:
         """CYBirationalClass has to_fundamental_domain method."""
         from cybir.core.ekc import CYBirationalClass
         assert hasattr(CYBirationalClass, "to_fundamental_domain")
+
+
+# ============================================================
+# Flexible reflections parameter and CoxeterGroup integration
+# ============================================================
+
+class TestFlexibleReflections:
+    """Test apply_coxeter_orbit with reflections parameter."""
+
+    def _make_ekc_with_sym_flop_pairs(self, reflections):
+        """Create a minimal CYBirationalClass with sym_flop_pairs set."""
+        from unittest.mock import MagicMock
+        from cybir.core.ekc import CYBirationalClass
+
+        cy = MagicMock()
+        ekc = CYBirationalClass(cy)
+        # Set _sym_flop_pairs from given reflections (A2)
+        for r in reflections:
+            ref_key = tuple(tuple(int(x) for x in row) for row in r)
+            # Use a dummy curve
+            curve = tuple(int(x) for x in r[0])
+            ekc._sym_flop_pairs.append((ref_key, curve))
+            ekc._sym_flop_refs.add(ref_key)
+            ekc._coxeter_refs.add(ref_key)
+        return ekc
+
+    def test_apply_coxeter_orbit_accepts_reflections_ekc(self, a2_reflections):
+        """apply_coxeter_orbit with reflections='ekc' runs without error."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections='ekc', phases=False)
+        assert ekc._coxeter_group is not None
+
+    def test_apply_coxeter_orbit_accepts_reflections_hekc(self, a2_reflections):
+        """apply_coxeter_orbit with reflections='hekc' and empty nongeneric_cs_pairs
+        produces same result as 'ekc'."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections='hekc', phases=False)
+        assert ekc._coxeter_group is not None
+        assert ekc._coxeter_group.order == 6  # A2 has order 6
+
+    def test_apply_coxeter_orbit_accepts_reflections_all(self, a2_reflections):
+        """apply_coxeter_orbit with reflections='all' and empty extra pairs
+        produces same result as 'ekc'."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections='all', phases=False)
+        assert ekc._coxeter_group is not None
+        assert ekc._coxeter_group.order == 6
+
+    def test_apply_coxeter_orbit_custom_matrices(self, a2_reflections):
+        """apply_coxeter_orbit with custom reflection matrix list."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections=a2_reflections, phases=False)
+        assert ekc._coxeter_group is not None
+        assert ekc._coxeter_group.order == 6
+
+    def test_apply_coxeter_orbit_invalid_mode_raises(self, a2_reflections):
+        """apply_coxeter_orbit with unknown string raises ValueError."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        with pytest.raises(ValueError, match="Unknown reflections mode"):
+            apply_coxeter_orbit(ekc, reflections='invalid', phases=False)
+
+    def test_apply_coxeter_orbit_invalid_type_raises(self, a2_reflections):
+        """apply_coxeter_orbit with non-str non-iterable raises TypeError."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        with pytest.raises(TypeError, match="reflections must be str or iterable"):
+            apply_coxeter_orbit(ekc, reflections=42, phases=False)
+
+    def test_coxeter_group_has_correct_type(self, a2_reflections):
+        """CoxeterGroup stored after orbit expansion has correct type A2."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        from cybir.core.types import CoxeterGroup
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections='ekc', phases=False)
+        cg = ekc._coxeter_group
+        assert isinstance(cg, CoxeterGroup)
+        assert cg.factors[0][0] == "A"
+        assert cg.factors[0][1] == 2
+
+    def test_coxeter_group_order_and_rank(self, a2_reflections):
+        """CoxeterGroup.order and .rank match expected A2 values."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections='ekc', phases=False)
+        cg = ekc._coxeter_group
+        assert cg.order == 6
+        assert cg.rank == 2
+
+    def test_coxeter_group_repr_subscript(self, a2_reflections):
+        """CoxeterGroup repr uses subscript notation."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections='ekc', phases=False)
+        cg = ekc._coxeter_group
+        r = repr(cg)
+        # Should contain subscript 2 (U+2082)
+        assert "\u2082" in r
+        assert "A" in r
+
+    def test_backward_compat_coxeter_type_info(self, a2_reflections):
+        """_coxeter_type_info and _coxeter_order still set for backward compat."""
+        from cybir.core.coxeter import apply_coxeter_orbit
+        ekc = self._make_ekc_with_sym_flop_pairs(a2_reflections)
+        apply_coxeter_orbit(ekc, reflections='ekc', phases=False)
+        assert ekc._coxeter_type_info == [("A", 2, 6)]
+        assert ekc._coxeter_order == 6
+
+
+class TestCYBirationalClassCoxeterGroupProperty:
+    """Test coxeter_group property on CYBirationalClass."""
+
+    def test_coxeter_group_property_default_none(self):
+        """coxeter_group property is None before orbit expansion."""
+        from unittest.mock import MagicMock
+        from cybir.core.ekc import CYBirationalClass
+        ekc = CYBirationalClass(MagicMock())
+        assert ekc.coxeter_group is None
+
+    def test_coxeter_group_property_exists(self):
+        """CYBirationalClass has coxeter_group property."""
+        from cybir.core.ekc import CYBirationalClass
+        assert hasattr(CYBirationalClass, "coxeter_group")
+
+    def test_nongeneric_cs_pairs_default_empty(self):
+        """_nongeneric_cs_pairs defaults to empty list."""
+        from unittest.mock import MagicMock
+        from cybir.core.ekc import CYBirationalClass
+        ekc = CYBirationalClass(MagicMock())
+        assert ekc._nongeneric_cs_pairs == []
+
+    def test_su2_pairs_default_empty(self):
+        """_su2_pairs defaults to empty list."""
+        from unittest.mock import MagicMock
+        from cybir.core.ekc import CYBirationalClass
+        ekc = CYBirationalClass(MagicMock())
+        assert ekc._su2_pairs == []
+
+    def test_apply_coxeter_orbit_method_has_reflections_param(self):
+        """CYBirationalClass.apply_coxeter_orbit accepts reflections parameter."""
+        import inspect
+        from cybir.core.ekc import CYBirationalClass
+        sig = inspect.signature(CYBirationalClass.apply_coxeter_orbit)
+        assert "reflections" in sig.parameters
+        assert sig.parameters["reflections"].default == "ekc"
+
+    def test_repr_uses_coxeter_group(self):
+        """__repr__ uses CoxeterGroup when available."""
+        from unittest.mock import MagicMock
+        from cybir.core.ekc import CYBirationalClass
+        from cybir.core.types import CoxeterGroup
+
+        ekc = CYBirationalClass(MagicMock())
+        ekc._constructed = True
+        ekc._weyl_expanded = True
+        ekc._coxeter_group = CoxeterGroup(
+            factors=(("A", 2, 6),),
+            order_matrix=np.array([[1, 3], [3, 1]]),
+            reflections=(),
+        )
+        r = repr(ekc)
+        assert "|W|=6" in r
+        assert "A" in r

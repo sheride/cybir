@@ -721,17 +721,24 @@ def reflect_phase_data(phase, g, label=None):
 # Orbit expansion (D-10 through D-14)
 # ---------------------------------------------------------------------------
 
-def apply_coxeter_orbit(ekc, phases=True):
+def apply_coxeter_orbit(ekc, reflections='ekc', phases=True):
     r"""Expand the fundamental domain via Coxeter group orbit.
 
-    Enumerates the full Coxeter group from symmetric-flop reflections
+    Enumerates the full Coxeter group from the selected reflection set
     and applies every non-identity group element to every fundamental-
-    domain phase and edge, producing the hyperextended Kahler cone.
+    domain phase and edge, producing the extended/hyperextended Kahler cone.
 
     Parameters
     ----------
     ekc : CYBirationalClass
         Must have ``construct_phases`` completed. Modified in place.
+    reflections : str or iterable, optional
+        Which reflections to use for orbit expansion:
+
+        - ``'ekc'`` (default): symmetric flop reflections only (produces EKC)
+        - ``'hekc'``: sym flop + SU2_NONGENERIC_CS (produces HEKC)
+        - ``'all'``: all Coxeter reflections (full group)
+        - Custom iterable of reflection matrices
     phases : bool, optional
         If ``True`` (default), create full reflected phase objects and
         graph edges. If ``False``, only accumulate cone generators
@@ -741,7 +748,7 @@ def apply_coxeter_orbit(ekc, phases=True):
     -----
     The algorithm (per D-10 through D-14):
 
-    1. Extract symmetric-flop reflections from ``ekc._sym_flop_refs``
+    1. Select reflection set based on ``reflections`` parameter (D-04)
     2. Check finite type via positive definiteness (D-06)
     3. Classify and compute expected order (D-05)
     4. Memory estimation (D-07)
@@ -754,15 +761,50 @@ def apply_coxeter_orbit(ekc, phases=True):
 
     See arXiv:2212.10573 Section 4.3.
     """
-    from .types import CalabiYauLite, ContractionType, ExtremalContraction
+    from .types import CalabiYauLite, ContractionType, CoxeterGroup, ExtremalContraction
 
-    reflections = [np.array(r) for r, _ in ekc._sym_flop_pairs]
-    if not reflections:
+    # Resolve reflection set (D-04)
+    if isinstance(reflections, str):
+        reflections_mode = reflections
+        if reflections == 'ekc':
+            # Symmetric flop reflections only -> EKC
+            ref_pairs = list(ekc._sym_flop_pairs)
+            reflection_matrices = [np.array(r) for r, _ in ref_pairs]
+        elif reflections == 'hekc':
+            # Sym flop + SU2_NONGENERIC_CS -> HEKC
+            ref_pairs = list(ekc._sym_flop_pairs)
+            sym_flop_ref_keys = set(r for r, _ in ref_pairs)
+            for r, c in getattr(ekc, '_nongeneric_cs_pairs', []):
+                if r not in sym_flop_ref_keys:
+                    ref_pairs.append((r, c))
+            reflection_matrices = [np.array(r) for r, _ in ref_pairs]
+        elif reflections == 'all':
+            # All Coxeter reflections (sym flop + nongeneric CS + genuine su(2))
+            all_pairs = list(ekc._sym_flop_pairs) + list(getattr(ekc, '_nongeneric_cs_pairs', []))
+            all_pairs += list(getattr(ekc, '_su2_pairs', []))
+            ref_keys_seen = set()
+            ref_pairs = []
+            for r, c in all_pairs:
+                if r not in ref_keys_seen:
+                    ref_keys_seen.add(r)
+                    ref_pairs.append((r, c))
+            reflection_matrices = [np.array(r) for r, _ in ref_pairs]
+        else:
+            raise ValueError(f"Unknown reflections mode: {reflections!r}. "
+                             f"Use 'ekc', 'hekc', 'all', or a list of matrices.")
+    elif hasattr(reflections, '__iter__'):
+        reflections_mode = 'custom'
+        reflection_matrices = [np.asarray(r, dtype=np.int64) for r in reflections]
+        ref_pairs = None
+    else:
+        raise TypeError(f"reflections must be str or iterable, got {type(reflections)}")
+
+    if not reflection_matrices:
         logger.info("No symmetric-flop reflections; skipping orbit expansion")
         return
 
     # Compute order matrix and check finiteness (D-06)
-    order_mat = coxeter_order_matrix(reflections)
+    order_mat = coxeter_order_matrix(reflection_matrices)
     if not is_finite_type(order_mat):
         logger.warning(
             "Infinite-type Coxeter group detected; skipping orbit expansion. "
@@ -774,12 +816,28 @@ def apply_coxeter_orbit(ekc, phases=True):
     type_list = classify_coxeter_type(order_mat)
     expected_order = coxeter_group_order(type_list)
 
-    # Store on ekc
+    # Large group warning (T-06-04)
+    if expected_order > 1000:
+        logger.warning(
+            "Large Coxeter group |W|=%d detected for reflections=%r. "
+            "Consider using phases=False for faster execution.",
+            expected_order,
+            reflections_mode,
+        )
+
+    # Build and store CoxeterGroup dataclass
+    coxeter_group = CoxeterGroup(
+        factors=tuple(type_list),
+        order_matrix=order_mat,
+        reflections=tuple(np.array(r) for r in reflection_matrices),
+    )
+    ekc._coxeter_group = coxeter_group
+    # Keep backward compat
     ekc._coxeter_type_info = type_list
     ekc._coxeter_order = expected_order
 
     # Memory estimation (D-07, T-04-05)
-    h11 = reflections[0].shape[0]
+    h11 = reflection_matrices[0].shape[0]
     mem_estimate = expected_order * 8 * h11 * h11
     if mem_estimate > 500_000_000:
         logger.warning(
@@ -804,7 +862,7 @@ def apply_coxeter_orbit(ekc, phases=True):
     # for connecting reflected flop edges
     label_map = {}  # (g_key, fund_label) -> new_label
 
-    for g in enumerate_coxeter_group(reflections, expected_order):
+    for g in enumerate_coxeter_group(reflection_matrices, expected_order):
         g = g.astype(np.int64)
         if np.array_equal(g, np.eye(h11, dtype=np.int64)):
             continue  # skip identity
@@ -908,12 +966,13 @@ def apply_coxeter_orbit(ekc, phases=True):
             ekc._eff_cone_gens.add(tuple(int(x) for x in reflected))
 
     logger.info(
-        "Coxeter orbit expansion: %d total phases (from %d fundamental), "
+        "Coxeter orbit expansion (%s): %d total phases (from %d fundamental), "
         "|W| = %d, type = %s",
+        reflections_mode,
         ekc._graph.num_phases,
         len(fund_phases),
         expected_order,
-        ", ".join(f"{t}_{r}" for t, r, _ in type_list),
+        repr(coxeter_group),
     )
 
 

@@ -68,7 +68,10 @@ class CYBirationalClass:
         self._weyl_phases = []  # labels of Weyl-expanded phases
         self._coxeter_type_info = None
         self._coxeter_order = None
+        self._coxeter_group = None       # CoxeterGroup dataclass
         self._sym_flop_pairs = []  # list of (ref_tuple, curve_tuple) for chamber walk (WR-04 fix)
+        self._nongeneric_cs_pairs = []   # [(ref_tuple, curve_tuple), ...] for SU2_NONGENERIC_CS
+        self._su2_pairs = []             # [(ref_tuple, curve_tuple), ...] for genuine SU2
 
     # --- Step-by-step construction API ---
 
@@ -120,17 +123,21 @@ class CYBirationalClass:
                          validate_stability=validate_stability)
         self._constructed = True
 
-    def apply_coxeter_orbit(self, phases=True):
-        """Expand to the hyperextended cone via Coxeter group orbit.
-
-        Enumerates the full Coxeter group from symmetric-flop reflections
-        and applies every group element to every fundamental-domain phase.
+    def apply_coxeter_orbit(self, reflections='ekc', phases=True):
+        """Expand to the extended/hyperextended cone via Coxeter group orbit.
 
         Parameters
         ----------
+        reflections : str or iterable, optional
+            Which reflections to use for orbit expansion:
+
+            - ``'ekc'`` (default): symmetric flop reflections only (produces EKC)
+            - ``'hekc'``: sym flop + SU2_NONGENERIC_CS (produces HEKC)
+            - ``'all'``: all Coxeter reflections (full group)
+            - Custom iterable of reflection matrices
         phases : bool, optional
             If True (default), create full reflected phase objects.
-            If False, only accumulate cone generators (faster, less memory).
+            If False, only accumulate cone generators.
 
         See Also
         --------
@@ -138,7 +145,7 @@ class CYBirationalClass:
         """
         from .coxeter import apply_coxeter_orbit
 
-        apply_coxeter_orbit(self, phases=phases)
+        apply_coxeter_orbit(self, reflections=reflections, phases=phases)
         self._weyl_expanded = True
 
     def invariants_for(self, phase_label):
@@ -344,6 +351,19 @@ class CYBirationalClass:
         return frozenset(self._eff_cone_gens)
 
     @property
+    def coxeter_group(self):
+        """CoxeterGroup dataclass with factors, order, rank, repr.
+
+        Set by :meth:`apply_coxeter_orbit`. Returns None if orbit
+        expansion has not been run.
+
+        Returns
+        -------
+        CoxeterGroup or None
+        """
+        return self._coxeter_group
+
+    @property
     def coxeter_type(self):
         """Coxeter group type classification, or None.
 
@@ -422,8 +442,16 @@ class CYBirationalClass:
         n_weyl = len(self._weyl_phases)
         fundamental = total - n_weyl
 
-        if self._weyl_expanded and self._coxeter_type_info:
-            # Format Coxeter type string, e.g. "A2" or "A1 x B2"
+        if self._weyl_expanded and self._coxeter_group is not None:
+            type_str = repr(self._coxeter_group)
+            order = self._coxeter_group.order
+            return (
+                f"CYBirationalClass({total} phases "
+                f"({fundamental} fundamental), "
+                f"orbit={type_str} |W|={order})"
+            )
+        elif self._weyl_expanded and self._coxeter_type_info:
+            # Backward compat fallback
             type_parts = []
             for t, rank, _order in self._coxeter_type_info:
                 type_parts.append(f"{t}{rank}")
