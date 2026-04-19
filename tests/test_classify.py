@@ -227,28 +227,47 @@ class TestFindZeroVolDivisor:
 
 
 class TestIsSymmetricFlop:
-    def test_symmetric_true(self, real_symmetric_flop):
+    def test_symmetric_true_returns_tuple(self, real_symmetric_flop):
+        """is_symmetric_flop returns (True, False) for a genuine symmetric flop."""
         d = real_symmetric_flop
         from cybir.core.gv import gv_eff
 
         gv_eff_1, gv_eff_3 = gv_eff(d["gv_series"])
-        assert is_symmetric_flop(
+        result = is_symmetric_flop(
             d["int_nums"], d["c2"], d["curve"],
             gv_eff_1, gv_eff_3, d["coxeter_reflection"]
-        ) is True
+        )
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        assert result == (True, False)
 
-    def test_symmetric_false(self, real_generic_flop):
-        """Generic flop (II) is not symmetric."""
+    def test_symmetric_false_returns_tuple(self, real_generic_flop):
+        """Generic flop (II) returns (False, False)."""
         d = real_generic_flop
         from cybir.core.gv import gv_eff
 
         gv_eff_1, gv_eff_3 = gv_eff(d["gv_series"])
         zvd = zero_vol_divisor(d["int_nums"], d["curve"])
         cox = coxeter_reflection(zvd, d["curve"])
-        assert is_symmetric_flop(
+        result = is_symmetric_flop(
             d["int_nums"], d["c2"], d["curve"],
             gv_eff_1, gv_eff_3, cox
-        ) is False
+        )
+        assert isinstance(result, tuple)
+        assert result == (False, False)
+
+    def test_backward_compat_no_cones(self, real_symmetric_flop):
+        """Without source_kc/flopped_kc, condition (b) is skipped."""
+        d = real_symmetric_flop
+        from cybir.core.gv import gv_eff
+
+        gv_eff_1, gv_eff_3 = gv_eff(d["gv_series"])
+        result = is_symmetric_flop(
+            d["int_nums"], d["c2"], d["curve"],
+            gv_eff_1, gv_eff_3, d["coxeter_reflection"],
+            source_kc=None, flopped_kc=None,
+        )
+        assert result == (True, False)
 
 
 # ---------------------------------------------------------------------------
@@ -394,3 +413,101 @@ class TestSu2NongenericCsAccumulation:
         _accumulate_generators(ekc, ContractionType.SU2_NONGENERIC_CS, result)
 
         assert (-2, 1) in ekc._eff_cone_gens
+
+
+# ---------------------------------------------------------------------------
+# _kahler_cones_match tests
+# ---------------------------------------------------------------------------
+
+
+class TestKahlerConesMatch:
+    """Test _kahler_cones_match helper."""
+
+    @pytest.fixture
+    def _skip_if_no_cytools(self):
+        pytest.importorskip("cytools")
+
+    @pytest.mark.usefixtures("_skip_if_no_cytools")
+    def test_identity_reflection_matches(self):
+        """Identity reflection: cones should match when they are the same."""
+        import cytools
+        rays = np.array([[1, 0], [0, 1]])
+        cone = cytools.Cone(rays=rays)
+        reflection = np.eye(2, dtype=int)
+        from cybir.core.classify import _kahler_cones_match
+        assert _kahler_cones_match(cone, cone, reflection) is True
+
+    @pytest.mark.usefixtures("_skip_if_no_cytools")
+    def test_mismatch_returns_false(self):
+        """Cones that don't match under reflection return False."""
+        import cytools
+        source_rays = np.array([[1, 0], [0, 1]])
+        flopped_rays = np.array([[1, 0], [1, 1]])
+        source_cone = cytools.Cone(rays=source_rays)
+        flopped_cone = cytools.Cone(rays=flopped_rays)
+        reflection = np.eye(2, dtype=int)
+        from cybir.core.classify import _kahler_cones_match
+        assert _kahler_cones_match(source_cone, flopped_cone, reflection) is False
+
+    @pytest.mark.usefixtures("_skip_if_no_cytools")
+    def test_reflection_maps_correctly(self):
+        """Reflection that maps source cone rays to flopped cone rays."""
+        import cytools
+        source_rays = np.array([[1, 0], [0, 1]])
+        # Reflection: swap x and y
+        reflection = np.array([[0, 1], [1, 0]], dtype=int)
+        # Reflected rays = source @ inv(M) = source @ M (since M=M^{-1})
+        # = [[0,1],[1,0]] which is the same cone (just reordered rays)
+        flopped_cone = cytools.Cone(rays=source_rays)
+        source_cone = cytools.Cone(rays=source_rays)
+        from cybir.core.classify import _kahler_cones_match
+        assert _kahler_cones_match(source_cone, flopped_cone, reflection) is True
+
+
+# ---------------------------------------------------------------------------
+# GROSS_FLOP accumulation tests
+# ---------------------------------------------------------------------------
+
+
+class TestGrossFlopAccumulation:
+    """Test that GROSS_FLOP does NOT add to sym_flop_refs or coxeter_refs."""
+
+    def test_gross_flop_not_in_sym_flop_refs(self):
+        """GROSS_FLOP should not contribute to _sym_flop_refs."""
+        ekc = _FakeEkc()
+        result = {
+            "contraction_type": ContractionType.GROSS_FLOP,
+            "contraction_curve": (1, 0),
+            "zero_vol_divisor": np.array([-2.0, 1.0]),
+            "coxeter_reflection": np.array([[-1.0, 1.0], [0.0, 1.0]]),
+        }
+        _accumulate_generators(ekc, ContractionType.GROSS_FLOP, result)
+
+        assert len(ekc._sym_flop_refs) == 0
+        assert len(ekc._sym_flop_pairs) == 0
+
+    def test_gross_flop_not_in_coxeter_refs(self):
+        """GROSS_FLOP should not contribute to _coxeter_refs."""
+        ekc = _FakeEkc()
+        result = {
+            "contraction_type": ContractionType.GROSS_FLOP,
+            "contraction_curve": (1, 0),
+            "zero_vol_divisor": np.array([-2.0, 1.0]),
+            "coxeter_reflection": np.array([[-1.0, 1.0], [0.0, 1.0]]),
+        }
+        _accumulate_generators(ekc, ContractionType.GROSS_FLOP, result)
+
+        assert len(ekc._coxeter_refs) == 0
+
+    def test_gross_flop_no_eff_cone_gens(self):
+        """GROSS_FLOP should not add to _eff_cone_gens (unlike su2/CFT)."""
+        ekc = _FakeEkc()
+        result = {
+            "contraction_type": ContractionType.GROSS_FLOP,
+            "contraction_curve": (1, 0),
+            "zero_vol_divisor": np.array([-2.0, 1.0]),
+            "coxeter_reflection": np.array([[-1.0, 1.0], [0.0, 1.0]]),
+        }
+        _accumulate_generators(ekc, ContractionType.GROSS_FLOP, result)
+
+        assert len(ekc._eff_cone_gens) == 0

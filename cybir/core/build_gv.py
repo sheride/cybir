@@ -177,6 +177,9 @@ def _accumulate_generators(ekc, ctype, result):
                 tuple(np.round(zvd).astype(int).tolist())
             )
 
+    # GROSS_FLOP: no special generator accumulation (behaves like generic FLOP)
+    # Intentionally does NOT add to _sym_flop_refs, _sym_flop_pairs, or _coxeter_refs
+
     # Symmetric flop reflections specifically (WR-04 fix: paired storage)
     if ctype == ContractionType.SYMMETRIC_FLOP:
         cox_ref = result.get("coxeter_reflection")
@@ -338,6 +341,7 @@ def _run_bfs(ekc, verbose, limit):
     undiagnosed = deque()
     deferred = []
     phase_counter = 1
+    classified_curves = {}  # D-02: classification invariance check
 
     # Initialize from root
     root_tip = _compute_tip(root)
@@ -386,13 +390,54 @@ def _run_bfs(ekc, verbose, limit):
         # Check for non-generic complex structure re-tagging
         result = _check_nongeneric_cs(ekc, result)
 
+        # D-01: GrossFlop post-check for symmetric flop candidates
+        if result["contraction_type"] == ContractionType.SYMMETRIC_FLOP:
+            from .classify import _kahler_cones_match
+            chain = flop_chains[source_label]
+            flopped_chain_check = chain + [wall_curve]
+            try:
+                flopped_gvs_check = ekc._root_invariants.flop_gvs(
+                    flopped_chain_check
+                )
+                flopped_mori_check = flopped_gvs_check.cone_incl_flop()
+                flopped_kc_check = flopped_mori_check.dual()
+                if not _kahler_cones_match(
+                    source.kahler_cone, flopped_kc_check,
+                    result["coxeter_reflection"],
+                ):
+                    result["contraction_type"] = ContractionType.GROSS_FLOP
+                    logger.info(
+                        "  GrossFlop detected: %s (condition a passed, "
+                        "condition b failed)",
+                        normalize_curve(wall_curve),
+                    )
+            except Exception as exc:
+                logger.warning(
+                    "  Could not check GrossFlop condition (b) for %s: %s",
+                    normalize_curve(wall_curve), exc,
+                )
+
         ctype = result["contraction_type"]
+
+        # D-02: Classification invariance check
+        norm_curve = normalize_curve(wall_curve)
+        if norm_curve in classified_curves:
+            prev_type = classified_curves[norm_curve]
+            if prev_type != ctype:
+                logger.warning(
+                    "Classification invariance: curve %s classified as %s "
+                    "from %s but previously as %s from another phase",
+                    norm_curve, ctype.value, source_label, prev_type.value,
+                )
+        else:
+            classified_curves[norm_curve] = ctype
 
         # Build ExtremalContraction.
         # Terminal walls (asymptotic, CFT, su2, symmetric flop) have a
         # canonical curve orientation — we never cross them, so the raw
-        # BFS direction is definitive.  Flop edges are bidirectional, so
-        # they use the normalized form (first nonzero positive).
+        # BFS direction is definitive.  Flop edges (including GROSS_FLOP)
+        # are bidirectional, so they use the normalized form (first
+        # nonzero positive).
         is_terminal = ctype in (
             ContractionType.ASYMPTOTIC,
             ContractionType.CFT,

@@ -172,12 +172,50 @@ def zero_vol_divisor(int_nums, curve):
         return None
 
 
+def _kahler_cones_match(source_kc, flopped_kc, reflection):
+    """Check if Coxeter reflection maps source Kahler cone to flopped Kahler cone.
+
+    Condition (b) for symmetric flop classification: the reflection must
+    map the source cone to the flopped cone. Checks bidirectional
+    containment of reflected rays.
+
+    Parameters
+    ----------
+    source_kc : cytools.Cone
+        Source phase Kahler cone.
+    flopped_kc : cytools.Cone
+        Flopped phase Kahler cone.
+    reflection : numpy.ndarray
+        Coxeter reflection matrix.
+
+    Returns
+    -------
+    bool
+    """
+    M_inv = np.round(np.linalg.inv(reflection.astype(float))).astype(int)
+    reflected_rays = source_kc.rays() @ M_inv
+    # Build cone from reflected rays and check equality via dual containment
+    import cytools
+    reflected_cone = cytools.Cone(rays=reflected_rays)
+    # Two cones equal iff each contains the other's rays
+    flopped_rays = flopped_kc.rays()
+    for ray in flopped_rays:
+        if not all(h @ ray >= -1e-8 for h in reflected_cone.hyperplanes()):
+            return False
+    for ray in reflected_rays:
+        if not all(h @ ray >= -1e-8 for h in flopped_kc.hyperplanes()):
+            return False
+    return True
+
+
 def is_symmetric_flop(int_nums, c2, curve, gv_eff_1, gv_eff_3,
-                      coxeter_reflection):
+                      coxeter_reflection, source_kc=None, flopped_kc=None):
     r"""Check whether a flop is symmetric under the Coxeter reflection.
 
-    A flop is **symmetric** when the wall-crossed intersection numbers
-    and second Chern class equal their Coxeter-reflected counterparts:
+    A flop is **symmetric** when two conditions hold:
+
+    (a) The wall-crossed intersection numbers and second Chern class
+    equal their Coxeter-reflected counterparts:
 
     .. math::
 
@@ -185,8 +223,12 @@ def is_symmetric_flop(int_nums, c2, curve, gv_eff_1, gv_eff_3,
         \quad\text{and}\quad
         c'_{2,a} = M^T_{ai} \, c_{2,i}
 
-    where :math:`M` is the Coxeter reflection matrix from
-    arXiv:2212.10573 Eq. (4.6).
+    (b) The Coxeter reflection maps the source Kahler cone to the
+    flopped Kahler cone.
+
+    If condition (a) passes but (b) fails, the flop is a **gross flop**
+    (condition (a) satisfied at the level of intersection numbers, but
+    the Kahler cones do not match under the reflection).
 
     See arXiv:2212.10573 Section 4 (symmetric flops).
 
@@ -204,11 +246,20 @@ def is_symmetric_flop(int_nums, c2, curve, gv_eff_1, gv_eff_3,
         Cubic effective GV invariant.
     coxeter_reflection : numpy.ndarray
         Coxeter reflection matrix :math:`M_{ab}`.
+    source_kc : optional
+        Source phase Kahler cone (``cytools.Cone``). If None, condition
+        (b) is skipped for backward compatibility.
+    flopped_kc : optional
+        Flopped phase Kahler cone (``cytools.Cone``). If None, condition
+        (b) is skipped for backward compatibility.
 
     Returns
     -------
-    bool
-        ``True`` if the flop is symmetric.
+    tuple[bool, bool]
+        ``(is_symmetric, is_gross_flop)``. If condition (a) fails,
+        returns ``(False, False)``. If (a) passes and (b) fails,
+        returns ``(False, True)`` (gross flop). If both pass (or cones
+        not provided), returns ``(True, False)``.
     """
     # Wall-crossed quantities
     wc_intnums = wall_cross_intnums(int_nums, curve, gv_eff_3)
@@ -219,10 +270,22 @@ def is_symmetric_flop(int_nums, c2, curve, gv_eff_1, gv_eff_3,
     cox_intnums = np.einsum("ia,jb,kc,abc->ijk", M, M, M, int_nums)
     cox_c2 = M @ c2
 
-    return bool(
+    # Condition (a): intersection numbers and c2 match
+    cond_a = bool(
         np.allclose(wc_intnums, cox_intnums)
         and np.allclose(wc_c2, cox_c2)
     )
+
+    if not cond_a:
+        return (False, False)
+
+    # Condition (b): Kahler cones match under reflection
+    if source_kc is not None and flopped_kc is not None:
+        cond_b = _kahler_cones_match(source_kc, flopped_kc, M)
+        if not cond_b:
+            return (False, True)  # gross flop
+
+    return (True, False)
 
 
 def classify_contraction(int_nums, c2, curve, gv_series):
@@ -327,11 +390,13 @@ def classify_contraction(int_nums, c2, curve, gv_series):
     # 7. Zero-vol divisor exists
     coxeter_ref = coxeter_reflection(zero_vol_div, curve)
 
-    symmetric = is_symmetric_flop(
+    symmetric, is_gross = is_symmetric_flop(
         int_nums, c2, curve, gv_eff_1, gv_eff_3, coxeter_ref
     )
 
-    if symmetric:
+    if is_gross:
+        ctype = ContractionType.GROSS_FLOP
+    elif symmetric:
         gv_signs_ok = (
             gv_series[0] >= 0
             and (len(gv_series) < 2 or gv_series[1] >= 0)
