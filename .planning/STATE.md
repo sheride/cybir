@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-04-14T23:14:52.770Z"
-last_activity: 2026-04-14
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-04-19T22:16:21.384Z"
+last_activity: 2026-04-19
 progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 17
-  completed_plans: 16
-  percent: 94
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 23
+  completed_plans: 18
+  percent: 78
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** A clean, well-documented, modular implementation of GV-based EKC construction that is easy to use, extend, and understand
-**Current focus:** Phase 05 — polish-validate-h11-3
+**Current focus:** Phase 06 — classification-correctness-toric-curves-cone-construction
 
 ## Current Position
 
-Phase: 05 (polish-validate-h11-3) — EXECUTING
-Plan: 3 of 3
+Phase: 06 (classification-correctness-toric-curves-cone-construction) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-04-14
+Last activity: 2026-04-19
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -36,7 +36,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **Velocity:**
 
-- Total plans completed: 10
+- Total plans completed: 13
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -47,6 +47,7 @@ Progress: [░░░░░░░░░░] 0%
 | 01 | 2 | - | - |
 | 02 | 4 | - | - |
 | 04 | 4 | - | - |
+| 05 | 3 | - | - |
 
 **Recent Trend:**
 
@@ -70,6 +71,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04-coxeter-weyl P04 | 6min | 2 tasks | 5 files |
 | Phase 05 P01 | 3min | 2 tasks | 5 files |
 | Phase 05 P02 | 4min | 2 tasks | 5 files |
+| Phase 06 P01 | 15min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -106,10 +108,14 @@ Recent decisions affecting current work:
 - [Phase 05]: validate_stability does full BFS restart for clean comparison
 - [Phase 05]: SU2_NONGENERIC_CS treated as terminal wall; adds coxeter refs and eff cone gens but NOT sym_flop_refs/pairs
 - [Phase 05]: compare_orbit.py skips polytopes without symmetric flops (nothing to validate)
+- [Phase 06]: is_symmetric_flop returns (bool, bool) tuple for backward-compatible gross flop detection
+- [Phase 06]: GrossFlop post-check in _run_bfs (not inside classify_contraction) for minimal disruption
+- [Phase 06]: GROSS_FLOP excluded from _coxeter_refs and _sym_flop_refs/pairs
 
 ### Roadmap Evolution
 
 - Phase 4 added: Coxeter Group & Weyl Expansion — proper group construction, streaming BFS, full orbit expansion with correct index conventions
+- Phase 6 added: Classification Correctness, Toric Curves & Cone Construction
 
 ### Pending Todos
 
@@ -121,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-14T23:14:52.764Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-04-19T22:16:21.379Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None
