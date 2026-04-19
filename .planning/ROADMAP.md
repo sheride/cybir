@@ -79,7 +79,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Pipeline & Integration | 4/4 | Complete | 2026-04-12 |
 | 4. Coxeter Group & Weyl Expansion | 4/4 | Complete   | 2026-04-12 |
 | 5. Polish, Validation & h11=3 Survey | 3/3 | Complete | 2026-04-16 |
-| 6. Classification Correctness, Toric Curves & Cone Construction | 0/6 | Planning | - |
+| 6. Classification Correctness, Toric Curves & Cone Construction | 3/6 | In Progress|  |
 
 ### Phase 4: Coxeter Group & Weyl Expansion
 **Goal**: Proper Coxeter group construction from symmetric-flop reflections with finite-type detection and memory-safe enumeration, full Weyl orbit expansion acting on all phase data with correct index conventions (g on Mori, (g^-1)^T on Kahler), and generator accumulation from reflected phases
@@ -122,12 +122,12 @@ Plans:
 
 **Goal:** Fix GrossFlop misclassification (Kahler cone check for symmetric flop candidates), add toric curve computation with FRST detection and Mori cone bounds, CoxeterGroup dataclass with flexible orbit expansion (EKC/HEKC/all), cone construction (movable, EKC, HEKC), diagnose_curve convenience API, and re-validate h11=3 survey
 **Depends on:** Phase 5
-**Plans:** 6 plans
+**Plans:** 3/6 plans executed
 
 Plans:
 - [x] 06-01-PLAN.md -- GrossFlop enum + classification fix, CoxeterGroup dataclass, classification invariance check
-- [ ] 06-02-PLAN.md -- Flexible orbit expansion (ekc/hekc/all reflections parameter)
-- [ ] 06-03-PLAN.md -- Toric curves module: enumeration, FRST detection, ToricCurveData
+- [x] 06-02-PLAN.md -- Flexible orbit expansion (ekc/hekc/all reflections parameter)
+- [x] 06-03-PLAN.md -- Toric curves module: enumeration, FRST detection, ToricCurveData
 - [ ] 06-04-PLAN.md -- Incremental toric BFS integration, Mori bounds, phase classification API
 - [ ] 06-05-PLAN.md -- Cone construction methods, diagnose_curve, re-exports
 - [ ] 06-06-PLAN.md -- h11=3 re-validation with GrossFlop fix
