@@ -70,7 +70,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -78,7 +78,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Core Mathematics | 4/4 | Complete | 2026-04-12 |
 | 3. Pipeline & Integration | 4/4 | Complete | 2026-04-12 |
 | 4. Coxeter Group & Weyl Expansion | 4/4 | Complete   | 2026-04-12 |
-| 5. Polish, Validation & h11=3 Survey | 0/3 | Planning | - |
+| 5. Polish, Validation & h11=3 Survey | 3/3 | Complete | 2026-04-16 |
+| 6. Classification Correctness, Toric Curves & Cone Construction | 0/6 | Planning | - |
 
 ### Phase 4: Coxeter Group & Weyl Expansion
 **Goal**: Proper Coxeter group construction from symmetric-flop reflections with finite-type detection and memory-safe enumeration, full Weyl orbit expansion acting on all phase data with correct index conventions (g on Mori, (g^-1)^T on Kahler), and generator accumulation from reflected phases
@@ -105,7 +106,7 @@ Plans:
 **Requirements**: POL-01, POL-02, POL-03, POL-04, POL-05, POL-06, POL-07, POL-08, POL-09, POL-10
 **Success Criteria** (what must be TRUE):
   1. Nice `__repr__`/`__str__` on CalabiYauLite, CYBirationalClass, ExtremalContraction showing useful summary info
-  2. Adaptive GV degree is safe at h11=3 — all polytopes produce correct results (validated against fixed high-degree reference)
+  2. Adaptive GV degree is safe at h11=3 -- all polytopes produce correct results (validated against fixed high-degree reference)
   3. `apply_coxeter_orbit` tested end-to-end on real CYTools geometries with symmetric flops (not just synthetic fixtures)
   4. Non-generic complex structure detection: symmetric flops whose zero-vol divisor is a GLSM column re-tagged as SU2_NONGENERIC_CS
   5. All h11=3 polytopes in the CYTools database have their full EKC resolved (fundamental domain + orbit expansion where applicable)
@@ -115,4 +116,18 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md -- Rich repr/str, non-favorable guard, stability check mode
 - [x] 05-02-PLAN.md -- SU2_NONGENERIC_CS contraction type, GLSM detection, orbit validation script
-- [ ] 05-03-PLAN.md -- h11=3 survey script and statistics notebook
+- [x] 05-03-PLAN.md -- h11=3 survey script and statistics notebook
+
+### Phase 6: Classification Correctness, Toric Curves & Cone Construction
+
+**Goal:** Fix GrossFlop misclassification (Kahler cone check for symmetric flop candidates), add toric curve computation with FRST detection and Mori cone bounds, CoxeterGroup dataclass with flexible orbit expansion (EKC/HEKC/all), cone construction (movable, EKC, HEKC), diagnose_curve convenience API, and re-validate h11=3 survey
+**Depends on:** Phase 5
+**Plans:** 6 plans
+
+Plans:
+- [ ] 06-01-PLAN.md -- GrossFlop enum + classification fix, CoxeterGroup dataclass, classification invariance check
+- [ ] 06-02-PLAN.md -- Flexible orbit expansion (ekc/hekc/all reflections parameter)
+- [ ] 06-03-PLAN.md -- Toric curves module: enumeration, FRST detection, ToricCurveData
+- [ ] 06-04-PLAN.md -- Incremental toric BFS integration, Mori bounds, phase classification API
+- [ ] 06-05-PLAN.md -- Cone construction methods, diagnose_curve, re-exports
+- [ ] 06-06-PLAN.md -- h11=3 re-validation with GrossFlop fix
