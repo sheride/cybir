@@ -7,6 +7,7 @@ import pytest
 from cybir.core.types import (
     CalabiYauLite,
     ContractionType,
+    CoxeterGroup,
     ExtremalContraction,
     InsufficientGVError,
 )
@@ -312,9 +313,9 @@ class TestExtremalContractionRepr:
 class TestContractionType:
     """Test ContractionType enum."""
 
-    def test_exactly_6_members(self):
-        """ContractionType has exactly 6 members."""
-        assert len(ContractionType) == 6
+    def test_exactly_7_members(self):
+        """ContractionType has exactly 7 members."""
+        assert len(ContractionType) == 7
 
     def test_values(self):
         """Enum values match expected strings."""
@@ -323,6 +324,7 @@ class TestContractionType:
         assert ContractionType.SU2.value == "su2"
         assert ContractionType.SU2_NONGENERIC_CS.value == "su2_nongeneric_cs"
         assert ContractionType.SYMMETRIC_FLOP.value == "symmetric_flop"
+        assert ContractionType.GROSS_FLOP.value == "gross_flop"
         assert ContractionType.FLOP.value == "flop"
 
     def test_display_name_paper_notation(self):
@@ -354,6 +356,12 @@ class TestContractionType:
         assert ct.value == "su2_nongeneric_cs"
         assert ct.display_name("paper") == "su(2) enhancement (non-generic CS)"
         assert ct.display_name("wilson") == "Type I (non-generic CS)"
+
+    def test_gross_flop_display_names(self):
+        """GROSS_FLOP has correct display names in both notations."""
+        assert ContractionType.GROSS_FLOP.display_name() == "gross flop"
+        assert ContractionType.GROSS_FLOP.display_name("paper") == "gross flop"
+        assert ContractionType.GROSS_FLOP.display_name("wilson") == "Gross Flop"
 
 
 # ============================================================
@@ -397,3 +405,80 @@ class TestConfestFixtures:
         """sample_cyl is not frozen by default."""
         sample_cyl._label = "modified"
         assert sample_cyl.label == "modified"
+
+
+# ============================================================
+# CoxeterGroup
+# ============================================================
+
+
+class TestCoxeterGroup:
+    """Test CoxeterGroup frozen dataclass."""
+
+    def test_order_product_of_factors(self):
+        """order property returns product of factor orders."""
+        cg = CoxeterGroup(
+            factors=(("A", 1, 2), ("A", 2, 6)),
+            order_matrix=np.eye(3),
+            reflections=(),
+        )
+        assert cg.order == 12
+
+    def test_rank_sum_of_factors(self):
+        """rank property returns sum of factor ranks."""
+        cg = CoxeterGroup(
+            factors=(("A", 1, 2), ("A", 2, 6)),
+            order_matrix=np.eye(3),
+            reflections=(),
+        )
+        assert cg.rank == 3
+
+    def test_repr_subscript_notation(self):
+        """repr uses Unicode subscript notation with multiplication sign."""
+        cg = CoxeterGroup(
+            factors=(("A", 1, 2), ("A", 2, 6)),
+            order_matrix=np.eye(3),
+            reflections=(),
+        )
+        assert repr(cg) == "A\u2081 \u00d7 A\u2082"
+
+    def test_repr_single_factor(self):
+        """repr with a single factor has no multiplication sign."""
+        cg = CoxeterGroup(
+            factors=(("B", 3, 48),),
+            order_matrix=np.eye(3),
+            reflections=(),
+        )
+        assert repr(cg) == "B\u2083"
+
+    def test_frozen(self):
+        """CoxeterGroup is frozen (immutable)."""
+        cg = CoxeterGroup(
+            factors=(("A", 1, 2),),
+            order_matrix=np.eye(1),
+            reflections=(),
+        )
+        with pytest.raises(AttributeError):
+            cg.factors = (("B", 2, 8),)
+
+
+# ============================================================
+# ExtremalContraction toric_origin
+# ============================================================
+
+
+class TestExtremalContractionToricOrigin:
+    """Test toric_origin field on ExtremalContraction."""
+
+    def test_toric_origin_set(self):
+        """toric_origin is accessible when provided at construction."""
+        ec = ExtremalContraction(
+            contraction_curve=np.array([1, 0]),
+            toric_origin="flop",
+        )
+        assert ec.toric_origin == "flop"
+
+    def test_toric_origin_defaults_none(self):
+        """toric_origin defaults to None when not provided."""
+        ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
+        assert ec.toric_origin is None

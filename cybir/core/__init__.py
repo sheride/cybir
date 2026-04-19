@@ -15,6 +15,7 @@ from .patch import patch_cytools
 from .types import (
     CalabiYauLite,
     ContractionType,
+    CoxeterGroup,
     ExtremalContraction,
     InsufficientGVError,
 )
@@ -41,6 +42,7 @@ __all__ = [
     # Types
     "CalabiYauLite",
     "ContractionType",
+    "CoxeterGroup",
     "ExtremalContraction",
     "InsufficientGVError",
     "CYGraph",

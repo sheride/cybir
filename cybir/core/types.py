@@ -1,10 +1,11 @@
 """Core data types for cybir.
 
 Provides CalabiYauLite, ExtremalContraction, ContractionType,
-and InsufficientGVError. Full implementation in Task 2.
+CoxeterGroup, and InsufficientGVError.
 """
 
 import enum
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -17,6 +18,7 @@ _WILSON_NOTATION = {
     "SU2": "Type I",
     "SU2_NONGENERIC_CS": "Type I (non-generic CS)",
     "SYMMETRIC_FLOP": "Symmetric Flop",
+    "GROSS_FLOP": "Gross Flop",
     "FLOP": "Flop",
 }
 
@@ -26,6 +28,7 @@ _PAPER_NOTATION = {
     "SU2": "su(2) enhancement",
     "SU2_NONGENERIC_CS": "su(2) enhancement (non-generic CS)",
     "SYMMETRIC_FLOP": "symmetric flop",
+    "GROSS_FLOP": "gross flop",
     "FLOP": "generic flop",
 }
 
@@ -39,9 +42,10 @@ class InsufficientGVError(RuntimeError):
 class ContractionType(enum.Enum):
     """Type of extremal birational contraction.
 
-    Six types following the classification in arXiv:2212.10573:
+    Seven types following the classification in arXiv:2212.10573:
     asymptotic, CFT, su(2) enhancement, su(2) enhancement at
-    non-generic complex structure, symmetric flop, generic flop.
+    non-generic complex structure, symmetric flop, gross flop,
+    generic flop.
     """
 
     ASYMPTOTIC = "asymptotic"
@@ -49,6 +53,7 @@ class ContractionType(enum.Enum):
     SU2 = "su2"
     SU2_NONGENERIC_CS = "su2_nongeneric_cs"
     SYMMETRIC_FLOP = "symmetric_flop"
+    GROSS_FLOP = "gross_flop"
     FLOP = "flop"
 
     def display_name(self, notation="paper"):
@@ -358,6 +363,9 @@ class ExtremalContraction:
         Linear effective GV invariant :math:`\\sum_k k \\, n^0_{k[\\mathcal{C}]}`.
     cone_face : optional
         Reference to the Mori cone face associated with this contraction.
+    toric_origin : str, optional
+        Toric origin tag (e.g. ``"flop"``) when this contraction was
+        identified from toric data.
     """
 
     def __init__(
@@ -371,6 +379,7 @@ class ExtremalContraction:
         gv_series=None,
         gv_eff_1=None,
         cone_face=None,
+        toric_origin=None,
     ):
         self._contraction_curve = np.asarray(contraction_curve)
         self._contraction_type = contraction_type
@@ -381,6 +390,7 @@ class ExtremalContraction:
         self._gv_series = list(gv_series) if gv_series is not None else None
         self._gv_eff_1 = gv_eff_1
         self._cone_face = cone_face
+        self._toric_origin = toric_origin
         self._frozen = True
 
     def __setattr__(self, name, value):
@@ -463,3 +473,49 @@ class ExtremalContraction:
             parts.append(f"gv={self._gv_series}")
 
         return f"ExtremalContraction({', '.join(parts)})"
+
+    @property
+    def toric_origin(self):
+        """Toric origin tag for this contraction, if any."""
+        return self._toric_origin
+
+
+@dataclass(frozen=True)
+class CoxeterGroup:
+    """Coxeter group data from orbit expansion.
+
+    Parameters
+    ----------
+    factors : tuple
+        Tuple of (family, rank, order) tuples, one per irreducible component.
+    order_matrix : object
+        The Coxeter order matrix m_ij (numpy.ndarray).
+    reflections : tuple
+        The generator reflection matrices as a tuple of numpy arrays.
+    """
+
+    factors: tuple
+    order_matrix: object  # numpy.ndarray, use object to avoid frozen issues
+    reflections: tuple
+
+    @property
+    def order(self):
+        """Total group order |W| (product of factor orders)."""
+        result = 1
+        for _, _, o in self.factors:
+            result *= o
+        return result
+
+    @property
+    def rank(self):
+        """Total rank (sum of factor ranks)."""
+        return sum(r for _, r, _ in self.factors)
+
+    def __repr__(self):
+        _sub = str.maketrans(
+            "0123456789", "\u2080\u2081\u2082\u2083\u2084\u2085\u2086\u2087\u2088\u2089"
+        )
+        parts = []
+        for family, rank, _ in self.factors:
+            parts.append(f"{family}{str(rank).translate(_sub)}")
+        return " \u00d7 ".join(parts)
