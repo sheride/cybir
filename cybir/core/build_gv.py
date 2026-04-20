@@ -70,18 +70,17 @@ def check_nongeneric_cs(cy, result):
     if zvd_norm < 1e-12:
         return result
 
-    # Each row of charges is a point/divisor; columns are the h11+1 GLSM charges.
-    # The zero-vol divisor is in the h11-dimensional basis, so compare against
-    # the first h11 columns (dropping the last column which is the origin/linear relation).
-    h11 = len(zvd_arr)
-    for row in charges:
-        row_basis = np.array(row[:h11], dtype=float)
-        row_norm = np.linalg.norm(row_basis)
-        if row_norm < 1e-12:
+    # GLSM charge matrix has shape (h11, n_points): rows are GLSM charges,
+    # columns are toric divisors in the h11 basis. The zero-vol divisor lives
+    # in the same h11-dimensional space, so compare against columns.
+    for i in range(charges.shape[1]):
+        col = charges[:, i].astype(float)
+        col_norm = np.linalg.norm(col)
+        if col_norm < 1e-12:
             continue
-        # Check if zvd is proportional to this row (scalar multiple)
-        cross = np.abs(np.dot(zvd_arr.astype(float), row_basis))
-        if np.abs(cross - zvd_norm * row_norm) < 1e-8:
+        # Check if zvd is proportional to this column (scalar multiple)
+        cross = np.abs(np.dot(zvd_arr.astype(float), col))
+        if np.abs(cross - zvd_norm * col_norm) < 1e-8:
             result["contraction_type"] = ContractionType.SU2_NONGENERIC_CS
             return result
 
