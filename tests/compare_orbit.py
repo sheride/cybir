@@ -14,6 +14,8 @@ Usage:
 import argparse
 import json
 import logging
+import os
+import pickle
 import sys
 import time
 
@@ -74,7 +76,34 @@ def run_cybir_orbit(cy, max_deg=10, limit=100, gvs=None):
     return ekc
 
 
-def compare_orbit(poly_id, polytope, max_deg=10, outfile=None):
+def _cache_path(cache_dir, poly_id):
+    """Return the pickle path for a polytope's cached GV invariants."""
+    safe_id = str(poly_id).replace(" ", "_").replace("=", "")
+    return os.path.join(cache_dir, f"{safe_id}.pkl")
+
+
+def _load_gvs(cache_dir, poly_id):
+    """Load cached GV invariants, or return None."""
+    if cache_dir is None:
+        return None
+    path = _cache_path(cache_dir, poly_id)
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return pickle.load(f)
+    return None
+
+
+def _save_gvs(cache_dir, poly_id, gvs):
+    """Save GV invariants to cache."""
+    if cache_dir is None:
+        return
+    os.makedirs(cache_dir, exist_ok=True)
+    path = _cache_path(cache_dir, poly_id)
+    with open(path, "wb") as f:
+        pickle.dump(gvs, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None):
     """Run both methods and compare results."""
     print(f"\n{'='*60}")
     print(f"Polytope {poly_id} (h11={polytope.h11('N')})")
@@ -104,9 +133,11 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None):
             outfile.flush()
         return None
 
+    cached_gvs = _load_gvs(cache_dir, poly_id)
+
     try:
         ekc_fund = CYBirationalClass.from_gv(
-            cy, max_deg=max_deg, verbose=False)
+            cy, max_deg=max_deg, verbose=False, gvs=cached_gvs)
     except Exception as e:
         print(f"  SKIP: cybir fundamental domain failed: {e}")
         if outfile:
@@ -116,6 +147,10 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None):
             }) + "\n")
             outfile.flush()
         return None
+
+    # Cache GVs after first successful BFS
+    if cached_gvs is None:
+        _save_gvs(cache_dir, poly_id, ekc_fund._root_invariants)
 
     # Check if this polytope has symmetric flops
     if not ekc_fund.sym_flop_refs:
@@ -130,11 +165,12 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None):
 
     print(f"  Symmetric flop refs: {len(ekc_fund.sym_flop_refs)}")
 
-    # Run cybir first (faster), then pass its GVs to the original
+    # Run cybir orbit expansion, reusing the same GVs
     t0 = time.time()
     try:
         ekc_cybir = CYBirationalClass.from_gv(
-            cy, max_deg=max_deg, verbose=False)
+            cy, max_deg=max_deg, verbose=False,
+            gvs=ekc_fund._root_invariants)
         ekc_cybir.apply_coxeter_orbit(phases=True)
     except Exception as e:
         print(f"  Cybir orbit expansion FAILED: {e}")
@@ -235,6 +271,11 @@ def main():
     parser.add_argument("--no-nongeneric-cs", action="store_true",
                         help="Disable SU2_NONGENERIC_CS re-tagging for "
                              "apples-to-apples comparison with old code")
+    parser.add_argument("--cache-dir", type=str,
+                        default="tests/.gv_cache",
+                        help="Directory for cached GV invariants (default: tests/.gv_cache)")
+    parser.add_argument("--no-cache", action="store_true",
+                        help="Disable GV caching (recompute everything)")
     args = parser.parse_args()
 
     # Disable SU2_NONGENERIC_CS if requested (for fair comparison with old code)
@@ -265,8 +306,10 @@ def main():
             if i < args.start or i >= end:
                 results.append((i, None))
                 continue
+            cache_dir = None if args.no_cache else args.cache_dir
             ok = compare_orbit(
-                f"h11={args.h11} #{i}", p, max_deg=10, outfile=f)
+                f"h11={args.h11} #{i}", p, max_deg=10, outfile=f,
+                cache_dir=cache_dir)
             results.append((i, ok))
 
     # Summary

@@ -13,6 +13,8 @@ Usage:
 import argparse
 import json
 import logging
+import os
+import pickle
 import time
 from collections import Counter
 
@@ -39,16 +41,54 @@ def parse_args():
                         help="Skip orbit expansion (faster debugging runs)")
     parser.add_argument("--start", type=int, default=0,
                         help="Resume from polytope index N (default: 0)")
+    parser.add_argument("--cache-dir", type=str,
+                        default="tests/.gv_cache",
+                        help="Directory for cached GV invariants (default: tests/.gv_cache)")
+    parser.add_argument("--no-cache", action="store_true",
+                        help="Disable GV caching (recompute everything)")
     return parser.parse_args()
 
 
-def survey_one(poly_idx, polytope, max_deg, skip_orbit):
+def _cache_path(cache_dir, poly_idx):
+    """Return the pickle path for a polytope's cached GV invariants."""
+    return os.path.join(cache_dir, f"h11_3_poly_{poly_idx}.pkl")
+
+
+def _load_gvs(cache_dir, poly_idx):
+    """Load cached GV invariants, or return None."""
+    path = _cache_path(cache_dir, poly_idx)
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return pickle.load(f)
+    return None
+
+
+def _save_gvs(cache_dir, poly_idx, gvs):
+    """Save GV invariants to cache."""
+    os.makedirs(cache_dir, exist_ok=True)
+    path = _cache_path(cache_dir, poly_idx)
+    with open(path, "wb") as f:
+        pickle.dump(gvs, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def survey_one(poly_idx, polytope, max_deg, skip_orbit, cache_dir=None):
     """Run the EKC pipeline on a single polytope, returning a result dict."""
     t0 = time.time()
     try:
         cy = polytope.triangulate().get_cy()
+
+        # Load cached GV invariants if available
+        cached_gvs = None
+        if cache_dir is not None:
+            cached_gvs = _load_gvs(cache_dir, poly_idx)
+
         ekc = CYBirationalClass.from_gv(
-            cy, max_deg=max_deg, verbose=False, validate_stability=True)
+            cy, max_deg=max_deg, verbose=False, validate_stability=True,
+            gvs=cached_gvs)
+
+        # Cache GVs after BFS (at final degree, with flop chain extensions)
+        if cache_dir is not None and cached_gvs is None:
+            _save_gvs(cache_dir, poly_idx, ekc._root_invariants)
 
         n_phases_fund = len(ekc.phases)
 
@@ -158,7 +198,9 @@ def main():
             print(f"[{count}/{len(work)}] Polytope #{poly_idx} ... ",
                   end="", flush=True)
 
-            result = survey_one(poly_idx, p, args.max_deg, args.skip_orbit)
+            cache_dir = None if args.no_cache else args.cache_dir
+            result = survey_one(poly_idx, p, args.max_deg, args.skip_orbit,
+                                cache_dir=cache_dir)
 
             f.write(json.dumps(result) + "\n")
             f.flush()
