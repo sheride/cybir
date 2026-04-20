@@ -64,6 +64,12 @@ def survey_one(poly_idx, polytope, max_deg, skip_orbit):
             if c.contraction_type is not None:
                 type_counts[c.contraction_type.name] += 1
 
+        # Explicit gross flop count for easy access
+        gross_flop_count = sum(
+            1 for c in ekc.contractions
+            if c.contraction_type == ContractionType.GROSS_FLOP
+        )
+
         # Coxeter info (serializable)
         cox_type = ekc.coxeter_type
         cox_type_serial = [list(t) for t in cox_type] if cox_type else None
@@ -76,6 +82,7 @@ def survey_one(poly_idx, polytope, max_deg, skip_orbit):
             "n_phases_fund": n_phases_fund,
             "n_phases_total": n_phases_total,
             "contraction_types": dict(type_counts),
+            "gross_flop_count": gross_flop_count,
             "coxeter_type": cox_type_serial,
             "coxeter_order": ekc.coxeter_order,
             "n_sym_flop_refs": len(ekc.sym_flop_refs),
@@ -161,9 +168,11 @@ def main():
                 agg_types.update(result["contraction_types"])
                 if (result["n_sym_flop_refs"] or 0) > 0:
                     n_with_orbit += 1
+                gf = result.get('gross_flop_count', 0)
+                gf_str = f" gross_flop={gf}" if gf else ""
                 print(f"ok  fund={result['n_phases_fund']} "
                       f"total={result['n_phases_total']} "
-                      f"cox={result['coxeter_type']} "
+                      f"cox={result['coxeter_type']}{gf_str} "
                       f"({result['time_s']:.1f}s)")
             else:
                 n_error += 1
