@@ -934,6 +934,13 @@ def diagnose_curve(cy, curve, max_deg=10, gvs=None, ekc=None):
 
     result = classify_contraction(int_nums, c2, curve, series)
 
+    # Nongeneric CS check: symmetric flops whose zero-vol divisor is a
+    # prime toric divisor are actually su(2) enhancements at non-generic
+    # complex structure.
+    from .build_gv import check_nongeneric_cs
+
+    result = check_nongeneric_cs(cy, result)
+
     # D-12: toric cross-check when ekc toric data is available
     tcd = getattr(ekc, '_toric_curve_data', None) if ekc is not None else None
     if tcd is not None and tcd.gv_dict:

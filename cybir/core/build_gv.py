@@ -31,7 +31,7 @@ logger = logging.getLogger("cybir")
 # Helper functions
 # ---------------------------------------------------------------------------
 
-def _check_nongeneric_cs(ekc, result):
+def check_nongeneric_cs(cy, result):
     """Re-tag symmetric flops whose zero-vol divisor is a prime toric divisor.
 
     At non-generic complex structure, some walls classified as symmetric
@@ -43,8 +43,8 @@ def _check_nongeneric_cs(ekc, result):
 
     Parameters
     ----------
-    ekc : CYBirationalClass
-        The orchestrator (provides access to ``ekc._cy``).
+    cy : cytools.CalabiYau
+        The Calabi-Yau threefold (provides GLSM charge matrix).
     result : dict
         Classification result from ``classify_contraction``.
 
@@ -60,8 +60,6 @@ def _check_nongeneric_cs(ekc, result):
     if zvd is None:
         return result
 
-    # Get GLSM charge matrix from the CYTools CalabiYau
-    cy = ekc._cy
     try:
         charges = cy.glsm_charge_matrix(include_origin=False)
     except Exception:
@@ -88,6 +86,11 @@ def _check_nongeneric_cs(ekc, result):
             return result
 
     return result
+
+
+def _check_nongeneric_cs(ekc, result):
+    """BFS wrapper: delegates to :func:`check_nongeneric_cs` using ``ekc._cy``."""
+    return check_nongeneric_cs(ekc._cy, result)
 
 
 def _compute_tip(phase):
