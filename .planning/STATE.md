@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-04-19T23:13:00.000Z"
+stopped_at: Completed 06-04-PLAN.md
+last_updated: "2026-04-19T23:28:38.125Z"
 last_activity: 2026-04-19
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 23
-  completed_plans: 18
-  percent: 78
+  completed_plans: 21
+  percent: 91
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 06 (classification-correctness-toric-curves-cone-construction) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-04-19
 
@@ -73,6 +73,7 @@ Progress: [█████░░░░░] 50%
 | Phase 05 P02 | 4min | 2 tasks | 5 files |
 | Phase 06 P01 | 15min | 2 tasks | 6 files |
 | Phase 06 P03 | 8min | 2 tasks | 2 files |
+| Phase 06 P04 | 8min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,9 @@ Recent decisions affecting current work:
 - [Phase 06]: GrossFlop post-check in _run_bfs (not inside classify_contraction) for minimal disruption
 - [Phase 06]: GROSS_FLOP excluded from _coxeter_refs and _sym_flop_refs/pairs
 - [Phase 06]: classify_phase_type returns non_inherited when regfans raises for non-triangulations (graceful fallback)
+- [Phase 06]: toric_origin matching uses curve tuple lookup in gv_dict (heuristic, accepts T-06-08)
+- [Phase 06]: Mori bounds use Cone.contains() with warnings on failure, not hard errors (per T-06-14)
+- [Phase 06]: _verify_mori_bounds cross-checks toric GVs against root_invariants.gv_series_cybir
 
 ### Roadmap Evolution
 
@@ -129,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-19T23:13:00.000Z
-Stopped at: Completed 06-03-PLAN.md
+Last session: 2026-04-19T23:28:38.121Z
+Stopped at: Completed 06-04-PLAN.md
 Resume file: None

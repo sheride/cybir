@@ -128,6 +128,6 @@ Plans:
 - [x] 06-01-PLAN.md -- GrossFlop enum + classification fix, CoxeterGroup dataclass, classification invariance check
 - [x] 06-02-PLAN.md -- Flexible orbit expansion (ekc/hekc/all reflections parameter)
 - [x] 06-03-PLAN.md -- Toric curves module: enumeration, FRST detection, ToricCurveData
-- [ ] 06-04-PLAN.md -- Incremental toric BFS integration, Mori bounds, phase classification API
+- [x] 06-04-PLAN.md -- Incremental toric BFS integration, Mori bounds, phase classification API
 - [ ] 06-05-PLAN.md -- Cone construction methods, diagnose_curve, re-exports
 - [ ] 06-06-PLAN.md -- h11=3 re-validation with GrossFlop fix
