@@ -94,7 +94,7 @@ class CYBirationalClass:
 
     def construct_phases(self, verbose=True, limit=100,
                          max_deg_ceiling=20, deg_step=2,
-                         validate_stability=False):
+                         validate_stability=False, check_toric=False):
         """Run BFS construction of the extended Kahler cone.
 
         Iterates over undiagnosed Mori cone walls, classifies each,
@@ -115,12 +115,17 @@ class CYBirationalClass:
         validate_stability : bool, optional
             If True, after BFS completes, bump degree and re-run to
             verify results are unchanged. Default False.
+        check_toric : bool, optional
+            If True, detect FRST phases and compile toric curves
+            incrementally. Enables phase classification and Mori
+            cone bounds. Default False.
         """
         from .build_gv import construct_phases
 
         construct_phases(self, verbose=verbose, limit=limit,
                          max_deg_ceiling=max_deg_ceiling, deg_step=deg_step,
-                         validate_stability=validate_stability)
+                         validate_stability=validate_stability,
+                         check_toric=check_toric)
         self._constructed = True
 
     def apply_coxeter_orbit(self, reflections='ekc', phases=True):
@@ -202,7 +207,8 @@ class CYBirationalClass:
 
     @classmethod
     def from_gv(cls, cy, max_deg=4, verbose=True, limit=100, gvs=None,
-                max_deg_ceiling=20, deg_step=2, validate_stability=False):
+                max_deg_ceiling=20, deg_step=2, validate_stability=False,
+                check_toric=False):
         """Construct EKC from GV invariants (convenience classmethod).
 
         Runs ``setup_root`` -> ``construct_phases`` and returns the
@@ -231,6 +237,9 @@ class CYBirationalClass:
         validate_stability : bool, optional
             If True, after BFS completes, bump degree and re-run to
             verify results are unchanged. Default False.
+        check_toric : bool, optional
+            If True, detect FRST phases and compile toric curves
+            incrementally. Default False.
 
         Returns
         -------
@@ -253,7 +262,8 @@ class CYBirationalClass:
         ekc.construct_phases(verbose=verbose, limit=limit,
                              max_deg_ceiling=max_deg_ceiling,
                              deg_step=deg_step,
-                             validate_stability=validate_stability)
+                             validate_stability=validate_stability,
+                             check_toric=check_toric)
         return ekc
 
     # --- Read-only API ---
@@ -433,6 +443,254 @@ class CYBirationalClass:
         bool
         """
         return self._weyl_expanded
+
+    # --- Phase classification API (D-14) ---
+
+    def phase_type(self, phase_label):
+        """Classification of a phase as FRST, vex, or non-inherited.
+
+        Only available when ``check_toric=True`` was passed to
+        ``construct_phases``.
+
+        Parameters
+        ----------
+        phase_label : str
+            Label of the phase.
+
+        Returns
+        -------
+        str or None
+            One of ``'frst'``, ``'vex'``, ``'non_inherited'``, or None
+            if toric checking was not enabled.
+        """
+        return getattr(self, '_phase_types', {}).get(phase_label)
+
+    def frst_phases(self):
+        """Labels of all FRST phases.
+
+        Returns
+        -------
+        list of str
+        """
+        return [l for l, t in getattr(self, '_phase_types', {}).items()
+                if t == 'frst']
+
+    def vex_phases(self):
+        """Labels of all vex phases.
+
+        Returns
+        -------
+        list of str
+        """
+        return [l for l, t in getattr(self, '_phase_types', {}).items()
+                if t == 'vex']
+
+    def non_inherited_phases(self):
+        """Labels of all non-inherited phases.
+
+        Returns
+        -------
+        list of str
+        """
+        return [l for l, t in getattr(self, '_phase_types', {}).items()
+                if t == 'non_inherited']
+
+    # --- Mori cone bounds (D-09) ---
+
+    def mori_cone_outer(self, phase_label):
+        """Outer Mori cone bound from CYTools mori_cone_cap.
+
+        Available only for FRST phases.
+
+        Parameters
+        ----------
+        phase_label : str
+
+        Returns
+        -------
+        cytools.Cone or None
+        """
+        try:
+            phase = self._graph.get_phase(phase_label)
+        except (KeyError, Exception):
+            return None
+        if phase is None or phase.mori_cone is None:
+            return None
+        return phase.mori_cone
+
+    def mori_cone_inner(self, phase_label):
+        """Inner Mori cone bound from toric curves.
+
+        Available only when ``check_toric=True`` was used and toric
+        curves have been computed for this phase.
+
+        Parameters
+        ----------
+        phase_label : str
+
+        Returns
+        -------
+        cytools.Cone or None
+        """
+        tcd = getattr(self, '_toric_curve_data', None)
+        if tcd is None:
+            return None
+        try:
+            phase = self._graph.get_phase(phase_label)
+        except (KeyError, Exception):
+            return None
+        if phase is None or phase.tip is None:
+            return None
+
+        from .toric_curves import orient_curves_for_phase
+        all_curves = tcd.all_curves()
+        if not all_curves:
+            return None
+
+        oriented = orient_curves_for_phase(all_curves, phase.tip)
+        rays = np.array([c for c in oriented if not np.allclose(c, 0)])
+        if len(rays) == 0:
+            return None
+
+        import cytools
+        return cytools.Cone(rays=rays)
+
+    def mori_cone_exact(self, phase_label):
+        """Exact Mori cone if inner == outer bounds match.
+
+        Returns
+        -------
+        cytools.Cone or None
+        """
+        inner = self.mori_cone_inner(phase_label)
+        outer = self.mori_cone_outer(phase_label)
+        if inner is None or outer is None:
+            return None
+        # Check if they are the same cone (same rays up to scaling)
+        try:
+            inner_rays = set(tuple(r) for r in inner.rays())
+            outer_rays = set(tuple(r) for r in outer.rays())
+            if inner_rays == outer_rays:
+                return outer
+        except Exception:
+            pass
+        return None
+
+    # --- Toric curves accessor (D-10) ---
+
+    def toric_curves(self, phase_label=None):
+        """Access toric curve data, optionally re-oriented for a phase.
+
+        Parameters
+        ----------
+        phase_label : str, optional
+            If provided, re-orient curves for this phase's Kahler cone.
+            If None, return curves in canonical orientation.
+
+        Returns
+        -------
+        ToricCurveData or None
+        """
+        tcd = getattr(self, '_toric_curve_data', None)
+        if tcd is None:
+            return None
+        if phase_label is None:
+            return tcd
+
+        phase = self._graph.get_phase(phase_label)
+        if phase is None or phase.tip is None:
+            return tcd
+
+        from .toric_curves import orient_curves_for_phase, ToricCurveData
+        return ToricCurveData(
+            flop_curves=orient_curves_for_phase(tcd.flop_curves, phase.tip),
+            weyl_curves_g0=orient_curves_for_phase(
+                tcd.weyl_curves_g0, phase.tip
+            ),
+            weyl_curves_higher_genus=orient_curves_for_phase(
+                tcd.weyl_curves_higher_genus, phase.tip
+            ),
+            other_curves=orient_curves_for_phase(
+                tcd.other_curves, phase.tip
+            ),
+            minface1_curves=orient_curves_for_phase(
+                tcd.minface1_curves, phase.tip
+            ),
+            gv_dict=tcd.gv_dict,
+        )
+
+    # --- Active Mori verification (D-09) ---
+
+    def _verify_mori_bounds(self, phase_label):
+        """Verify inner <= discovered Mori <= outer and cross-check toric GVs.
+
+        Called from ``_run_bfs`` after toric curves are compiled for an
+        FRST phase. Checks that all inner-bound rays satisfy outer-bound
+        inequalities. Cross-validates toric GV invariants against
+        computed GV invariants. Logs warnings on discrepancies.
+
+        Parameters
+        ----------
+        phase_label : str
+            Label of the FRST phase to verify.
+        """
+        inner = self.mori_cone_inner(phase_label)
+        outer = self.mori_cone_outer(phase_label)
+
+        if inner is not None and outer is not None:
+            # Check inner <= outer: every inner ray should be in outer cone
+            try:
+                if not outer.contains(inner):
+                    logger.warning(
+                        "Mori bound violation for %s: inner cone NOT contained "
+                        "in outer cone. Some toric curves lie outside "
+                        "mori_cone_cap.",
+                        phase_label,
+                    )
+                else:
+                    logger.info(
+                        "Mori bounds consistent for %s: inner <= outer",
+                        phase_label,
+                    )
+            except Exception as exc:
+                logger.warning(
+                    "Could not verify Mori bounds for %s: %s",
+                    phase_label, exc,
+                )
+
+        # Cross-check toric GVs against computed GVs
+        tcd = getattr(self, '_toric_curve_data', None)
+        if (
+            tcd is not None
+            and tcd.gv_dict
+            and hasattr(self, '_root_invariants')
+            and self._root_invariants is not None
+        ):
+            phase = self._graph.get_phase(phase_label)
+            if phase is not None and phase.tip is not None:
+                from .toric_curves import orient_curves_for_phase
+                for curve_tuple, toric_gv in tcd.gv_dict.items():
+                    curve_arr = np.array(curve_tuple)
+                    # Orient for this phase
+                    sign = np.sign(phase.tip @ curve_arr)
+                    if sign < 0:
+                        curve_arr = -curve_arr
+                    # Try to get computed GV for this curve
+                    try:
+                        series = self._root_invariants.gv_series_cybir(
+                            curve_arr
+                        )
+                        if series and len(series) > 0:
+                            computed_gv = series[0]
+                            if computed_gv != toric_gv:
+                                logger.warning(
+                                    "Toric GV mismatch for curve %s in "
+                                    "phase %s: toric=%s, computed=%s",
+                                    tuple(int(x) for x in curve_arr),
+                                    phase_label, toric_gv, computed_gv,
+                                )
+                    except Exception:
+                        pass  # Curve may not be in computed GV range
 
     def __repr__(self):
         if not self._constructed:

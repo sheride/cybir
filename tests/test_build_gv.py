@@ -118,6 +118,8 @@ class MockEKC:
         self._coxeter_refs = set()
         self._sym_flop_refs = set()
         self._sym_flop_pairs = []
+        self._nongeneric_cs_pairs = []
+        self._su2_pairs = []
         self._infinity_cone_gens = set()
         self._eff_cone_gens = set()
 
@@ -279,3 +281,201 @@ class TestValidateStability:
         sig = inspect.signature(CYBirationalClass.from_gv)
         assert "validate_stability" in sig.parameters
         assert sig.parameters["validate_stability"].default is False
+
+
+# ---------------------------------------------------------------------------
+# Paired storage for SU2_NONGENERIC_CS and SU2
+# ---------------------------------------------------------------------------
+
+
+class TestPairedStorage:
+    """Tests for paired reflection/curve storage (D-04)."""
+
+    def test_nongeneric_cs_paired_storage(self):
+        """SU2_NONGENERIC_CS accumulates paired (ref, curve) tuples."""
+        ekc = MockEKC()
+        M = np.eye(3)
+        M[0, 1] = -2
+        result = {
+            "contraction_curve": (1, 0, 0),
+            "zero_vol_divisor": np.array([0, 1, 0]),
+            "coxeter_reflection": M,
+        }
+        _accumulate_generators(ekc, ContractionType.SU2_NONGENERIC_CS, result)
+        assert len(ekc._nongeneric_cs_pairs) == 1
+        ref_key, curve_tuple = ekc._nongeneric_cs_pairs[0]
+        assert curve_tuple == (1, 0, 0)
+
+    def test_nongeneric_cs_deduplicates(self):
+        """Duplicate SU2_NONGENERIC_CS reflections are not re-added."""
+        ekc = MockEKC()
+        M = np.eye(3)
+        M[0, 1] = -2
+        result = {
+            "contraction_curve": (1, 0, 0),
+            "zero_vol_divisor": np.array([0, 1, 0]),
+            "coxeter_reflection": M,
+        }
+        _accumulate_generators(ekc, ContractionType.SU2_NONGENERIC_CS, result)
+        _accumulate_generators(ekc, ContractionType.SU2_NONGENERIC_CS, result)
+        assert len(ekc._nongeneric_cs_pairs) == 1
+
+    def test_su2_paired_storage(self):
+        """SU2 accumulates paired (ref, curve) tuples."""
+        ekc = MockEKC()
+        M = np.eye(3)
+        M[1, 2] = -2
+        result = {
+            "contraction_curve": (0, 1, 0),
+            "zero_vol_divisor": np.array([0, 0, 1]),
+            "coxeter_reflection": M,
+        }
+        _accumulate_generators(ekc, ContractionType.SU2, result)
+        assert len(ekc._su2_pairs) == 1
+        ref_key, curve_tuple = ekc._su2_pairs[0]
+        assert curve_tuple == (0, 1, 0)
+
+    def test_su2_deduplicates(self):
+        """Duplicate SU2 reflections are not re-added."""
+        ekc = MockEKC()
+        M = np.eye(3)
+        M[1, 2] = -2
+        result = {
+            "contraction_curve": (0, 1, 0),
+            "zero_vol_divisor": np.array([0, 0, 1]),
+            "coxeter_reflection": M,
+        }
+        _accumulate_generators(ekc, ContractionType.SU2, result)
+        _accumulate_generators(ekc, ContractionType.SU2, result)
+        assert len(ekc._su2_pairs) == 1
+
+
+# ---------------------------------------------------------------------------
+# check_toric parameter
+# ---------------------------------------------------------------------------
+
+
+class TestCheckToricParameter:
+    """Tests for check_toric parameter on construct_phases and from_gv."""
+
+    def test_check_toric_parameter_on_construct_phases(self):
+        """construct_phases accepts check_toric kwarg."""
+        import inspect
+        from cybir.core.build_gv import construct_phases
+
+        sig = inspect.signature(construct_phases)
+        assert "check_toric" in sig.parameters
+        assert sig.parameters["check_toric"].default is False
+
+    def test_check_toric_on_ekc_construct_phases(self):
+        """CYBirationalClass.construct_phases accepts check_toric."""
+        import inspect
+        from cybir.core.ekc import CYBirationalClass
+
+        sig = inspect.signature(CYBirationalClass.construct_phases)
+        assert "check_toric" in sig.parameters
+        assert sig.parameters["check_toric"].default is False
+
+    def test_check_toric_on_from_gv(self):
+        """CYBirationalClass.from_gv accepts check_toric."""
+        import inspect
+        from cybir.core.ekc import CYBirationalClass
+
+        sig = inspect.signature(CYBirationalClass.from_gv)
+        assert "check_toric" in sig.parameters
+        assert sig.parameters["check_toric"].default is False
+
+    def test_check_toric_on_run_bfs(self):
+        """_run_bfs accepts check_toric kwarg."""
+        import inspect
+        from cybir.core.build_gv import _run_bfs
+
+        sig = inspect.signature(_run_bfs)
+        assert "check_toric" in sig.parameters
+        assert sig.parameters["check_toric"].default is False
+
+
+# ---------------------------------------------------------------------------
+# Phase classification and Mori bounds API
+# ---------------------------------------------------------------------------
+
+
+class TestPhaseClassificationAPI:
+    """Tests for phase classification methods on CYBirationalClass."""
+
+    def test_phase_type_returns_none_without_toric(self):
+        """phase_type returns None when check_toric was not enabled."""
+        from cybir.core.ekc import CYBirationalClass
+
+        # Create a minimal instance without running construction
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        assert ekc.phase_type("CY_0") is None
+
+    def test_frst_phases_empty_without_toric(self):
+        """frst_phases returns empty list without toric data."""
+        from cybir.core.ekc import CYBirationalClass
+
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        assert ekc.frst_phases() == []
+
+    def test_vex_phases_empty_without_toric(self):
+        """vex_phases returns empty list without toric data."""
+        from cybir.core.ekc import CYBirationalClass
+
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        assert ekc.vex_phases() == []
+
+    def test_non_inherited_phases_empty_without_toric(self):
+        """non_inherited_phases returns empty list without toric data."""
+        from cybir.core.ekc import CYBirationalClass
+
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        assert ekc.non_inherited_phases() == []
+
+    def test_toric_curves_returns_none_without_toric(self):
+        """toric_curves returns None when no toric data."""
+        from cybir.core.ekc import CYBirationalClass
+
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        assert ekc.toric_curves() is None
+
+    def test_mori_cone_inner_returns_none_without_toric(self):
+        """mori_cone_inner returns None without toric data."""
+        from cybir.core.ekc import CYBirationalClass
+
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        assert ekc.mori_cone_inner("CY_0") is None
+
+    def test_mori_cone_outer_returns_none_for_no_mori(self):
+        """mori_cone_outer returns None when phase has no mori_cone."""
+        from cybir.core.ekc import CYBirationalClass
+        from cybir.core.types import CalabiYauLite
+
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        # Add a phase with no mori cone
+        phase = CalabiYauLite(int_nums=np.zeros((2, 2, 2)), label="CY_0")
+        ekc._graph.add_phase(phase)
+        assert ekc.mori_cone_outer("CY_0") is None
+
+    def test_mori_cone_exact_returns_none_without_data(self):
+        """mori_cone_exact returns None without both bounds."""
+        from cybir.core.ekc import CYBirationalClass
+
+        class FakeCY:
+            pass
+        ekc = CYBirationalClass(FakeCY())
+        assert ekc.mori_cone_exact("CY_0") is None

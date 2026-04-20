@@ -166,11 +166,41 @@ def _accumulate_generators(ekc, ctype, result):
         if cox_ref is not None:
             ekc._coxeter_refs.add(tuplify(np.round(cox_ref).astype(int)))
 
+    # Paired storage for genuine SU2 (D-04, for HEKC/all orbit expansion)
+    if ctype == ContractionType.SU2:
+        cox_ref = result.get("coxeter_reflection")
+        if cox_ref is not None:
+            ref_key = tuplify(np.round(cox_ref).astype(int))
+            contr_curve = result.get("contraction_curve")
+            if contr_curve is not None:
+                curve_arr = np.array(
+                    [int(x) for x in contr_curve]
+                    if not isinstance(contr_curve, np.ndarray)
+                    else np.round(contr_curve).astype(int)
+                )
+                curve_tuple = tuple(int(x) for x in curve_arr)
+                existing_refs = set(r for r, _ in ekc._su2_pairs)
+                if ref_key not in existing_refs:
+                    ekc._su2_pairs.append((ref_key, curve_tuple))
+
     # SU2_NONGENERIC_CS: treat like su(2) for generator accumulation
     if ctype == ContractionType.SU2_NONGENERIC_CS:
         cox_ref = result.get("coxeter_reflection")
         if cox_ref is not None:
-            ekc._coxeter_refs.add(tuplify(np.round(cox_ref).astype(int)))
+            ref_key = tuplify(np.round(cox_ref).astype(int))
+            ekc._coxeter_refs.add(ref_key)
+            # Paired storage for HEKC/all orbit expansion (D-04)
+            contr_curve = result.get("contraction_curve")
+            if contr_curve is not None:
+                curve_arr = np.array(
+                    [int(x) for x in contr_curve]
+                    if not isinstance(contr_curve, np.ndarray)
+                    else np.round(contr_curve).astype(int)
+                )
+                curve_tuple = tuple(int(x) for x in curve_arr)
+                existing_refs = set(r for r, _ in ekc._nongeneric_cs_pairs)
+                if ref_key not in existing_refs:
+                    ekc._nongeneric_cs_pairs.append((ref_key, curve_tuple))
         zvd = result.get("zero_vol_divisor")
         if zvd is not None:
             ekc._eff_cone_gens.add(
@@ -322,13 +352,19 @@ def setup_root(ekc, max_deg=4):
     logger.info("Root phase CY_0 set up with %d GV invariants", n_gvs)
 
 
-def _run_bfs(ekc, verbose, limit):
+def _run_bfs(ekc, verbose, limit, check_toric=False):
     """Run one pass of BFS construction. Returns (phase_counter, deferred).
 
     The deferred list contains (wall_curve, source_label, series_len) tuples
     for walls that could not be classified at the current GV degree.
     series_len is the number of nonzero GV entries seen, used to detect
     potent curves across retries.
+
+    Parameters
+    ----------
+    check_toric : bool, optional
+        If True, detect FRST phases and compile toric curves
+        incrementally during BFS. Default False.
     """
     root = ekc._graph.get_phase(ekc._root_label)
     mori_gens = root.mori_cone.extremal_rays()
@@ -342,6 +378,23 @@ def _run_bfs(ekc, verbose, limit):
     deferred = []
     phase_counter = 1
     classified_curves = {}  # D-02: classification invariance check
+
+    # Toric curve compilation (D-07)
+    if check_toric:
+        from .toric_curves import (
+            classify_phase_type, induced_2face_triangulations,
+            compute_toric_curves, ToricCurveData,
+        )
+        from .util import moving_cone as compute_moving_cone
+
+        cy = ekc._cy
+        Q = cy.glsm_charge_matrix(include_origin=False)
+        mc = compute_moving_cone(Q)
+        ekc._moving_cone = mc
+        ekc._toric_curve_data = ToricCurveData()
+        ekc._frst_triangulations = []
+        ekc._seen_2face_triags = set()
+        ekc._phase_types = {}  # label -> 'frst'|'vex'|'non_inherited'
 
     # Initialize from root
     root_tip = _compute_tip(root)
@@ -358,6 +411,34 @@ def _run_bfs(ekc, verbose, limit):
 
     for gen in mori_gens:
         undiagnosed.append((np.asarray(gen), "CY_0"))
+
+    # Classify root phase for toric curves
+    if check_toric:
+        phase_type, fan = classify_phase_type(root.kahler_cone, Q, moving_cone_obj=mc)
+        ekc._phase_types["CY_0"] = phase_type
+        if phase_type == 'frst' and fan is not None:
+            try:
+                h = np.linalg.lstsq(Q, root_tip.astype(float), rcond=None)[0]
+                triag = cy.triangulate(heights=h)
+                ekc._frst_triangulations.append(triag)
+                polytope = cy.polytope()
+                new_face_triags = induced_2face_triangulations(polytope, [triag])
+                new_count = 0
+                for face_idx, face_triag_list in enumerate(new_face_triags):
+                    for ft in face_triag_list:
+                        key = frozenset(tuple(sorted(tuple(s) for s in ft)))
+                        if key not in ekc._seen_2face_triags:
+                            ekc._seen_2face_triags.add(key)
+                            new_count += 1
+                if new_count > 0:
+                    new_tcd = compute_toric_curves(cy, new_face_triags, tip=root_tip)
+                    ekc._toric_curve_data.merge(new_tcd)
+                    logger.info("  FRST phase CY_0: %d new toric curves",
+                                len(new_tcd.all_curves()))
+                # D-09: active Mori verification
+                ekc._verify_mori_bounds("CY_0")
+            except Exception as exc:
+                logger.warning("  Toric curve computation failed for CY_0: %s", exc)
 
     while undiagnosed and ekc._graph.num_phases < limit:
         wall_curve, source_label = undiagnosed.popleft()
@@ -450,6 +531,15 @@ def _run_bfs(ekc, verbose, limit):
             if is_terminal
             else np.array(normalize_curve(wall_curve))
         )
+        # Determine toric_origin if check_toric is enabled
+        toric_origin_val = None
+        if check_toric and hasattr(ekc, '_toric_curve_data') and ekc._toric_curve_data:
+            curve_tuple_check = tuple(int(x) for x in curve_for_edge)
+            neg_tuple_check = tuple(-x for x in curve_tuple_check)
+            if curve_tuple_check in ekc._toric_curve_data.gv_dict:
+                toric_origin_val = "matched"
+            elif neg_tuple_check in ekc._toric_curve_data.gv_dict:
+                toric_origin_val = "matched"
         contraction = ExtremalContraction(
             contraction_curve=curve_for_edge,
             contraction_type=ctype,
@@ -459,6 +549,7 @@ def _run_bfs(ekc, verbose, limit):
             coxeter_reflection=result.get("coxeter_reflection"),
             gv_series=result.get("gv_series"),
             gv_eff_1=result.get("gv_eff_1"),
+            toric_origin=toric_origin_val,
         )
 
         # Log
@@ -557,6 +648,53 @@ def _run_bfs(ekc, verbose, limit):
             )
             phase_counter += 1
 
+            # Toric classification for new flopped phase
+            if check_toric:
+                phase_type, fan = classify_phase_type(
+                    flopped._kahler_cone, Q, moving_cone_obj=mc
+                )
+                ekc._phase_types[new_label] = phase_type
+                if phase_type == 'frst' and fan is not None:
+                    try:
+                        tip_val = tips.get(new_label)
+                        if tip_val is not None:
+                            h = np.linalg.lstsq(
+                                Q, tip_val.astype(float), rcond=None
+                            )[0]
+                            triag = cy.triangulate(heights=h)
+                            ekc._frst_triangulations.append(triag)
+                            polytope = cy.polytope()
+                            new_face_triags = induced_2face_triangulations(
+                                polytope, [triag]
+                            )
+                            new_count = 0
+                            for face_idx, face_triag_list in enumerate(
+                                new_face_triags
+                            ):
+                                for ft in face_triag_list:
+                                    key = frozenset(
+                                        tuple(sorted(tuple(s) for s in ft))
+                                    )
+                                    if key not in ekc._seen_2face_triags:
+                                        ekc._seen_2face_triags.add(key)
+                                        new_count += 1
+                            if new_count > 0:
+                                new_tcd = compute_toric_curves(
+                                    cy, new_face_triags, tip=tip_val
+                                )
+                                ekc._toric_curve_data.merge(new_tcd)
+                                logger.info(
+                                    "  FRST phase %s: %d new toric curves",
+                                    new_label, len(new_tcd.all_curves()),
+                                )
+                            # D-09: active Mori verification
+                            ekc._verify_mori_bounds(new_label)
+                    except Exception as exc:
+                        logger.warning(
+                            "  Toric curve computation failed for %s: %s",
+                            new_label, exc,
+                        )
+
             for ray in flopped._kahler_cone.rays():
                 ekc._eff_cone_gens.add(
                     tuple(np.round(ray).astype(int).tolist())
@@ -585,7 +723,7 @@ _POTENCY_THRESHOLD = 4
 
 
 def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
-                     deg_step=2, validate_stability=False):
+                     deg_step=2, validate_stability=False, check_toric=False):
     """Run BFS construction of the extended Kahler cone.
 
     Uses adaptive GV degree: starts with the initial degree from
@@ -614,6 +752,10 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
         ``deg_step`` and re-run the full BFS to verify that results
         are unchanged. If results differ, keep the higher-degree
         result and log a warning. Default False.
+    check_toric : bool, optional
+        If True, detect FRST phases during BFS and compile toric
+        curves incrementally. Enables phase classification
+        (FRST/vex/non-inherited) and Mori cone bounds. Default False.
     """
     if verbose:
         logger.setLevel(logging.INFO)
@@ -635,11 +777,22 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
         ekc._coxeter_refs = set()
         ekc._sym_flop_refs = set()
         ekc._sym_flop_pairs = []
+        ekc._nongeneric_cs_pairs = []
+        ekc._su2_pairs = []
         ekc._infinity_cone_gens = set()
         ekc._eff_cone_gens = set()
         ekc._build_log = []
 
-        phase_counter, deferred = _run_bfs(ekc, verbose, limit)
+        # Reset toric state for fresh BFS pass
+        if check_toric:
+            from .toric_curves import ToricCurveData
+            ekc._toric_curve_data = ToricCurveData()
+            ekc._frst_triangulations = []
+            ekc._seen_2face_triags = set()
+            ekc._phase_types = {}
+
+        phase_counter, deferred = _run_bfs(ekc, verbose, limit,
+                                           check_toric=check_toric)
 
         if not deferred:
             break  # all walls classified successfully
@@ -748,11 +901,20 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
             ekc._coxeter_refs = set()
             ekc._sym_flop_refs = set()
             ekc._sym_flop_pairs = []
+            ekc._nongeneric_cs_pairs = []
+            ekc._su2_pairs = []
             ekc._infinity_cone_gens = set()
             ekc._eff_cone_gens = set()
             ekc._build_log = []
 
-            _run_bfs(ekc, verbose, limit)
+            if check_toric:
+                from .toric_curves import ToricCurveData
+                ekc._toric_curve_data = ToricCurveData()
+                ekc._frst_triangulations = []
+                ekc._seen_2face_triags = set()
+                ekc._phase_types = {}
+
+            _run_bfs(ekc, verbose, limit, check_toric=check_toric)
 
             # 5. Compare
             stable = (

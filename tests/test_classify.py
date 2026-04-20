@@ -366,6 +366,8 @@ class _FakeEkc:
         self._coxeter_refs = set()
         self._sym_flop_refs = set()
         self._sym_flop_pairs = []
+        self._nongeneric_cs_pairs = []
+        self._su2_pairs = []
         self._infinity_cone_gens = set()
         self._eff_cone_gens = set()
 
