@@ -17,9 +17,12 @@ from cybir.core.patch import patch_cytools
 from cybir.core.types import (
     CalabiYauLite,
     ContractionType,
+    CoxeterGroup,
     ExtremalContraction,
     InsufficientGVError,
 )
+from cybir.core.toric_curves import ToricCurveData
+from cybir.core.ekc import diagnose_curve
 from cybir.core.coxeter import (
     classify_coxeter_type,
     coxeter_element,
@@ -43,9 +46,12 @@ __all__ = [
     # Types
     "CalabiYauLite",
     "ContractionType",
+    "CoxeterGroup",
     "ExtremalContraction",
     "InsufficientGVError",
     "CYGraph",
+    "ToricCurveData",
+    "diagnose_curve",
     # Pipeline
     "CYBirationalClass",
     "patch_cytools",

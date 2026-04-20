@@ -19,6 +19,14 @@ from .types import (
     ExtremalContraction,
     InsufficientGVError,
 )
+from .toric_curves import (
+    ToricCurveData,
+    classify_phase_type,
+    compute_toric_curves,
+    induced_2face_triangulations,
+    orient_curves_for_phase,
+)
+from .ekc import diagnose_curve
 from .coxeter import (
     classify_coxeter_type,
     coxeter_element,
@@ -71,6 +79,13 @@ __all__ = [
     "coxeter_reflection",
     "is_finite_type",
     "matrix_period",
+    # Toric curves (Phase 6)
+    "ToricCurveData",
+    "classify_phase_type",
+    "compute_toric_curves",
+    "diagnose_curve",
+    "induced_2face_triangulations",
+    "orient_curves_for_phase",
     # Utilities
     "charge_matrix_hsnf",
     "minimal_N",

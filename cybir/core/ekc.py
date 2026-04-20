@@ -692,6 +692,130 @@ class CYBirationalClass:
                     except Exception:
                         pass  # Curve may not be in computed GV range
 
+    # --- Cone construction (D-11) ---
+
+    def effective_cone(self):
+        """Effective cone of curves from accumulated generators.
+
+        Constructed from zero-volume divisors and Kahler cone rays
+        accumulated during BFS and orbit expansion.
+
+        Returns
+        -------
+        cytools.Cone or None
+            The effective cone, or None if no generators.
+
+        Notes
+        -----
+        See arXiv:2212.10573 Section 2.
+        """
+        if not self._eff_cone_gens:
+            return None
+        import cytools
+        rays = np.array([list(g) for g in self._eff_cone_gens])
+        return cytools.Cone(rays=rays)
+
+    def movable_cone(self):
+        """Movable cone: dual of the effective cone.
+
+        The movable cone is the cone of divisor classes that are
+        basepoint-free after a birational modification. It equals
+        the dual of the effective cone of curves.
+
+        Returns
+        -------
+        cytools.Cone or None
+            The movable cone, or None if no effective cone generators.
+
+        Notes
+        -----
+        See arXiv:2212.10573 Section 2.
+        """
+        eff = self.effective_cone()
+        if eff is None:
+            return None
+        return eff.dual()
+
+    def infinity_cone(self):
+        """Infinity cone from asymptotic and CFT wall curves.
+
+        Returns
+        -------
+        cytools.Cone or None
+            The infinity cone, or None if no generators.
+
+        Notes
+        -----
+        See arXiv:2212.10573 Section 2.
+        """
+        if not self._infinity_cone_gens:
+            return None
+        import cytools
+        rays = np.array([list(g) for g in self._infinity_cone_gens])
+        return cytools.Cone(rays=rays)
+
+    def extended_kahler_cone(self):
+        """Extended Kahler cone (EKC): convex hull of all EKC phase Kahler cone rays.
+
+        The EKC is the union of Kahler cones across all phases after
+        symmetric-flop-only orbit expansion. Since the union is not
+        generally convex, this returns the convex hull (outer
+        approximation) as a single Cone.
+
+        To get the individual phase cones, iterate ``self.phases``.
+
+        Returns
+        -------
+        cytools.Cone or None
+            Convex hull of all phase Kahler rays, or None.
+
+        Notes
+        -----
+        See arXiv:2212.10573 Section 4.3. The convex hull is a
+        containing cone; for non-convex EKCs the exact boundary
+        requires the full phase decomposition.
+        """
+        import cytools
+        all_rays = []
+        for phase in self.phases:
+            if phase.kahler_cone is not None:
+                try:
+                    for ray in phase.kahler_cone.rays():
+                        all_rays.append(list(ray))
+                except Exception:
+                    pass
+        if not all_rays:
+            return None
+        return cytools.Cone(rays=np.array(all_rays))
+
+    def hyperextended_kahler_cone(self):
+        """Hyperextended Kahler cone (HEKC): EKC + SU2_NONGENERIC_CS orbits.
+
+        The HEKC extends the EKC by also including the orbit under
+        SU2_NONGENERIC_CS reflections. At generic complex structure,
+        HEKC = EKC. At tuned complex structure, HEKC is strictly larger.
+
+        Returns the convex hull as a single Cone. For the exact HEKC,
+        run ``apply_coxeter_orbit(reflections='hekc')`` first, then
+        call ``extended_kahler_cone()`` on the result.
+
+        Returns
+        -------
+        cytools.Cone or None
+
+        Notes
+        -----
+        See arXiv:2212.10573 Section 4.3. This method is equivalent
+        to ``extended_kahler_cone()`` when called on a
+        CYBirationalClass that has had
+        ``apply_coxeter_orbit(reflections='hekc')`` called. The
+        method exists for API clarity -- call it on an HEKC-expanded
+        object to signal intent.
+        """
+        # If orbit was expanded with 'hekc', phases already include HEKC orbits
+        # Otherwise, this is just the EKC
+        return self.extended_kahler_cone()
+
     def __repr__(self):
         if not self._constructed:
             return "CYBirationalClass(empty)"
@@ -730,3 +854,116 @@ class CYBirationalClass:
                 f"CYBirationalClass({total} phases, "
                 f"no orbit expansion)"
             )
+
+
+def diagnose_curve(cy, curve, max_deg=10, gvs=None, ekc=None):
+    """Classify an extremal contraction curve with minimal setup.
+
+    Convenience function that handles grading vector computation and
+    GV series extraction internally. When an ``ekc`` (CYBirationalClass)
+    with toric data is provided, also cross-checks against toric
+    classification and combinatorial GV invariants (per D-12).
+
+    Parameters
+    ----------
+    cy : cytools.CalabiYau
+        The Calabi-Yau threefold.
+    curve : array_like
+        Curve class in the h11 basis.
+    max_deg : int, optional
+        Maximum degree for GV computation. Default 10.
+    gvs : Invariants or list, optional
+        Pre-computed GV invariants. Accepts either a CYTools
+        ``Invariants`` object or a plain list
+        ``[GV(C), GV(2C), GV(3C), ...]``.
+    ekc : CYBirationalClass, optional
+        If provided and ``ekc._toric_curve_data`` is available,
+        adds ``toric_type`` and ``toric_gv`` keys to the result
+        dict when the curve matches a toric curve.
+
+    Returns
+    -------
+    dict
+        Classification result from ``classify_contraction``:
+        ``contraction_type``, ``zero_vol_divisor``,
+        ``coxeter_reflection``, ``gv_invariant``, ``effective_gv``,
+        ``gv_eff_1``, ``gv_series``.
+        When ``ekc`` is provided and toric data matches, also
+        includes ``toric_type`` (str: 'flop', 'weyl_g0',
+        'weyl_higher_genus', or 'other') and ``toric_gv`` (int or None).
+
+    Examples
+    --------
+    >>> from cybir import diagnose_curve
+    >>> result = diagnose_curve(cy, [1, 0, -1])
+    >>> result['contraction_type']
+    ContractionType.FLOP
+
+    Notes
+    -----
+    See arXiv:2212.10573 Section 4 for the classification algorithm.
+    """
+    from .classify import classify_contraction
+    from .patch import patch_cytools
+
+    patch_cytools()
+
+    curve = np.asarray(curve)
+    int_nums = cy.intersection_numbers(in_basis=True, format="dense")
+    c2 = cy.second_chern_class(in_basis=True)
+
+    if isinstance(gvs, list):
+        # Plain list of GV invariants
+        series = list(gvs)
+    else:
+        # CYTools Invariants object, or compute fresh
+        if gvs is None:
+            toric_mori = cy.mori_cone_cap(in_basis=True)
+            grading = np.array(toric_mori.find_grading_vector()).astype(int)
+            gvs = cy.compute_gvs(grading_vec=grading, max_deg=max_deg)
+            gvs.flop_curves = []
+            gvs.precompose = np.eye(len(grading))
+        series = gvs.gv_series_cybir(curve)
+
+    if not series:
+        from .types import InsufficientGVError
+
+        raise InsufficientGVError(
+            f"No GV series data for curve {list(curve)}"
+        )
+
+    result = classify_contraction(int_nums, c2, curve, series)
+
+    # D-12: toric cross-check when ekc toric data is available
+    tcd = getattr(ekc, '_toric_curve_data', None) if ekc is not None else None
+    if tcd is not None and tcd.gv_dict:
+        curve_tuple = tuple(int(x) for x in curve)
+        neg_tuple = tuple(-x for x in curve_tuple)
+        lookup_key = None
+        if curve_tuple in tcd.gv_dict:
+            lookup_key = curve_tuple
+        elif neg_tuple in tcd.gv_dict:
+            lookup_key = neg_tuple
+        if lookup_key is not None:
+            result["toric_gv"] = tcd.gv_dict[lookup_key]
+            # Determine toric classification category
+            abs_curve = np.abs(curve)
+            if any(
+                np.array_equal(np.abs(c), abs_curve)
+                for c in tcd.flop_curves
+            ):
+                result["toric_type"] = "flop"
+            elif any(
+                np.array_equal(np.abs(c), abs_curve)
+                for c in tcd.weyl_curves_g0
+            ):
+                result["toric_type"] = "weyl_g0"
+            elif any(
+                np.array_equal(np.abs(c), abs_curve)
+                for c in tcd.weyl_curves_higher_genus
+            ):
+                result["toric_type"] = "weyl_higher_genus"
+            else:
+                result["toric_type"] = "other"
+
+    return result

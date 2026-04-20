@@ -482,3 +482,32 @@ class TestExtremalContractionToricOrigin:
         """toric_origin defaults to None when not provided."""
         ec = ExtremalContraction(contraction_curve=np.array([1, 0]))
         assert ec.toric_origin is None
+
+
+# ============================================================
+# Phase 6 imports
+# ============================================================
+
+
+class TestPhase6Imports:
+    """Verify all Phase 6 public API is importable."""
+
+    def test_phase6_core_imports(self):
+        """All Phase 6 API importable from cybir.core."""
+        from cybir.core import (  # noqa: F401
+            CoxeterGroup,
+            ToricCurveData,
+            classify_phase_type,
+            compute_toric_curves,
+            diagnose_curve,
+            induced_2face_triangulations,
+            orient_curves_for_phase,
+        )
+
+    def test_phase6_top_level_imports(self):
+        """Key Phase 6 API importable from cybir."""
+        from cybir import (  # noqa: F401
+            CoxeterGroup,
+            ToricCurveData,
+            diagnose_curve,
+        )
