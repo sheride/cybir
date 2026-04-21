@@ -261,12 +261,18 @@ def is_symmetric_flop(int_nums, c2, curve, gv_eff_1, gv_eff_3,
         returns ``(False, True)`` (gross flop). If both pass (or cones
         not provided), returns ``(True, False)``.
     """
+    # Integrality check: a valid Coxeter reflection must act on the
+    # integer lattice. Non-integer reflections cannot generate a
+    # finite Coxeter group and indicate a generic (non-symmetric) flop.
+    M = coxeter_reflection
+    if not np.allclose(M, np.round(M)):
+        return (False, False)
+
     # Wall-crossed quantities
     wc_intnums = wall_cross_intnums(int_nums, curve, gv_eff_3)
     wc_c2 = wall_cross_c2(c2, curve, gv_eff_1)
 
     # Coxeter-reflected quantities
-    M = coxeter_reflection
     cox_intnums = np.einsum("ia,jb,kc,abc->ijk", M, M, M, int_nums)
     cox_c2 = M @ c2
 
