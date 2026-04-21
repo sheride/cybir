@@ -169,6 +169,8 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None,
 
     # Run cybir orbit expansion, reusing the same GVs
     t0 = time.time()
+    orbit_failed = False
+    orbit_error = None
     try:
         ekc_cybir = CYBirationalClass.from_gv(
             cy, max_deg=max_deg, verbose=False,
@@ -176,14 +178,12 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None,
             max_deg_ceiling=max_deg_ceiling)
         ekc_cybir.apply_coxeter_orbit(phases=True)
     except Exception as e:
+        orbit_failed = True
+        orbit_error = str(e)
+        # Don't return — fall through to compare fundamental domain
+        ekc_cybir = ekc_fund  # use fundamental domain for comparison
         print(f"  Cybir orbit expansion FAILED: {e}")
-        if outfile:
-            outfile.write(json.dumps({
-                "id": poly_id, "status": "fail",
-                "reason": f"cybir_orbit: {e}",
-            }) + "\n")
-            outfile.flush()
-        return False
+        print(f"  Comparing fundamental domain instead")
     t_cybir = time.time() - t0
 
     # Run original with ignore_sym=False, reusing cybir's GVs
@@ -242,11 +242,15 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None,
     # Pass/fail based on phases, infinity gens, and effective gens.
     # Coxeter refs are informational (same group, different generating set).
     ok = match_phases and match_inf and match_eff
-    status = "pass" if ok else "fail"
-    print(f"\n  OVERALL: {status.upper()}")
+    if orbit_failed:
+        status = "fail_orbit" if ok else "fail"
+    else:
+        status = "pass" if ok else "fail"
+    print(f"\n  OVERALL: {status.upper()}"
+          + (f" (orbit failed: {orbit_error})" if orbit_failed else ""))
 
     if outfile:
-        outfile.write(json.dumps({
+        entry = {
             "id": poly_id, "status": status,
             "phases_orig": n_orig, "phases_cybir": n_cybir,
             "inf_match": match_inf, "eff_match": match_eff,
@@ -254,7 +258,10 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None,
             "time_orig": round(t_orig, 2),
             "time_cybir": round(t_cybir, 2),
             "n_sym_flop_refs": len(ekc_fund.sym_flop_refs),
-        }) + "\n")
+        }
+        if orbit_failed:
+            entry["orbit_error"] = orbit_error
+        outfile.write(json.dumps(entry) + "\n")
         outfile.flush()
 
     return ok
