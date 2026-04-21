@@ -20,6 +20,7 @@ _WILSON_NOTATION = {
     "SYMMETRIC_FLOP": "Symmetric Flop",
     "GROSS_FLOP": "Gross Flop",
     "FLOP": "Flop",
+    "UNRESOLVED": "Unresolved (degree cap)",
 }
 
 _PAPER_NOTATION = {
@@ -30,6 +31,7 @@ _PAPER_NOTATION = {
     "SYMMETRIC_FLOP": "symmetric flop",
     "GROSS_FLOP": "gross flop",
     "FLOP": "generic flop",
+    "UNRESOLVED": "unresolved (degree cap)",
 }
 
 
@@ -42,10 +44,11 @@ class InsufficientGVError(RuntimeError):
 class ContractionType(enum.Enum):
     """Type of extremal birational contraction.
 
-    Seven types following the classification in arXiv:2212.10573:
+    Eight types following the classification in arXiv:2212.10573:
     asymptotic, CFT, su(2) enhancement, su(2) enhancement at
     non-generic complex structure, symmetric flop, gross flop,
-    generic flop.
+    generic flop, plus an ``UNRESOLVED`` sentinel for walls that
+    require higher GV degree than the ceiling allows.
     """
 
     ASYMPTOTIC = "asymptotic"
@@ -55,6 +58,7 @@ class ContractionType(enum.Enum):
     SYMMETRIC_FLOP = "symmetric_flop"
     GROSS_FLOP = "gross_flop"
     FLOP = "flop"
+    UNRESOLVED = "unresolved"
 
     def display_name(self, notation="paper"):
         """Return human-readable name in the given notation.

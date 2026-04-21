@@ -733,6 +733,10 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
     classified (empty series or insufficient GVs), bumps the degree
     and **restarts the entire BFS from scratch** with the new GVs.
 
+    The degree bump is targeted: for each deferred wall, the exact
+    degree needed to resolve the next lattice point along that
+    curve's ray is computed. The bump goes to the maximum of these.
+
     Potent curves are detected by tracking series length across retries.
     If a wall's GV series has >= 4 populated multiples (C, 2C, 3C, 4C)
     and still doesn't terminate, it is flagged as potent and not retried.
@@ -745,10 +749,13 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
         Enable info-level logging. Default True.
     limit : int, optional
         Maximum number of phases. Default 100.
-    max_deg_ceiling : int, optional
-        Maximum degree to recompute GVs to. Default 20.
+    max_deg_ceiling : int or None, optional
+        Maximum degree to recompute GVs to. Default 20. Pass ``None``
+        to remove the ceiling entirely (the targeted bump drives the
+        degree). When a ceiling is active, walls requiring higher
+        degree are labelled ``ContractionType.UNRESOLVED``.
     deg_step : int, optional
-        Degree increment per retry round. Default 2.
+        Degree increment per retry round (fallback only). Default 2.
     validate_stability : bool, optional
         If True, after the main BFS completes, bump degree by
         ``deg_step`` and re-run the full BFS to verify that results
@@ -839,27 +846,43 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
                 needed = (n_current + 1) * deg_per_mult + 1
                 required_deg = max(required_deg, needed)
 
-        if not still_deferred or current_deg >= max_deg_ceiling:
-            # Report unresolved walls
-            if still_deferred:
-                logger.warning(
-                    "%d wall(s) unresolved at max_deg=%d:",
-                    len(still_deferred), current_deg,
+        if not still_deferred:
+            break
+
+        # Check ceiling
+        hit_ceiling = (max_deg_ceiling is not None
+                       and current_deg >= max_deg_ceiling)
+
+        if hit_ceiling:
+            # Label unresolved walls as UNRESOLVED contractions
+            logger.warning(
+                "%d wall(s) unresolved at max_deg=%d (ceiling):",
+                len(still_deferred), current_deg,
+            )
+            for wc, sl, _, _ in still_deferred:
+                logger.warning("  curve %s from %s", normalize_curve(wc), sl)
+            ekc._unresolved_walls = [
+                (normalize_curve(wc), sl) for wc, sl, _, _ in still_deferred
+            ]
+            # Record as UNRESOLVED contractions so they're visible
+            for wc, sl, _, _ in still_deferred:
+                contraction = ExtremalContraction(
+                    contraction_type=ContractionType.UNRESOLVED,
+                    wall_curve=normalize_curve(wc),
                 )
-                for wc, sl, _, _ in still_deferred:
-                    logger.warning("  curve %s from %s", normalize_curve(wc), sl)
-                ekc._unresolved_walls = [
-                    (normalize_curve(wc), sl) for wc, sl, _, _ in still_deferred
-                ]
+                ekc._graph.add_contraction(contraction, sl, None)
             break
 
         # Targeted degree bump: resolve the next lattice point for
-        # the highest-degree deferred curve, clamped to ceiling
-        new_deg = min(required_deg, max_deg_ceiling)
+        # the highest-degree deferred curve
+        new_deg = required_deg
+        if max_deg_ceiling is not None:
+            new_deg = min(new_deg, max_deg_ceiling)
         if new_deg <= current_deg:
-            # Fallback: if targeted bump didn't increase (e.g. negative
-            # degree curves), use deg_step
-            new_deg = min(current_deg + deg_step, max_deg_ceiling)
+            # Fallback: if targeted bump didn't increase, use deg_step
+            new_deg = current_deg + deg_step
+            if max_deg_ceiling is not None:
+                new_deg = min(new_deg, max_deg_ceiling)
 
         logger.info(
             "Adaptive GV: deg %d -> %d, restarting BFS (%d deferred walls)",

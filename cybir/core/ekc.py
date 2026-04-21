@@ -108,10 +108,13 @@ class CYBirationalClass:
             Enable info-level logging. Default True.
         limit : int, optional
             Maximum number of phases. Default 100.
-        max_deg_ceiling : int, optional
-            Maximum degree to recompute GVs to. Default 20.
+        max_deg_ceiling : int or None, optional
+            Maximum degree to recompute GVs to. Default 20. Pass
+            ``None`` to remove the ceiling (targeted bump drives
+            the degree). Unresolved walls are labelled
+            ``ContractionType.UNRESOLVED`` when a ceiling is active.
         deg_step : int, optional
-            Degree increment per retry round. Default 2.
+            Degree increment per retry round (fallback only). Default 2.
         validate_stability : bool, optional
             If True, after BFS completes, bump degree and re-run to
             verify results are unchanged. Default False.
@@ -230,10 +233,12 @@ class CYBirationalClass:
             Pre-computed GV invariants. If provided, skips the expensive
             ``compute_gvs`` call in ``setup_root``. Useful for caching
             GVs across multiple runs.
-        max_deg_ceiling : int, optional
-            Maximum degree to recompute GVs to. Default 20.
+        max_deg_ceiling : int or None, optional
+            Maximum degree to recompute GVs to. Default 20. Pass
+            ``None`` to remove the ceiling. Walls requiring higher
+            degree are labelled ``ContractionType.UNRESOLVED``.
         deg_step : int, optional
-            Degree increment per retry round. Default 2.
+            Degree increment per retry round (fallback only). Default 2.
         validate_stability : bool, optional
             If True, after BFS completes, bump degree and re-run to
             verify results are unchanged. Default False.

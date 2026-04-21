@@ -313,9 +313,9 @@ class TestExtremalContractionRepr:
 class TestContractionType:
     """Test ContractionType enum."""
 
-    def test_exactly_7_members(self):
-        """ContractionType has exactly 7 members."""
-        assert len(ContractionType) == 7
+    def test_exactly_8_members(self):
+        """ContractionType has exactly 8 members."""
+        assert len(ContractionType) == 8
 
     def test_values(self):
         """Enum values match expected strings."""
