@@ -879,10 +879,25 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
         if max_deg_ceiling is not None:
             new_deg = min(new_deg, max_deg_ceiling)
         if new_deg <= current_deg:
-            # Fallback: if targeted bump didn't increase, use deg_step
-            new_deg = current_deg + deg_step
-            if max_deg_ceiling is not None:
-                new_deg = min(new_deg, max_deg_ceiling)
+            # Can't bump further — treat remaining walls as unresolved
+            if still_deferred:
+                logger.warning(
+                    "%d wall(s) unresolved: targeted degree %d exceeds "
+                    "ceiling %s (current %d)",
+                    len(still_deferred), required_deg,
+                    max_deg_ceiling, current_deg,
+                )
+                ekc._unresolved_walls = [
+                    (normalize_curve(wc), sl)
+                    for wc, sl, _, _ in still_deferred
+                ]
+                for wc, sl, _, _ in still_deferred:
+                    contraction = ExtremalContraction(
+                        normalize_curve(wc),
+                        contraction_type=ContractionType.UNRESOLVED,
+                    )
+                    ekc._graph.add_contraction(contraction, sl, None)
+            break
 
         logger.info(
             "Adaptive GV: deg %d -> %d, restarting BFS (%d deferred walls)",
