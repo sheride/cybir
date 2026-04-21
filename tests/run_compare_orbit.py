@@ -22,6 +22,8 @@ def main():
     parser.add_argument("--total", type=int, default=243)
     parser.add_argument("--timeout", type=int, default=120,
                         help="Max seconds per polytope (default: 120)")
+    parser.add_argument("--no-ceiling", action="store_true",
+                        help="Remove max_deg ceiling (pass through to compare_orbit)")
     args = parser.parse_args()
 
     outfile = "tests/compare_orbit_results.jsonl"
@@ -37,12 +39,15 @@ def main():
     for i in range(args.start, args.total):
         t0 = time.time()
         try:
-            result = subprocess.run(
-                [sys.executable, "tests/compare_orbit.py",
+            cmd = [sys.executable, "tests/compare_orbit.py",
                  "--h11", str(args.h11),
                  "--start", str(i),
                  "--count", "1",
-                 "--no-nongeneric-cs"],
+                 "--no-nongeneric-cs"]
+            if args.no_ceiling:
+                cmd.append("--no-ceiling")
+            result = subprocess.run(
+                cmd,
                 timeout=args.timeout,
                 capture_output=True,
                 text=True,
