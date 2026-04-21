@@ -357,10 +357,10 @@ def setup_root(ekc, max_deg=4):
 def _run_bfs(ekc, verbose, limit, check_toric=False):
     """Run one pass of BFS construction. Returns (phase_counter, deferred).
 
-    The deferred list contains (wall_curve, source_label, series_len) tuples
-    for walls that could not be classified at the current GV degree.
-    series_len is the number of nonzero GV entries seen, used to detect
-    potent curves across retries.
+    The deferred list contains (wall_curve, source_label, series_len, chain)
+    tuples for walls that could not be classified at the current GV degree.
+    series_len is the number of GV entries seen, and chain is the flop chain
+    for the source phase (needed to compute effective grading degree).
 
     Parameters
     ----------
@@ -452,7 +452,7 @@ def _run_bfs(ekc, verbose, limit, check_toric=False):
         series = gvs_local.gv_series_cybir(wall_curve)
 
         if not series:
-            deferred.append((np.array(wall_curve), source_label, 0))
+            deferred.append((np.array(wall_curve), source_label, 0, list(chain)))
             continue
 
         # Classify
@@ -461,7 +461,7 @@ def _run_bfs(ekc, verbose, limit, check_toric=False):
                 source.int_nums, source.c2, wall_curve, series
             )
         except InsufficientGVError:
-            deferred.append((np.array(wall_curve), source_label, len(series)))
+            deferred.append((np.array(wall_curve), source_label, len(series), list(chain)))
             continue
         except Exception as exc:
             logger.warning(
@@ -799,9 +799,12 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
         if not deferred:
             break  # all walls classified successfully
 
-        # Check for potent curves: if series_len >= threshold, flag and remove
+        # Check for potent curves and compute targeted degree bump
         still_deferred = []
-        for wall_curve, source_label, series_len in deferred:
+        grading = ekc._root_invariants.grading_vec
+        required_deg = current_deg
+
+        for wall_curve, source_label, series_len, chain in deferred:
             key = (normalize_curve(wall_curve), source_label)
             prev_len = potent_candidates.get(key, 0)
 
@@ -814,17 +817,27 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
                 )
                 continue  # drop this wall — it's potent
 
-            if series_len > 0 and series_len == prev_len:
-                # Series didn't grow despite higher degree — also likely potent
-                logger.warning(
-                    "  Potent curve suspected: %s from %s "
-                    "(series length unchanged at %d after degree bump)",
-                    normalize_curve(wall_curve), source_label, series_len,
-                )
-                continue
-
             potent_candidates[key] = series_len
-            still_deferred.append((wall_curve, source_label, series_len))
+            still_deferred.append(
+                (wall_curve, source_label, series_len, chain)
+            )
+
+            # Compute the degree needed to resolve the next lattice
+            # point along this curve's ray, accounting for the flop
+            # chain's sign flips and basis change.
+            gvs_local = ekc._root_invariants.flop_gvs(chain)
+            c = np.asarray(wall_curve)
+            # Apply flop sign correction
+            for fc in gvs_local.flop_curves:
+                from .patch import _is_aligned
+                if _is_aligned(c, fc):
+                    c = -c
+            c_gv = gvs_local.precompose @ c
+            deg_per_mult = int(np.dot(c_gv, grading))
+            if deg_per_mult > 0:
+                n_current = current_deg // deg_per_mult
+                needed = (n_current + 1) * deg_per_mult + 1
+                required_deg = max(required_deg, needed)
 
         if not still_deferred or current_deg >= max_deg_ceiling:
             # Report unresolved walls
@@ -833,22 +846,27 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
                     "%d wall(s) unresolved at max_deg=%d:",
                     len(still_deferred), current_deg,
                 )
-                for wc, sl, _ in still_deferred:
+                for wc, sl, _, _ in still_deferred:
                     logger.warning("  curve %s from %s", normalize_curve(wc), sl)
                 ekc._unresolved_walls = [
-                    (normalize_curve(wc), sl) for wc, sl, _ in still_deferred
+                    (normalize_curve(wc), sl) for wc, sl, _, _ in still_deferred
                 ]
             break
 
-        # Bump degree, recompute GVs, restart BFS
-        new_deg = min(current_deg + deg_step, max_deg_ceiling)
+        # Targeted degree bump: resolve the next lattice point for
+        # the highest-degree deferred curve, clamped to ceiling
+        new_deg = min(required_deg, max_deg_ceiling)
+        if new_deg <= current_deg:
+            # Fallback: if targeted bump didn't increase (e.g. negative
+            # degree curves), use deg_step
+            new_deg = min(current_deg + deg_step, max_deg_ceiling)
+
         logger.info(
             "Adaptive GV: deg %d -> %d, restarting BFS (%d deferred walls)",
             current_deg, new_deg, len(still_deferred),
         )
 
         cy = ekc._cy
-        grading = ekc._root_invariants.grading_vec
         new_gvs = cy.compute_gvs(grading_vec=grading, max_deg=new_deg)
         new_gvs.flop_curves = []
         new_gvs.precompose = np.eye(len(grading))
