@@ -867,8 +867,8 @@ def construct_phases(ekc, verbose=True, limit=100, max_deg_ceiling=20,
             # Record as UNRESOLVED contractions so they're visible
             for wc, sl, _, _ in still_deferred:
                 contraction = ExtremalContraction(
+                    normalize_curve(wc),
                     contraction_type=ContractionType.UNRESOLVED,
-                    wall_curve=normalize_curve(wc),
                 )
                 ekc._graph.add_contraction(contraction, sl, None)
             break

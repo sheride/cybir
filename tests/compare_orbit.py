@@ -103,7 +103,8 @@ def _save_gvs(cache_dir, poly_id, gvs):
         pickle.dump(gvs, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None):
+def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None,
+                   max_deg_ceiling=20):
     """Run both methods and compare results."""
     print(f"\n{'='*60}")
     print(f"Polytope {poly_id} (h11={polytope.h11('N')})")
@@ -137,7 +138,8 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None):
 
     try:
         ekc_fund = CYBirationalClass.from_gv(
-            cy, max_deg=max_deg, verbose=False, gvs=cached_gvs)
+            cy, max_deg=max_deg, verbose=False, gvs=cached_gvs,
+            max_deg_ceiling=max_deg_ceiling)
     except Exception as e:
         print(f"  SKIP: cybir fundamental domain failed: {e}")
         if outfile:
@@ -170,7 +172,8 @@ def compare_orbit(poly_id, polytope, max_deg=10, outfile=None, cache_dir=None):
     try:
         ekc_cybir = CYBirationalClass.from_gv(
             cy, max_deg=max_deg, verbose=False,
-            gvs=ekc_fund._root_invariants)
+            gvs=ekc_fund._root_invariants,
+            max_deg_ceiling=max_deg_ceiling)
         ekc_cybir.apply_coxeter_orbit(phases=True)
     except Exception as e:
         print(f"  Cybir orbit expansion FAILED: {e}")
@@ -276,6 +279,8 @@ def main():
                         help="Directory for cached GV invariants (default: tests/.gv_cache)")
     parser.add_argument("--no-cache", action="store_true",
                         help="Disable GV caching (recompute everything)")
+    parser.add_argument("--no-ceiling", action="store_true",
+                        help="Remove max_deg ceiling (targeted bump drives degree)")
     args = parser.parse_args()
 
     # Disable SU2_NONGENERIC_CS if requested (for fair comparison with old code)
@@ -307,9 +312,10 @@ def main():
                 results.append((i, None))
                 continue
             cache_dir = None if args.no_cache else args.cache_dir
+            ceiling = None if args.no_ceiling else 20
             ok = compare_orbit(
                 f"h11={args.h11} #{i}", p, max_deg=10, outfile=f,
-                cache_dir=cache_dir)
+                cache_dir=cache_dir, max_deg_ceiling=ceiling)
             results.append((i, ok))
 
     # Summary
