@@ -131,3 +131,13 @@ Plans:
 - [x] 06-04-PLAN.md -- Incremental toric BFS integration, Mori bounds, phase classification API
 - [x] 06-05-PLAN.md -- Cone construction methods, diagnose_curve, re-exports
 - [x] 06-06-PLAN.md -- h11=3 re-validation with GrossFlop fix
+
+### Phase 7: h11=2,3 survey validation with cached ground truth for fundamental domain and orbit expansion
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 7 to break down)
