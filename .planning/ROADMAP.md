@@ -70,7 +70,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -79,7 +79,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Pipeline & Integration | 4/4 | Complete | 2026-04-12 |
 | 4. Coxeter Group & Weyl Expansion | 4/4 | Complete   | 2026-04-12 |
 | 5. Polish, Validation & h11=3 Survey | 3/3 | Complete | 2026-04-16 |
-| 6. Classification Correctness, Toric Curves & Cone Construction | 3/6 | In Progress|  |
+| 6. Classification Correctness, Toric Curves & Cone Construction | 6/6 | Complete |  |
+| 7. h11=2,3 Survey Validation with Cached Ground Truth | 0/2 | Planned |  |
 
 ### Phase 4: Coxeter Group & Weyl Expansion
 **Goal**: Proper Coxeter group construction from symmetric-flop reflections with finite-type detection and memory-safe enumeration, full Weyl orbit expansion acting on all phase data with correct index conventions (g on Mori, (g^-1)^T on Kahler), and generator accumulation from reflected phases
@@ -122,7 +123,7 @@ Plans:
 
 **Goal:** Fix GrossFlop misclassification (Kahler cone check for symmetric flop candidates), add toric curve computation with FRST detection and Mori cone bounds, CoxeterGroup dataclass with flexible orbit expansion (EKC/HEKC/all), cone construction (movable, EKC, HEKC), diagnose_curve convenience API, and re-validate h11=3 survey
 **Depends on:** Phase 5
-**Plans:** 3/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 06-01-PLAN.md -- GrossFlop enum + classification fix, CoxeterGroup dataclass, classification invariance check
@@ -132,12 +133,19 @@ Plans:
 - [x] 06-05-PLAN.md -- Cone construction methods, diagnose_curve, re-exports
 - [x] 06-06-PLAN.md -- h11=3 re-validation with GrossFlop fix
 
-### Phase 7: h11=2,3 survey validation with cached ground truth for fundamental domain and orbit expansion
+### Phase 7: h11=2,3 Survey Validation with Cached Ground Truth
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Generate and cache ground-truth EKC data from the original cornell-dev code for all h11=2 and h11=3 favorable polytopes in durable JSON+npz format, then validate cybir against this cached ground truth via pytest-integrated regression tests, replacing the existing ad-hoc survey/comparison scripts
 **Depends on:** Phase 6
-**Plans:** 0 plans
+**Requirements**: GT-01, GT-02, GT-03, GT-04, GT-05, GT-06
+**Success Criteria** (what must be TRUE):
+  1. Ground truth generation script runs on all h11=2 and h11=3 favorable polytopes, producing JSON+npz per polytope
+  2. Fundamental domain data is cached for ALL polytopes; full BFS data cached for finite Coxeter groups only
+  3. Per-phase intersection numbers, c2, Kahler cones, and per-contraction curves/types are all cached comprehensively
+  4. pytest regression tests compare cybir output against cached ground truth for every polytope
+  5. Old ad-hoc scripts (survey_h11_3.py, compare_orbit.py, run_compare_orbit.py) are removed
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 7 to break down)
+- [ ] 07-01-PLAN.md -- Ground truth generation script, directory structure, JSON+npz schema
+- [ ] 07-02-PLAN.md -- pytest regression tests, old script cleanup
