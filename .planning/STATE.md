@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-04-23T19:11:38.043Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-04-23T20:37:12.304Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 28
-  completed_plans: 26
-  percent: 93
+  completed_plans: 27
+  percent: 96
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 08 (deploy-cybir-sphinx-documentation-to-github-pages-at-https-s) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-23
 
@@ -80,6 +80,7 @@ Progress: [█████████░] 96%
 | Phase 07 P01 | 3min | 2 tasks | 8 files |
 | Phase 07 P02 | 2min | 2 tasks | 8 files |
 | Phase 08 P01 | 20min | 2 tasks | 5 files |
+| Phase 08 P02 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,7 @@ Recent decisions affecting current work:
 - [Phase 08]: autodoc_mock_imports scoped narrowly to [cytools, regfans] — flint not imported by cybir, hsnf is pure-Python pip-installable
 - [Phase 08]: docs build deps live in [project.optional-dependencies.docs] extra (single source of truth for local + CI)
 - [Phase 08]: Prose |W| in docstrings must be wrapped as :math:`|W|` — RST reads |...| as substitution reference and Sphinx -W fails otherwise
+- [Phase 08]: Notebook-to-docs recipe: ln -s ../../../notebooks/<name>.ipynb into documentation/source/notebooks/ + toctree entry in index.rst; git tracks mode 120000 symlink (not copy); myst-nb renders from stored outputs
 
 ### Roadmap Evolution
 
@@ -147,6 +149,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-23T19:11:38.031Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-04-23T20:37:12.298Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
