@@ -182,27 +182,31 @@ def induced_2face_triangulations(polytope, triangulations):
     return triangulations_2faces
 
 
-def classify_phase_type(kahler_cone, charge_matrix, moving_cone_obj=None):
+def classify_phase_type(kahler_cone, charge_matrix, moving_cone_obj=None,
+                        points_no_origin=None):
     """Classify a phase as FRST, vex, or non-inherited.
 
-    Uses the FRST detection trichotomy (D-06):
+    Uses the FRST detection trichotomy:
 
-    1. Compute the moving cone from the charge matrix.
-    2. Check if the phase's Kahler cone has solid intersection with
+    1. Check if the phase's Kähler cone has solid intersection with
        the moving cone.
-    3. If solid, find an interior point, lift to a height vector,
-       and use regfans to subdivide the vector configuration.
+    2. If solid, find an interior point, lift to a height vector.
+    3. Build a ``VectorConfiguration`` from the polytope points
+       (excluding origin) and triangulate with those heights.
     4. Check if the resulting fan respects the point configuration
        (i.e., is a fine regular star triangulation).
 
     Parameters
     ----------
     kahler_cone : cytools.Cone
-        The phase's Kahler cone.
+        The phase's Kähler cone.
     charge_matrix : numpy.ndarray
-        GLSM charge matrix Q, shape ``(h11, n_points)``.
+        GLSM charge matrix Q (without origin), shape ``(h11, n_points)``.
     moving_cone_obj : cytools.Cone, optional
         Pre-computed moving cone. If None, computed from charge_matrix.
+    points_no_origin : numpy.ndarray, optional
+        Polytope points excluding the origin, shape ``(n_points, dim)``.
+        Required for correct FRST detection.
 
     Returns
     -------
@@ -211,14 +215,6 @@ def classify_phase_type(kahler_cone, charge_matrix, moving_cone_obj=None):
         ``'frst'``, ``'vex'``, or ``'non_inherited'``, and
         ``fan_or_none`` is the regfans Fan for frst/vex phases
         or None.
-
-    Notes
-    -----
-    Per D-06 in CONTEXT.md. Uses regfans ``VectorConfiguration`` for
-    FRST detection. Uses CYTools ``Cone.intersection()`` and
-    ``Cone.is_solid()`` for checking solid intersection with the
-    moving cone (both methods verified to exist on the CYTools
-    Cone class).
     """
     from regfans import VectorConfiguration
 
@@ -242,17 +238,28 @@ def classify_phase_type(kahler_cone, charge_matrix, moving_cone_obj=None):
     Q = np.asarray(charge_matrix, dtype=float)
     h = np.linalg.lstsq(Q, J.astype(float), rcond=None)[0]
 
-    # Subdivide vector configuration
-    vc = VectorConfiguration(Q.T)
+    # Scale to integers and add [0,1,2,...] to guarantee distinct heights.
+    # lstsq minimum-norm solutions often have degenerate components that
+    # produce non-simplicial subdivisions in regfans.
+    h_int = np.round(h * 10000).astype(int) + np.arange(len(h))
+
+    # Build vector configuration from polytope points (not GLSM charges)
+    if points_no_origin is None:
+        return ("non_inherited", None)
+
+    vc = VectorConfiguration(points_no_origin)
     try:
-        fan = vc.triangulate(heights=h)
+        fan = vc.triangulate(heights=h_int)
     except Exception:
         return ("non_inherited", None)
 
-    if fan.respects_ptconfig():
-        return ("frst", fan)
-    else:
-        return ("vex", fan)
+    try:
+        if fan.respects_ptconfig():
+            return ("frst", fan)
+        else:
+            return ("vex", fan)
+    except NotImplementedError:
+        return ("non_inherited", None)
 
 
 def orient_curves_for_phase(curves, tip):

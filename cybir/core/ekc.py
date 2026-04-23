@@ -378,30 +378,71 @@ class CYBirationalClass:
         """
         return self._coxeter_group
 
+    def _ensure_coxeter_classified(self):
+        """Lazily compute Coxeter type and order from accumulated reflections.
+
+        Only runs once; subsequent calls are no-ops.  Does NOT expand the
+        orbit — only classifies the group from its generators.
+        """
+        if self._coxeter_type_info is not None:
+            return  # already classified (by this method or apply_coxeter_orbit)
+        if not self._coxeter_refs:
+            # No reflections → trivial group
+            self._coxeter_type_info = []
+            self._coxeter_order = 1
+            return
+        from .coxeter import (
+            coxeter_order_matrix,
+            is_finite_type,
+            classify_coxeter_type,
+            coxeter_group_order,
+        )
+
+        refs = [np.array(r) for r in self._coxeter_refs]
+        try:
+            order_mat = coxeter_order_matrix(refs)
+        except ValueError:
+            # matrix_period exceeded max iterations → infinite order pair
+            self._coxeter_type_info = []
+            self._coxeter_order = None
+            return
+        if not is_finite_type(order_mat):
+            # Infinite group — order is infinite, type list may still
+            # be partially meaningful but we mark order as None.
+            self._coxeter_type_info = []
+            self._coxeter_order = None
+            return
+        type_list = classify_coxeter_type(order_mat)
+        self._coxeter_type_info = type_list
+        self._coxeter_order = coxeter_group_order(type_list)
+
     @property
     def coxeter_type(self):
-        """Coxeter group type classification, or None.
+        """Coxeter group type classification.
 
-        Set by :meth:`apply_coxeter_orbit`. Returns a list of
-        ``(type_string, rank, order)`` tuples for each irreducible
-        component.
+        Lazily computed on first access from the accumulated reflections.
+        Returns a list of ``(type_string, rank, order)`` tuples for each
+        irreducible component.  Empty list for the trivial group.
 
         Returns
         -------
-        list of tuple or None
+        list of tuple
         """
+        self._ensure_coxeter_classified()
         return self._coxeter_type_info
 
     @property
     def coxeter_order(self):
-        """Order :math:`|W|` of the Coxeter group, or None.
+        """Order :math:`|W|` of the Coxeter group.
 
-        Set by :meth:`apply_coxeter_orbit`.
+        Lazily computed on first access.  Returns 1 for the trivial group
+        (no reflections), ``None`` for infinite groups.
 
         Returns
         -------
         int or None
         """
+        self._ensure_coxeter_classified()
         return self._coxeter_order
 
     @property

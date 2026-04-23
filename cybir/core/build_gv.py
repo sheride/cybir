@@ -397,6 +397,7 @@ def _run_bfs(ekc, verbose, limit, check_toric=False):
         ekc._frst_triangulations = []
         ekc._seen_2face_triags = set()
         ekc._phase_types = {}  # label -> 'frst'|'vex'|'non_inherited'
+        pts_no_origin = cy.polytope().points_not_interior_to_facets()[1:]
 
     # Initialize from root
     root_tip = _compute_tip(root)
@@ -416,7 +417,7 @@ def _run_bfs(ekc, verbose, limit, check_toric=False):
 
     # Classify root phase for toric curves
     if check_toric:
-        phase_type, fan = classify_phase_type(root.kahler_cone, Q, moving_cone_obj=mc)
+        phase_type, fan = classify_phase_type(root.kahler_cone, Q, moving_cone_obj=mc, points_no_origin=pts_no_origin)
         ekc._phase_types["CY_0"] = phase_type
         if phase_type == 'frst' and fan is not None:
             try:
@@ -653,7 +654,8 @@ def _run_bfs(ekc, verbose, limit, check_toric=False):
             # Toric classification for new flopped phase
             if check_toric:
                 phase_type, fan = classify_phase_type(
-                    flopped._kahler_cone, Q, moving_cone_obj=mc
+                    flopped._kahler_cone, Q, moving_cone_obj=mc,
+                    points_no_origin=pts_no_origin
                 )
                 ekc._phase_types[new_label] = phase_type
                 if phase_type == 'frst' and fan is not None:
@@ -702,13 +704,38 @@ def _run_bfs(ekc, verbose, limit, check_toric=False):
                     tuple(np.round(ray).astype(int).tolist())
                 )
         else:
-            ekc._graph.add_contraction(
-                contraction, source_label, existing_label
-            )
-            logger.info(
-                "  re-encountered phase %s via %s",
-                existing_label, tuple_curve,
-            )
+            # Check if this wall already has a contraction between
+            # these two phases (from the other side's BFS traversal).
+            # Each wall should produce exactly one contraction, with
+            # the zvd sign from the phase that first discovered it.
+            already_exists = False
+            norm = normalize_curve(wall_curve)
+            for _, _, edata in ekc._graph._graph.edges(data=True):
+                ec = edata.get("contraction")
+                if ec is None:
+                    continue
+                ec_norm = normalize_curve(ec.contraction_curve)
+                pa = edata.get("phase_a")
+                if ec_norm == norm and (
+                    (pa == source_label)
+                    or (pa == existing_label)
+                ):
+                    already_exists = True
+                    break
+
+            if already_exists:
+                logger.info(
+                    "  skipping duplicate contraction %s → %s via %s",
+                    source_label, existing_label, tuple_curve,
+                )
+            else:
+                ekc._graph.add_contraction(
+                    contraction, source_label, existing_label
+                )
+                logger.info(
+                    "  re-encountered phase %s via %s",
+                    existing_label, tuple_curve,
+                )
 
     # Add root Kahler cone rays to effective cone gens
     if root.kahler_cone is not None:

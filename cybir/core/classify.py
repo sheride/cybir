@@ -119,8 +119,22 @@ def zero_vol_divisor(int_nums, curve):
     :math:`v_\alpha`, the zero-volume divisor in the full basis is
     :math:`D_i = \Pi^T_{i\alpha} v_\alpha`, cleaned to integer form.
 
-    The sign convention is :math:`D \cdot \mathcal{C} < 0`
-    (Pitfall 3 in Phase 2 RESEARCH.md).
+    **Sign convention:** :math:`D \cdot \mathcal{C} < 0`.
+
+    The zero-volume divisor is defined only up to sign (it spans a 1D
+    null space).  The sign is fixed by requiring :math:`D \cdot C < 0`,
+    where :math:`C` is the inward-pointing Mori cone generator of the
+    source phase.  Physically, this is the divisor that *would become
+    effective* if one tuned complex structure to make this wall an su(2)
+    enhancement, taking the source phase as the fundamental domain.
+
+    Under the Coxeter reflection :math:`R` associated to the wall,
+    :math:`R^{-T} D = -D` (the reflection acting on divisors sends
+    :math:`D \to -D`).  This is consistent: viewing the wall from the
+    other phase reverses which side is the fundamental domain and
+    requires :math:`-D` as the would-be effective divisor.  Thus the
+    same wall produces opposite-sign zvds when classified from opposite
+    phases — this is expected, not a bug.
 
     See arXiv:2212.10573 Section 4 (shrinking divisors).
 
