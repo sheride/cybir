@@ -8,6 +8,13 @@ import pytest
 from cybir.core.types import CalabiYauLite
 
 
+def pytest_configure(config):
+    """Register custom markers."""
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+    )
+
+
 @pytest.fixture
 def sample_int_nums():
     """A simple 2x2x2 symmetric intersection-number tensor for h11=2."""
