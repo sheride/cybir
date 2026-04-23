@@ -4,6 +4,8 @@ Birational geometry of Calabi-Yau threefold hypersurfaces in toric varieties.
 
 **cybir** reconstructs the extended Kahler cone (EKC) from genus-zero Gopakumar-Vafa invariants, following the methods of [arXiv:2212.10573](https://arxiv.org/abs/2212.10573) (Gendler, Heidenreich, McAllister, Moritz, Rudelius) and [arXiv:2303.00757](https://arxiv.org/abs/2303.00757) (Demirtas, Kim, McAllister, Moritz, Rios-Tascon). Built to integrate cleanly with [CYTools](https://cytools.liagre.fr/).
 
+Documentation: <https://sheride.github.io/cybir>
+
 ## Features
 
 - **BFS-based EKC construction** with adaptive GV degree (starts low, bumps automatically if needed)
