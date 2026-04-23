@@ -70,7 +70,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -80,10 +80,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Coxeter Group & Weyl Expansion | 4/4 | Complete   | 2026-04-12 |
 | 5. Polish, Validation & h11=3 Survey | 3/3 | Complete | 2026-04-16 |
 | 6. Classification Correctness, Toric Curves & Cone Construction | 6/6 | Complete |  |
-| 7. h11=2,3 Survey Validation with Cached Ground Truth | 0/2 | Planned |  |
+| 7. h11=2,3 Survey Validation with Cached Ground Truth | 1/2 | Executing |  |
+| 8. Deploy cybir Sphinx docs to GitHub Pages | 0/3 | Planned |  |
 
 ### Phase 4: Coxeter Group & Weyl Expansion
-**Goal**: Proper Coxeter group construction from symmetric-flop reflections with finite-type detection and memory-safe enumeration, full Weyl orbit expansion acting on all phase data with correct index conventions (g on Mori, (g^-1)^T on Kahler), and generator accumulation from reflected phases
+**Goal**: Proper Coxeter group construction from symmetric-flop reflection matrices using streaming BFS with memory estimation, full Weyl orbit expansion acting on all phase data with correct index conventions (g on Mori, (g^-1)^T on Kahler), and generator accumulation from reflected phases
 **Depends on**: Phase 3
 **Requirements**: SC-1, SC-2, SC-3, SC-4, SC-5, SC-6
 **Success Criteria** (what must be TRUE):
@@ -137,7 +138,7 @@ Plans:
 
 **Goal:** Generate and cache ground-truth EKC data from the original cornell-dev code for all h11=2 and h11=3 favorable polytopes in durable JSON+npz format, then validate cybir against this cached ground truth via pytest-integrated regression tests, replacing the existing ad-hoc survey/comparison scripts
 **Depends on:** Phase 6
-**Requirements**: GT-01, GT-02, GT-03, GT-04, GT-05, GT-06
+**Requirements**: GT-01, GT-02, GT-03, GT-04, GT-05
 **Success Criteria** (what must be TRUE):
   1. Ground truth generation script runs on all h11=2 and h11=3 favorable polytopes, producing JSON+npz per polytope
   2. Fundamental domain data is cached for ALL polytopes; full BFS data cached for finite Coxeter groups only
@@ -147,5 +148,16 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md -- Ground truth generation script, directory structure, JSON+npz schema
-- [ ] 07-02-PLAN.md -- pytest regression tests, old script cleanup
+- [x] 07-01-PLAN.md -- Ground truth generation script, directory structure, JSON+npz schema
+- [x] 07-02-PLAN.md -- pytest regression tests, old script cleanup
+
+### Phase 8: Deploy cybir Sphinx docs to GitHub Pages
+
+**Goal:** Publish cybir Sphinx HTML to https://sheride.github.io/cybir on every push to `main` via a GitHub Actions workflow, with PR-only builds as pre-merge smoke tests. Autodoc succeeds in CI using `autodoc_mock_imports = ["cytools", "regfans"]` (grep-verified narrow list — flint and hsnf are NOT mocked). Notebooks render from stored output (`nb_execution_mode = "off"`). Deploy via `peaceiris/actions-gh-pages@v4` with `force_orphan: true` and `.nojekyll` emission. README links to the deployed URL.
+**Depends on:** Phase 7
+**Plans:** 3 plans
+
+Plans:
+- [x] 08-01-PLAN.md -- Add `[project.optional-dependencies.docs]` to pyproject.toml and `autodoc_mock_imports = ["cytools", "regfans"]` to conf.py; local `-W` Sphinx build smoke-passes
+- [ ] 08-02-PLAN.md -- Create `documentation/source/notebooks/h11_3_survey.ipynb` relative symlink and add `notebooks/h11_3_survey` to Examples toctree in index.rst
+- [ ] 08-03-PLAN.md -- Create `.github/workflows/docs.yml` (build + gated deploy with least-privilege permissions), add docs URL to README.md, verify `.gitignore` covers `documentation/build/`

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-05-PLAN.md
-last_updated: "2026-04-22T01:41:40.813Z"
-last_activity: 2026-04-22
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-04-23T19:11:38.043Z"
+last_activity: 2026-04-23
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 23
-  completed_plans: 23
-  percent: 100
+  total_phases: 8
+  completed_phases: 7
+  total_plans: 28
+  completed_plans: 26
+  percent: 93
 ---
 
 # Project State
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** A clean, well-documented, modular implementation of GV-based EKC construction that is easy to use, extend, and understand
-**Current focus:** Phase 06 — classification-correctness-toric-curves-cone-construction
+**Current focus:** Phase 08 — deploy-cybir-sphinx-documentation-to-github-pages-at-https-s
 
 ## Current Position
 
-Phase: 06
-Plan: Not started
+Phase: 08 (deploy-cybir-sphinx-documentation-to-github-pages-at-https-s) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-22
+Last activity: 2026-04-23
 
-Progress: [█████░░░░░] 50%
+Progress: [█████████░] 96%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 19
+- Total plans completed: 21
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -49,6 +49,7 @@ Progress: [█████░░░░░] 50%
 | 04 | 4 | - | - |
 | 05 | 3 | - | - |
 | 06 | 6 | - | - |
+| 07 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -76,6 +77,9 @@ Progress: [█████░░░░░] 50%
 | Phase 06 P03 | 8min | 2 tasks | 2 files |
 | Phase 06 P04 | 8min | 2 tasks | 4 files |
 | Phase 06 P05 | 4min | 2 tasks | 4 files |
+| Phase 07 P01 | 3min | 2 tasks | 8 files |
+| Phase 07 P02 | 2min | 2 tasks | 8 files |
+| Phase 08 P01 | 20min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -121,11 +125,17 @@ Recent decisions affecting current work:
 - [Phase 06]: _verify_mori_bounds cross-checks toric GVs against root_invariants.gv_series_cybir
 - [Phase 06]: hyperextended_kahler_cone delegates to extended_kahler_cone for API clarity
 - [Phase 06]: diagnose_curve is standalone function (not method) since it needs cy, curve, and optionally ekc
+- [Phase 07]: Pickle for transient GV cache (pragmatic exception); Coxeter type/order from cybir; subprocess per polytope for multiprocessing safety
+- [Phase 07]: Content-based phase matching (int_nums + c2) for ground truth comparison; Coxeter refs excluded; type mapping for SU2_NONGENERIC_CS and GROSS_FLOP
+- [Phase 08]: autodoc_mock_imports scoped narrowly to [cytools, regfans] — flint not imported by cybir, hsnf is pure-Python pip-installable
+- [Phase 08]: docs build deps live in [project.optional-dependencies.docs] extra (single source of truth for local + CI)
+- [Phase 08]: Prose |W| in docstrings must be wrapped as :math:`|W|` — RST reads |...| as substitution reference and Sphinx -W fails otherwise
 
 ### Roadmap Evolution
 
 - Phase 4 added: Coxeter Group & Weyl Expansion — proper group construction, streaming BFS, full orbit expansion with correct index conventions
 - Phase 6 added: Classification Correctness, Toric Curves & Cone Construction
+- Phase 8 added: Deploy cybir Sphinx documentation to GitHub Pages at https://sheride.github.io/cybir with autodoc_mock_imports + GitHub Actions
 
 ### Pending Todos
 
@@ -137,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-20T02:04:55.690Z
-Stopped at: Completed 06-05-PLAN.md
+Last session: 2026-04-23T19:11:38.031Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
