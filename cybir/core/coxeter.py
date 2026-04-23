@@ -10,7 +10,7 @@ extended Kahler cone construction. Functions include:
 - ``coxeter_bilinear_form``: B_ij = -cos(pi/m_ij)
 - ``is_finite_type``: Positive-definiteness check of the bilinear form
 - ``classify_coxeter_type``: Decompose into irreducible components and classify
-- ``coxeter_group_order``: |W| from closed-form formulas per type
+- ``coxeter_group_order``: :math:`|W|` from closed-form formulas per type
 - ``enumerate_coxeter_group``: Streaming BFS on the Cayley graph
 
 See arXiv:2212.10573 Section 4.3 for the role of Coxeter groups in
@@ -502,7 +502,7 @@ def classify_coxeter_type(order_matrix):
 
 
 def coxeter_group_order(type_list):
-    """Compute the order |W| of a Coxeter group from its type classification.
+    """Compute the order :math:`|W|` of a Coxeter group from its type classification.
 
     For reducible groups, the order is the product of the orders of the
     irreducible components.
@@ -516,7 +516,7 @@ def coxeter_group_order(type_list):
     Returns
     -------
     int
-        The order |W| of the Coxeter group.
+        The order :math:`|W|` of the Coxeter group.
 
     Notes
     -----
@@ -576,7 +576,7 @@ def enumerate_coxeter_group(generators, expected_order=None, max_memory_bytes=50
     generators : list of numpy.ndarray
         Integer reflection matrices (generators of the Coxeter group).
     expected_order : int, optional
-        Expected |W| from type classification. Used for memory estimation
+        Expected :math:`|W|` from type classification. Used for memory estimation
         and as a sanity check.
     max_memory_bytes : int, optional
         Memory cap for the seen-set. Default 500 MB. A warning is

@@ -394,7 +394,7 @@ class CYBirationalClass:
 
     @property
     def coxeter_order(self):
-        """Order |W| of the Coxeter group, or None.
+        """Order :math:`|W|` of the Coxeter group, or None.
 
         Set by :meth:`apply_coxeter_orbit`.
 

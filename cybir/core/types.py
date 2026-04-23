@@ -504,7 +504,7 @@ class CoxeterGroup:
 
     @property
     def order(self):
-        """Total group order |W| (product of factor orders)."""
+        """Total group order :math:`|W|` (product of factor orders)."""
         result = 1
         for _, _, o in self.factors:
             result *= o
