@@ -160,4 +160,4 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md -- Add `[project.optional-dependencies.docs]` to pyproject.toml and `autodoc_mock_imports = ["cytools", "regfans"]` to conf.py; local `-W` Sphinx build smoke-passes
 - [x] 08-02-PLAN.md -- Create `documentation/source/notebooks/h11_3_survey.ipynb` relative symlink and add `notebooks/h11_3_survey` to Examples toctree in index.rst
-- [ ] 08-03-PLAN.md -- Create `.github/workflows/docs.yml` (build + gated deploy with least-privilege permissions), add docs URL to README.md, verify `.gitignore` covers `documentation/build/`
+- [x] 08-03-PLAN.md -- Create `.github/workflows/docs.yml` (build + gated deploy with least-privilege permissions), add docs URL to README.md, verify `.gitignore` covers `documentation/build/`
