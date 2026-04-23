@@ -10,3 +10,22 @@ documentation/build/
 .claude/
 .gv_cache/
 CLAUDE.md
+
+# Ground truth data (generated, not tracked)
+tests/ground_truth/h11_2/poly_*.json
+tests/ground_truth/h11_2/poly_*.npz
+tests/ground_truth/h11_3/poly_*.json
+tests/ground_truth/h11_3/poly_*.npz
+tests/ground_truth/gv_cache/
+
+# Scratch / debug / evidence scripts
+tests/_*.py
+tests/evidence_*.py
+
+# Generated interactive viz artifacts
+tests/*_graph.html
+tests/phase_graphs_h11_3/
+
+# Personal notes, WIP notebooks
+notebooks/convo_about_features_*.txt
+notebooks/curve_assessment.ipynb
