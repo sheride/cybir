@@ -37,6 +37,7 @@ Table of contents
 
    notebooks/h11_2_survey
    notebooks/h11_2_walkthrough
+   notebooks/h11_3_survey
    notebooks/h11_3_walkthrough
 
 
