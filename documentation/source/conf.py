@@ -24,6 +24,8 @@ extensions = [
     "myst_nb",
 ]
 
+autodoc_mock_imports = ["cytools", "regfans"]
+
 templates_path = ["_templates"]
 
 source_suffix = [".rst", ".ipynb", ".md"]
