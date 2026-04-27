@@ -523,3 +523,69 @@ class CoxeterGroup:
         for family, rank, _ in self.factors:
             parts.append(f"{family}{str(rank).translate(_sub)}")
         return " \u00d7 ".join(parts)
+
+
+@dataclass(frozen=True)
+class PartialClassification:
+    """Geometric-only classification of an extremal contraction curve.
+
+    Returned by :func:`cybir.diagnose_curve` when called with
+    ``compute_gvs=False`` and no GV series provided. Captures everything
+    determinable from triple intersection numbers, the second Chern class,
+    and the curve class alone -- no GV invariants required.
+
+    The geometric checks (asymptotic, CFT, zero-volume divisor existence,
+    Coxeter-reflection integrality) are sufficient to fully classify the
+    contraction in some cases. When they are not, ``determined`` is
+    ``None`` and ``remaining_options`` lists which contraction types
+    remain possible after geometric narrowing; computing GVs is required
+    to disambiguate among them.
+
+    Parameters
+    ----------
+    zero_vol_divisor : numpy.ndarray or None
+        Integer divisor with :math:`D \\cdot \\mathcal{C} < 0`, or
+        ``None`` if no zero-volume divisor exists or the null space is
+        higher-dimensional. See :func:`cybir.core.classify.zero_vol_divisor`.
+    coxeter_reflection : numpy.ndarray or None
+        Coxeter reflection matrix on the lattice when a zero-volume
+        divisor exists; ``None`` otherwise.
+    is_asymptotic : bool
+        ``True`` if the projected triple intersection numbers vanish.
+    is_cft : bool
+        ``True`` if the projected intersection-number matrix is
+        rank-deficient.
+    determined : ContractionType or None
+        Set when geometry alone pins the type down (``ASYMPTOTIC``,
+        ``CFT``, or ``FLOP`` from no-zvd / non-integer-reflection paths).
+        ``None`` when GVs are needed to disambiguate.
+    remaining_options : tuple of ContractionType
+        Contraction types still possible. Length 1 when ``determined``
+        is set; longer when GVs are needed.
+    needs_for_disambiguation : str
+        Short prose explanation of what GV data would resolve the
+        remaining options. Empty string when ``determined`` is set.
+
+    Examples
+    --------
+    >>> from cybir import diagnose_curve
+    >>> partial = diagnose_curve(cy, [1, 0, -1], compute_gvs=False)
+    >>> if partial.determined is not None:
+    ...     print(f"Classified as {partial.determined.name} from geometry alone")
+    ... else:
+    ...     print(f"GVs needed; possibilities: {partial.remaining_options}")
+    """
+
+    zero_vol_divisor: object  # numpy.ndarray or None; object avoids frozen issues
+    coxeter_reflection: object  # numpy.ndarray or None
+    is_asymptotic: bool
+    is_cft: bool
+    determined: object  # ContractionType or None
+    remaining_options: tuple
+    needs_for_disambiguation: str
+
+    def __repr__(self):
+        if self.determined is not None:
+            return f"PartialClassification(determined={self.determined.name})"
+        names = ", ".join(t.name for t in self.remaining_options)
+        return f"PartialClassification(remaining=[{names}])"

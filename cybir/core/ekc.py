@@ -902,13 +902,22 @@ class CYBirationalClass:
             )
 
 
-def diagnose_curve(cy, curve, max_deg=10, gvs=None, ekc=None):
+def diagnose_curve(cy, curve, max_deg=10, gvs=None, ekc=None, *,
+                   compute_gvs=True):
     """Classify an extremal contraction curve with minimal setup.
 
     Convenience function that handles grading vector computation and
     GV series extraction internally. When an ``ekc`` (CYBirationalClass)
     with toric data is provided, also cross-checks against toric
     classification and combinatorial GV invariants (per D-12).
+
+    With ``compute_gvs=False`` and no ``gvs`` provided, performs only
+    geometric checks (asymptotic, CFT, zero-volume divisor existence,
+    Coxeter-reflection integrality) and returns a
+    :class:`~cybir.core.types.PartialClassification`. Use this when the
+    GV computation is too expensive and you want to know whether
+    geometry alone suffices, or which contraction types are still
+    possible.
 
     Parameters
     ----------
@@ -917,26 +926,40 @@ def diagnose_curve(cy, curve, max_deg=10, gvs=None, ekc=None):
     curve : array_like
         Curve class in the h11 basis.
     max_deg : int, optional
-        Maximum degree for GV computation. Default 10.
+        Maximum degree for GV computation. Default 10. Ignored when
+        ``compute_gvs=False`` and ``gvs`` is None.
     gvs : Invariants or list, optional
         Pre-computed GV invariants. Accepts either a CYTools
         ``Invariants`` object or a plain list
-        ``[GV(C), GV(2C), GV(3C), ...]``.
+        ``[GV(C), GV(2C), GV(3C), ...]``. When provided, the
+        ``compute_gvs`` flag is ignored.
     ekc : CYBirationalClass, optional
         If provided and ``ekc._toric_curve_data`` is available,
         adds ``toric_type`` and ``toric_gv`` keys to the result
-        dict when the curve matches a toric curve.
+        dict when the curve matches a toric curve. Has no effect on
+        the lazy / geometric path.
+    compute_gvs : bool, default True
+        If False AND ``gvs`` is None, skip the (potentially expensive)
+        GV computation step and return a
+        :class:`~cybir.core.types.PartialClassification` instead of
+        the full classification dict. If ``gvs`` is provided, this
+        flag is ignored and full classification proceeds.
 
     Returns
     -------
-    dict
-        Classification result from ``classify_contraction``:
+    dict or PartialClassification
+        When ``compute_gvs=True`` (default) or ``gvs`` is provided,
+        returns the full classification dict from ``classify_contraction``:
         ``contraction_type``, ``zero_vol_divisor``,
         ``coxeter_reflection``, ``gv_invariant``, ``effective_gv``,
-        ``gv_eff_1``, ``gv_series``.
-        When ``ekc`` is provided and toric data matches, also
-        includes ``toric_type`` (str: 'flop', 'weyl_g0',
-        'weyl_higher_genus', or 'other') and ``toric_gv`` (int or None).
+        ``gv_eff_1``, ``gv_series``. When ``ekc`` is provided and toric
+        data matches, also includes ``toric_type``
+        (str: 'flop', 'weyl_g0', 'weyl_higher_genus', or 'other')
+        and ``toric_gv`` (int or None).
+
+        When ``compute_gvs=False`` and no ``gvs`` provided, returns a
+        :class:`~cybir.core.types.PartialClassification` capturing the
+        geometric narrowing.
 
     Examples
     --------
@@ -945,11 +968,19 @@ def diagnose_curve(cy, curve, max_deg=10, gvs=None, ekc=None):
     >>> result['contraction_type']
     ContractionType.FLOP
 
+    Skip GV computation, get partial result:
+
+    >>> partial = diagnose_curve(cy, [1, 0, -1], compute_gvs=False)
+    >>> if partial.determined is not None:
+    ...     print(f"Determined: {partial.determined.name}")
+    ... else:
+    ...     print(f"GVs needed; possibilities: {partial.remaining_options}")
+
     Notes
     -----
     See arXiv:2212.10573 Section 4 for the classification algorithm.
     """
-    from .classify import classify_contraction
+    from .classify import classify_contraction, classify_geometric
     from .patch import patch_cytools
 
     patch_cytools()
@@ -957,6 +988,10 @@ def diagnose_curve(cy, curve, max_deg=10, gvs=None, ekc=None):
     curve = np.asarray(curve)
     int_nums = cy.intersection_numbers(in_basis=True, format="dense")
     c2 = cy.second_chern_class(in_basis=True)
+
+    # Lazy / geometric-only path: no GVs in hand and caller said don't compute.
+    if gvs is None and not compute_gvs:
+        return classify_geometric(int_nums, c2, curve)
 
     if isinstance(gvs, list):
         # Plain list of GV invariants

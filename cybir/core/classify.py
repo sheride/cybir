@@ -14,12 +14,34 @@ from scipy.linalg import null_space
 
 from .flop import wall_cross_c2, wall_cross_intnums
 from .gv import gv_eff
-from .types import ContractionType, InsufficientGVError
+from .types import ContractionType, InsufficientGVError, PartialClassification
 from .coxeter import coxeter_reflection
 from .util import (
     minimal_N,
     projected_int_nums,
     projection_matrix,
+)
+
+
+# Contraction types that remain possible when geometry has narrowed to
+# "zero-volume divisor exists with integer Coxeter reflection." GVs are
+# required to disambiguate.
+_MULTI_OPTION_REMAINING = (
+    ContractionType.SYMMETRIC_FLOP,
+    ContractionType.SU2,
+    ContractionType.GROSS_FLOP,
+    ContractionType.FLOP,
+)
+
+_DISAMBIGUATION_HINT = (
+    "Compute GV invariants up to at least degree 3 (GV(C), GV(2C), GV(3C)) "
+    "to compute gv_eff_1 and gv_eff_3 for the wall-crossing formulas. "
+    "The wall-crossed intersection numbers / second Chern class compared "
+    "against their Coxeter-reflected counterparts distinguish symmetric "
+    "from generic flops; the source/flopped Kahler-cone match distinguishes "
+    "GROSS_FLOP from SYMMETRIC_FLOP; GV signs at low degree distinguish "
+    "SYMMETRIC_FLOP from SU2. Higher degrees may be needed for potency "
+    "convergence (the final GV in the series must be zero)."
 )
 
 
@@ -437,3 +459,166 @@ def classify_contraction(int_nums, c2, curve, gv_series):
         gv1=gv_eff_1,
         series=list(gv_series),
     )
+
+
+def classify_geometric(int_nums, c2, curve):
+    r"""Classify an extremal contraction from geometric data alone (no GVs).
+
+    Performs the cheap geometric checks from
+    :func:`classify_contraction` -- asymptotic, CFT, zero-volume divisor
+    existence, Coxeter-reflection integrality -- and returns a
+    :class:`~cybir.core.types.PartialClassification` capturing what
+    geometry alone determines.
+
+    Three branches pin the type down without GVs:
+
+    1. **Asymptotic** -- projected triple intersections vanish.
+    2. **CFT** -- projected matrix is rank-deficient.
+    3. **FLOP** -- no zero-volume divisor, *or* a zero-vol divisor exists
+       but the resulting Coxeter reflection has non-integer entries
+       (cannot generate a finite Coxeter group).
+
+    When none of these apply, the contraction is one of
+    ``{SYMMETRIC_FLOP, SU2, GROSS_FLOP, FLOP}`` and GVs are required to
+    disambiguate (see ``needs_for_disambiguation`` on the result).
+
+    See arXiv:2212.10573 Section 4 for the underlying classification.
+
+    Parameters
+    ----------
+    int_nums : numpy.ndarray
+        Triple intersection numbers :math:`\kappa_{ijk}`,
+        shape ``(h11, h11, h11)``.
+    c2 : numpy.ndarray
+        Second Chern class :math:`c_2 \cdot D_a`, shape ``(h11,)``.
+    curve : numpy.ndarray
+        Curve class, shape ``(h11,)``.
+
+    Returns
+    -------
+    PartialClassification
+        Geometric classification result. Inspect ``.determined`` for
+        the unique type when geometry suffices, or ``.remaining_options``
+        when GVs are needed.
+
+    Examples
+    --------
+    >>> partial = classify_geometric(int_nums, c2, [1, 0, -1])
+    >>> if partial.determined is not None:
+    ...     print(f"Determined: {partial.determined.name}")
+    ... else:
+    ...     print(f"GVs needed; possibilities: {partial.remaining_options}")
+    """
+    int_nums = np.asarray(int_nums, dtype=float)
+    c2 = np.asarray(c2, dtype=float)
+    curve = np.asarray(curve)
+
+    # 1. Asymptotic -- terminal
+    if is_asymptotic(int_nums, curve):
+        return PartialClassification(
+            zero_vol_divisor=None,
+            coxeter_reflection=None,
+            is_asymptotic=True,
+            is_cft=False,
+            determined=ContractionType.ASYMPTOTIC,
+            remaining_options=(ContractionType.ASYMPTOTIC,),
+            needs_for_disambiguation="",
+        )
+
+    # 2. CFT -- terminal (with zvd as a useful side-effect for cone gens)
+    if is_cft(int_nums, curve):
+        zvd = zero_vol_divisor(int_nums, curve)
+        return PartialClassification(
+            zero_vol_divisor=zvd,
+            coxeter_reflection=None,
+            is_asymptotic=False,
+            is_cft=True,
+            determined=ContractionType.CFT,
+            remaining_options=(ContractionType.CFT,),
+            needs_for_disambiguation="",
+        )
+
+    # 3. zero-volume divisor
+    zvd = zero_vol_divisor(int_nums, curve)
+
+    # 3a. No zero-vol divisor -- generic FLOP, terminal
+    if zvd is None:
+        return PartialClassification(
+            zero_vol_divisor=None,
+            coxeter_reflection=None,
+            is_asymptotic=False,
+            is_cft=False,
+            determined=ContractionType.FLOP,
+            remaining_options=(ContractionType.FLOP,),
+            needs_for_disambiguation="",
+        )
+
+    # 4. Compute Coxeter reflection from zvd + curve (no GVs needed)
+    M = coxeter_reflection(zvd, curve)
+
+    # 4a. Non-integer reflection -- can't generate a finite Coxeter group;
+    # this is a generic FLOP, terminal. Mirrors the integrality check
+    # in is_symmetric_flop.
+    if not np.allclose(M, np.round(M)):
+        return PartialClassification(
+            zero_vol_divisor=zvd,
+            coxeter_reflection=M,
+            is_asymptotic=False,
+            is_cft=False,
+            determined=ContractionType.FLOP,
+            remaining_options=(ContractionType.FLOP,),
+            needs_for_disambiguation="",
+        )
+
+    # 5. Multi-option: zvd exists, M is integer. GVs needed.
+    return PartialClassification(
+        zero_vol_divisor=zvd,
+        coxeter_reflection=M,
+        is_asymptotic=False,
+        is_cft=False,
+        determined=None,
+        remaining_options=_MULTI_OPTION_REMAINING,
+        needs_for_disambiguation=_DISAMBIGUATION_HINT,
+    )
+
+
+def gv_degrees_needed(int_nums, c2, curve):
+    """Return the minimum GV degree needed to fully classify a curve.
+
+    Wraps :func:`classify_geometric` and returns ``0`` when geometry
+    alone determines the contraction type, ``3`` when GVs are needed.
+    Useful for callers with expensive ``compute_gvs`` budgets who want
+    to skip the call entirely when geometry suffices.
+
+    Note that ``3`` is a *minimum*: in practice you may want a longer
+    series so the trailing GV is zero (the potency-check convergence
+    requirement in :func:`classify_contraction`).
+
+    Parameters
+    ----------
+    int_nums : numpy.ndarray
+        Triple intersection numbers, shape ``(h11, h11, h11)``.
+    c2 : numpy.ndarray
+        Second Chern class, shape ``(h11,)``.
+    curve : numpy.ndarray
+        Curve class, shape ``(h11,)``.
+
+    Returns
+    -------
+    int
+        ``0`` when geometry alone classifies the curve (``ASYMPTOTIC``,
+        ``CFT``, or ``FLOP`` from no-zvd / non-integer-reflection paths).
+        ``3`` when GVs are required to disambiguate among
+        ``{SYMMETRIC_FLOP, SU2, GROSS_FLOP, FLOP}``.
+
+    Examples
+    --------
+    >>> n = gv_degrees_needed(int_nums, c2, curve)
+    >>> if n == 0:
+    ...     result = diagnose_curve(cy, curve, compute_gvs=False)
+    ... else:
+    ...     gvs = cy.compute_gvs(max_deg=max(n, 10))
+    ...     result = diagnose_curve(cy, curve, gvs=gvs)
+    """
+    partial = classify_geometric(int_nums, c2, curve)
+    return 0 if partial.determined is not None else 3

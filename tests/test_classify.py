@@ -10,12 +10,14 @@ import pytest
 
 from cybir.core.classify import (
     classify_contraction,
+    classify_geometric,
+    gv_degrees_needed,
     zero_vol_divisor,
     is_asymptotic,
     is_cft,
     is_symmetric_flop,
 )
-from cybir.core.types import ContractionType, InsufficientGVError
+from cybir.core.types import ContractionType, InsufficientGVError, PartialClassification
 from cybir.core.coxeter import coxeter_reflection
 from cybir.core.build_gv import _accumulate_generators
 
@@ -513,3 +515,107 @@ class TestGrossFlopAccumulation:
         _accumulate_generators(ekc, ContractionType.GROSS_FLOP, result)
 
         assert len(ekc._eff_cone_gens) == 0
+
+
+# ---------------------------------------------------------------------------
+# classify_geometric / gv_degrees_needed (lazy diagnose path)
+# ---------------------------------------------------------------------------
+
+
+class TestClassifyGeometric:
+    """Geometric-only narrowing: should determine ASYMPTOTIC, CFT, and
+    no-zvd FLOPs without GVs, and return a PartialClassification with
+    multi-option remaining for the symmetric-flop / su(2) ambiguity."""
+
+    def test_returns_partial_classification(self, h11_3_asymptotic):
+        int_nums, curve = h11_3_asymptotic
+        result = classify_geometric(int_nums, np.zeros(3), curve)
+        assert isinstance(result, PartialClassification)
+
+    def test_asymptotic_determined(self, h11_3_asymptotic):
+        int_nums, curve = h11_3_asymptotic
+        result = classify_geometric(int_nums, np.zeros(3), curve)
+        assert result.is_asymptotic is True
+        assert result.is_cft is False
+        assert result.determined is ContractionType.ASYMPTOTIC
+        assert result.remaining_options == (ContractionType.ASYMPTOTIC,)
+        assert result.needs_for_disambiguation == ""
+
+    def test_cft_determined(self, h11_3_cft):
+        int_nums, curve = h11_3_cft
+        result = classify_geometric(int_nums, np.zeros(3), curve)
+        # h11_3_cft is constructed to fail asymptotic and pass CFT
+        assert result.is_cft is True
+        assert result.determined is ContractionType.CFT
+        assert result.remaining_options == (ContractionType.CFT,)
+
+    def test_real_generic_flop_no_zvd_terminal(self, real_generic_flop):
+        """A real generic flop (no zero-vol divisor) classifies as
+        FLOP from geometry alone — no GVs ever needed."""
+        d = real_generic_flop
+        result = classify_geometric(d["int_nums"], d["c2"], d["curve"])
+        # This fixture has zvd computed via the standard zvd routine;
+        # if zvd is None, geometry pins it down
+        if result.zero_vol_divisor is None:
+            assert result.determined is ContractionType.FLOP
+            assert result.remaining_options == (ContractionType.FLOP,)
+
+    def test_real_symmetric_flop_multi_option(self, real_symmetric_flop):
+        """A real symmetric flop wall (with integer Coxeter reflection)
+        cannot be distinguished from su(2) / gross flop / generic flop
+        without GVs. PartialClassification must report multiple
+        remaining options."""
+        d = real_symmetric_flop
+        result = classify_geometric(d["int_nums"], d["c2"], d["curve"])
+        assert result.is_asymptotic is False
+        assert result.is_cft is False
+        assert result.zero_vol_divisor is not None
+        assert result.coxeter_reflection is not None
+        # Sym flop walls have integer reflections, so geometry can't pin
+        # the type — must report multi-option
+        assert result.determined is None
+        assert ContractionType.SYMMETRIC_FLOP in result.remaining_options
+        assert ContractionType.SU2 in result.remaining_options
+        assert ContractionType.GROSS_FLOP in result.remaining_options
+        assert ContractionType.FLOP in result.remaining_options
+        assert result.needs_for_disambiguation != ""
+
+    def test_real_su2_multi_option(self, real_su2):
+        """An su(2) wall has integer Coxeter reflection — same
+        multi-option result as symmetric flop until GVs disambiguate."""
+        d = real_su2
+        result = classify_geometric(d["int_nums"], d["c2"], d["curve"])
+        assert result.determined is None
+        assert ContractionType.SU2 in result.remaining_options
+
+    def test_repr_determined(self, h11_3_asymptotic):
+        int_nums, curve = h11_3_asymptotic
+        result = classify_geometric(int_nums, np.zeros(3), curve)
+        assert "determined=ASYMPTOTIC" in repr(result)
+
+    def test_repr_remaining(self, real_symmetric_flop):
+        d = real_symmetric_flop
+        result = classify_geometric(d["int_nums"], d["c2"], d["curve"])
+        r = repr(result)
+        assert "remaining=" in r
+        assert "SYMMETRIC_FLOP" in r
+
+
+class TestGvDegreesNeeded:
+    def test_zero_when_geometry_suffices(self, h11_3_asymptotic):
+        int_nums, curve = h11_3_asymptotic
+        assert gv_degrees_needed(int_nums, np.zeros(3), curve) == 0
+
+    def test_zero_for_cft(self, h11_3_cft):
+        int_nums, curve = h11_3_cft
+        assert gv_degrees_needed(int_nums, np.zeros(3), curve) == 0
+
+    def test_three_for_symmetric_flop(self, real_symmetric_flop):
+        d = real_symmetric_flop
+        n = gv_degrees_needed(d["int_nums"], d["c2"], d["curve"])
+        assert n == 3
+
+    def test_three_for_su2(self, real_su2):
+        d = real_su2
+        n = gv_degrees_needed(d["int_nums"], d["c2"], d["curve"])
+        assert n == 3

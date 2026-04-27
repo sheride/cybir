@@ -4,6 +4,8 @@ __version__ = "0.1.0"
 
 from cybir.core.classify import (
     classify_contraction,
+    classify_geometric,
+    gv_degrees_needed,
     is_asymptotic,
     is_cft,
     is_symmetric_flop,
@@ -20,6 +22,7 @@ from cybir.core.types import (
     CoxeterGroup,
     ExtremalContraction,
     InsufficientGVError,
+    PartialClassification,
 )
 from cybir.core.toric_curves import ToricCurveData
 from cybir.core.ekc import diagnose_curve
@@ -49,6 +52,7 @@ __all__ = [
     "CoxeterGroup",
     "ExtremalContraction",
     "InsufficientGVError",
+    "PartialClassification",
     "CYGraph",
     "ToricCurveData",
     "diagnose_curve",
@@ -66,6 +70,8 @@ __all__ = [
     "is_nilpotent",
     # Classify
     "classify_contraction",
+    "classify_geometric",
+    "gv_degrees_needed",
     "is_asymptotic",
     "is_cft",
     "zero_vol_divisor",
