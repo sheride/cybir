@@ -20,10 +20,12 @@ from .types import (
     InsufficientGVError,
 )
 from .toric_curves import (
+    MoriBounds,
     ToricCurveData,
     classify_phase_type,
     compute_toric_curves,
     induced_2face_triangulations,
+    mori_cone_bounds,
     orient_curves_for_phase,
 )
 from .ekc import diagnose_curve
@@ -80,11 +82,13 @@ __all__ = [
     "is_finite_type",
     "matrix_period",
     # Toric curves (Phase 6)
+    "MoriBounds",
     "ToricCurveData",
     "classify_phase_type",
     "compute_toric_curves",
     "diagnose_curve",
     "induced_2face_triangulations",
+    "mori_cone_bounds",
     "orient_curves_for_phase",
     # Utilities
     "charge_matrix_hsnf",

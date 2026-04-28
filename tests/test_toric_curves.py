@@ -207,3 +207,100 @@ class TestSharedEdgeConsistency:
         pytest.skip(
             "No polytope with shared edges across triangulations found"
         )
+
+
+@pytest.mark.skipif(not _cytools_available(), reason="cytools required")
+class TestMoriConeBounds:
+    """Tests for the standalone mori_cone_bounds function."""
+
+    def test_from_cy_returns_mori_bounds(self):
+        import cytools
+        from cybir.core.toric_curves import mori_cone_bounds, MoriBounds
+
+        p = cytools.fetch_polytopes(h11=2, lattice="N", limit=1)[0]
+        cy = p.triangulate().get_cy()
+        bounds = mori_cone_bounds(cy)
+        assert isinstance(bounds, MoriBounds)
+        assert bounds.cy is cy
+        assert bounds.outer is not None
+        assert bounds.outer.rays() is not None
+        assert isinstance(bounds.coincide, bool)
+
+    def test_from_fan_round_trips_outer(self):
+        """Outer (Mcap) should be identical whether input is CY or fan
+        for the same polytope/triangulation."""
+        import cytools
+        import regfans
+        from regfans import VectorConfiguration
+        from cybir.core.toric_curves import mori_cone_bounds
+
+        p = cytools.fetch_polytopes(h11=2, lattice="N", limit=1)[0]
+        cy = p.triangulate().get_cy()
+        bounds_cy = mori_cone_bounds(cy)
+
+        vc = VectorConfiguration(p.points_not_interior_to_facets()[1:])
+        fan = vc.triangulate()
+        assert fan.respects_ptconfig()
+        bounds_fan = mori_cone_bounds(fan)
+
+        # Outer cone should be the same
+        rays_cy = sorted(tuple(r) for r in bounds_cy.outer.rays())
+        rays_fan = sorted(tuple(r) for r in bounds_fan.outer.rays())
+        assert rays_cy == rays_fan
+
+    def test_fan_with_invalid_ptconfig_raises(self):
+        """Fan that fails respects_ptconfig() should raise ValueError."""
+        from cybir.core.toric_curves import mori_cone_bounds
+
+        class _FakeFan:
+            def respects_ptconfig(self):
+                return False
+
+            class _FakeVC:
+                def vectors(self):
+                    return np.eye(3, dtype=int)
+
+            vc = _FakeVC()
+
+            def simplices(self):
+                return [(1, 2, 3)]
+
+        with pytest.raises(ValueError, match="respect"):
+            mori_cone_bounds(_FakeFan())
+
+    def test_bounds_coincide_majority(self):
+        """For most reflexive polytopes, the toric inner bound and Mcap
+        should coincide (the actual Mori cone is the toric Mori cone).
+        Verify this on a sample: at least 50% should match."""
+        import cytools
+        from cybir.core.toric_curves import mori_cone_bounds
+
+        polys = cytools.fetch_polytopes(h11=3, lattice="N", limit=20)
+        n_total, n_coincide = 0, 0
+        for p in polys:
+            cy = p.triangulate().get_cy()
+            bounds = mori_cone_bounds(cy)
+            n_total += 1
+            if bounds.coincide:
+                n_coincide += 1
+        assert n_total > 0
+        # Vast majority should agree -- 50% lower bound is conservative
+        assert n_coincide >= n_total // 2, (
+            f"Only {n_coincide}/{n_total} h11=3 polytopes had "
+            f"matching Mori bounds; expected vast majority"
+        )
+
+    def test_repr(self):
+        import cytools
+        from cybir.core.toric_curves import mori_cone_bounds
+
+        p = cytools.fetch_polytopes(h11=2, lattice="N", limit=1)[0]
+        cy = p.triangulate().get_cy()
+        bounds = mori_cone_bounds(cy)
+        r = repr(bounds)
+        assert "MoriBounds" in r
+        assert "outer=" in r
+
+    def test_top_level_export(self):
+        """mori_cone_bounds and MoriBounds should be importable from cybir."""
+        from cybir import mori_cone_bounds, MoriBounds  # noqa: F401

@@ -24,7 +24,11 @@ from cybir.core.types import (
     InsufficientGVError,
     PartialClassification,
 )
-from cybir.core.toric_curves import ToricCurveData
+from cybir.core.toric_curves import (
+    MoriBounds,
+    ToricCurveData,
+    mori_cone_bounds,
+)
 from cybir.core.ekc import diagnose_curve
 from cybir.core.coxeter import (
     classify_coxeter_type,
@@ -54,8 +58,10 @@ __all__ = [
     "InsufficientGVError",
     "PartialClassification",
     "CYGraph",
+    "MoriBounds",
     "ToricCurveData",
     "diagnose_curve",
+    "mori_cone_bounds",
     # Pipeline
     "CYBirationalClass",
     "patch_cytools",
