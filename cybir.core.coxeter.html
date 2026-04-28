@@ -1,0 +1,809 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>coxeter — Coxeter group construction and orbit expansion &#8212; cybir  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'cybir.core.coxeter';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="patch — CYTools monkey-patching for GV flop tracking" href="cybir.core.patch.html" />
+    <link rel="prev" title="build_gv — BFS pipeline builder for EKC construction" href="cybir.core.build_gv.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">cybir  documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="cybir.html">cybir API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="cybir.core.html">cybir.core</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.ekc.html">ekc — Birational class orchestrator and result API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.build_gv.html">build_gv — BFS pipeline builder for EKC construction</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">coxeter — Coxeter group construction and orbit expansion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.patch.html">patch — CYTools monkey-patching for GV flop tracking</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.types.html">types — CalabiYauLite, ExtremalContraction, and ContractionType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.graph.html">graph — Phase adjacency graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.classify.html">classify — Contraction classification algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.flop.html">flop — Wall-crossing formulas and flop construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.gv.html">gv — Gopakumar-Vafa invariant utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.util.html">util — Projection, normalization, and lattice utilities</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="cybir.core.html">cybir.core</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.ekc.html">ekc — Birational class orchestrator and result API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.build_gv.html">build_gv — BFS pipeline builder for EKC construction</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">coxeter — Coxeter group construction and orbit expansion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.patch.html">patch — CYTools monkey-patching for GV flop tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.types.html">types — CalabiYauLite, ExtremalContraction, and ContractionType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.graph.html">graph — Phase adjacency graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.classify.html">classify — Contraction classification algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.flop.html">flop — Wall-crossing formulas and flop construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.gv.html">gv — Gopakumar-Vafa invariant utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.util.html">util — Projection, normalization, and lattice utilities</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="notebooks/h11_2_survey.html">Survey: All h11=2 Calabi-Yau threefolds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/h11_2_walkthrough.html">EKC Construction: h11=2 Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/h11_3_walkthrough.html">EKC Construction: h11=3 Example</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/cybir.core.coxeter.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>coxeter — Coxeter group construction and orbit expansion</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.apply_coxeter_orbit"><code class="docutils literal notranslate"><span class="pre">apply_coxeter_orbit()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.classify_coxeter_type"><code class="docutils literal notranslate"><span class="pre">classify_coxeter_type()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_bilinear_form"><code class="docutils literal notranslate"><span class="pre">coxeter_bilinear_form()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_element"><code class="docutils literal notranslate"><span class="pre">coxeter_element()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_group_order"><code class="docutils literal notranslate"><span class="pre">coxeter_group_order()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_order_matrix"><code class="docutils literal notranslate"><span class="pre">coxeter_order_matrix()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_reflection"><code class="docutils literal notranslate"><span class="pre">coxeter_reflection()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.enumerate_coxeter_group"><code class="docutils literal notranslate"><span class="pre">enumerate_coxeter_group()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.is_finite_type"><code class="docutils literal notranslate"><span class="pre">is_finite_type()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.matrix_period"><code class="docutils literal notranslate"><span class="pre">matrix_period()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.reflect_phase_data"><code class="docutils literal notranslate"><span class="pre">reflect_phase_data()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.to_fundamental_domain"><code class="docutils literal notranslate"><span class="pre">to_fundamental_domain()</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-cybir.core.coxeter">
+<span id="coxeter-coxeter-group-construction-and-orbit-expansion"></span><h1>coxeter — Coxeter group construction and orbit expansion<a class="headerlink" href="#module-cybir.core.coxeter" title="Link to this heading">#</a></h1>
+<p>Coxeter group construction, finite-type classification, and BFS enumeration.</p>
+<p>Provides the mathematical foundation for Weyl orbit expansion in the
+extended Kahler cone construction. Functions include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">matrix_period</span></code>: Multiplicative order of an integer matrix</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coxeter_reflection</span></code>: Reflection matrix from arXiv:2212.10573 Eq. (4.6)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coxeter_element</span></code>: Product of reflection matrices (the Coxeter element)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coxeter_order_matrix</span></code>: Compute m_ij = order(M_i M_j)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coxeter_bilinear_form</span></code>: B_ij = -cos(pi/m_ij)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_finite_type</span></code>: Positive-definiteness check of the bilinear form</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">classify_coxeter_type</span></code>: Decompose into irreducible components and classify</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coxeter_group_order</span></code>: <span class="math notranslate nohighlight">\(|W|\)</span> from closed-form formulas per type</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enumerate_coxeter_group</span></code>: Streaming BFS on the Cayley graph</p></li>
+</ul>
+<p>See arXiv:2212.10573 Section 4.3 for the role of Coxeter groups in
+the extended Kahler cone construction.</p>
+<p>Moved from <code class="docutils literal notranslate"><span class="pre">cybir.core.util</span></code>: <code class="docutils literal notranslate"><span class="pre">matrix_period</span></code>, <code class="docutils literal notranslate"><span class="pre">coxeter_reflection</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">coxeter_matrix</span></code> (renamed to <code class="docutils literal notranslate"><span class="pre">coxeter_element</span></code>).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.apply_coxeter_orbit">
+<span class="sig-name descname"><span class="pre">apply_coxeter_orbit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ekc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reflections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ekc'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.apply_coxeter_orbit" title="Link to this definition">#</a></dt>
+<dd><p>Expand the fundamental domain via Coxeter group orbit.</p>
+<p>Enumerates the full Coxeter group from the selected reflection set
+and applies every non-identity group element to every fundamental-
+domain phase and edge, producing the extended/hyperextended Kahler cone.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ekc</strong> (<a class="reference internal" href="cybir.core.ekc.html#cybir.core.ekc.CYBirationalClass" title="cybir.core.ekc.CYBirationalClass"><em>CYBirationalClass</em></a>) – Must have <code class="docutils literal notranslate"><span class="pre">construct_phases</span></code> completed. Modified in place.</p></li>
+<li><p><strong>reflections</strong> (<em>str</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – <p>Which reflections to use for orbit expansion:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'ekc'</span></code> (default): symmetric flop reflections only (produces EKC)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'hekc'</span></code>: sym flop + SU2_NONGENERIC_CS (produces HEKC)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'all'</span></code>: all Coxeter reflections (full group)</p></li>
+<li><p>Custom iterable of reflection matrices</p></li>
+</ul>
+</p></li>
+<li><p><strong>phases</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), create full reflected phase objects and
+graph edges. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, only accumulate cone generators
+(faster, less memory). See D-13.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The algorithm (per D-10 through D-14):</p>
+<ol class="arabic simple">
+<li><p>Select reflection set based on <code class="docutils literal notranslate"><span class="pre">reflections</span></code> parameter (D-04)</p></li>
+<li><p>Check finite type via positive definiteness (D-06)</p></li>
+<li><p>Classify and compute expected order (D-05)</p></li>
+<li><p>Memory estimation (D-07)</p></li>
+<li><p>Streaming BFS: for each group element g (skip identity):
+- Reflect each fundamental phase (phases=True only)
+- Accumulate Kahler rays, terminal wall curves, zero-vol divisors
+- Reflect each fundamental edge (D-12)</p></li>
+</ol>
+<p>No deduplication of reflected phases (D-11).</p>
+<p>See arXiv:2212.10573 Section 4.3.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.classify_coxeter_type">
+<span class="sig-name descname"><span class="pre">classify_coxeter_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.classify_coxeter_type" title="Link to this definition">#</a></dt>
+<dd><p>Classify a Coxeter group by decomposing into irreducible components.</p>
+<p>Decomposes the Coxeter graph into connected components and classifies
+each against known Dynkin diagrams.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>order_matrix</strong> (<em>numpy.ndarray</em>) – Coxeter order matrix (symmetric, integer, diagonal = 1).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list of tuple</strong> – Each tuple is <code class="docutils literal notranslate"><span class="pre">(type_string,</span> <span class="pre">rank,</span> <span class="pre">order)</span></code> for one irreducible
+component.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See arXiv:2212.10573 Section 4.3. For reducible groups, the total
+order is the product of the component orders.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.coxeter_bilinear_form">
+<span class="sig-name descname"><span class="pre">coxeter_bilinear_form</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.coxeter_bilinear_form" title="Link to this definition">#</a></dt>
+<dd><p>Compute the bilinear form B_ij = -cos(pi / m_ij).</p>
+<p>This is the standard bilinear form associated with a Coxeter group.
+The group is finite if and only if <em>B</em> is positive definite.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>order_matrix</strong> (<em>numpy.ndarray</em>) – Coxeter order matrix (symmetric, integer, diagonal = 1).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>numpy.ndarray</strong> – Real symmetric matrix.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See arXiv:2212.10573 Section 4.3 and
+<a class="reference external" href="https://en.wikipedia.org/wiki/Coxeter_group">Wikipedia: Coxeter group</a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.coxeter_element">
+<span class="sig-name descname"><span class="pre">coxeter_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reflections</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.coxeter_element" title="Link to this definition">#</a></dt>
+<dd><p>Compute the Coxeter element from a list of reflection matrices.</p>
+<p>The Coxeter element is the ordered product
+<span class="math notranslate nohighlight">\(M_1 M_2 \cdots M_n\)</span> of the individual reflections.
+See arXiv:2212.10573 Section 4 for the role of the Coxeter element
+in determining the extended Kahler cone structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reflections</strong> (<em>list</em><em> of </em><em>numpy.ndarray</em>) – Reflection matrices to multiply.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>numpy.ndarray</strong> – The Coxeter element (product of all reflections).</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <em>reflections</em> is empty.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Renamed from <code class="docutils literal notranslate"><span class="pre">coxeter_matrix</span></code> (per P-04). The old name is kept as
+a deprecated alias.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.coxeter_group_order">
+<span class="sig-name descname"><span class="pre">coxeter_group_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.coxeter_group_order" title="Link to this definition">#</a></dt>
+<dd><p>Compute the order <span class="math notranslate nohighlight">\(|W|\)</span> of a Coxeter group from its type classification.</p>
+<p>For reducible groups, the order is the product of the orders of the
+irreducible components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>type_list</strong> (<em>list</em><em> of </em><em>tuple</em>) – Output of <a class="reference internal" href="#cybir.core.coxeter.classify_coxeter_type" title="cybir.core.coxeter.classify_coxeter_type"><code class="xref py py-func docutils literal notranslate"><span class="pre">classify_coxeter_type()</span></code></a>: list of
+<code class="docutils literal notranslate"><span class="pre">(type_string,</span> <span class="pre">rank,</span> <span class="pre">order)</span></code> tuples.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>int</strong> – The order <span class="math notranslate nohighlight">\(|W|\)</span> of the Coxeter group.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See arXiv:2212.10573 Section 4.3.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.coxeter_order_matrix">
+<span class="sig-name descname"><span class="pre">coxeter_order_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reflections</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.coxeter_order_matrix" title="Link to this definition">#</a></dt>
+<dd><p>Compute the Coxeter order matrix m_ij = order(M_i M_j).</p>
+<p>Diagonal entries are 1 (since <span class="math notranslate nohighlight">\(M_i^2 = I\)</span> for reflections).
+Off-diagonal entry m_ij is the order of the product <span class="math notranslate nohighlight">\(M_i M_j\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reflections</strong> (<em>list</em><em> of </em><em>numpy.ndarray</em>) – Integer reflection matrices.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>numpy.ndarray</strong> – Symmetric integer matrix with m_ii = 1.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See arXiv:2212.10573 Section 4.3. The Coxeter order matrix encodes
+the presentation of the Coxeter group: generators <span class="math notranslate nohighlight">\(s_i\)</span> with
+relations <span class="math notranslate nohighlight">\((s_i s_j)^{m_{ij}} = 1\)</span>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.coxeter_reflection">
+<span class="sig-name descname"><span class="pre">coxeter_reflection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">divisor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curve</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.coxeter_reflection" title="Link to this definition">#</a></dt>
+<dd><p>Compute the Coxeter reflection matrix for a given divisor and curve.</p>
+<p>Implements the reflection</p>
+<div class="math notranslate nohighlight">
+\[M_{ab} = \delta_{ab}
+         - 2 \frac{\mathcal{C}_a D_b}{\mathcal{C} \cdot D}\]</div>
+<p>from arXiv:2212.10573 Eq. (4.6). The reflection satisfies
+<span class="math notranslate nohighlight">\(M \mathcal{C} = -\mathcal{C}\)</span>.</p>
+<p>When <span class="math notranslate nohighlight">\(\mathcal{C} \cdot D = 0\)</span> the reflection is undefined
+and the identity matrix is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>divisor</strong> (<em>numpy.ndarray</em>) – Divisor class <span class="math notranslate nohighlight">\(D_a\)</span>.</p></li>
+<li><p><strong>curve</strong> (<em>numpy.ndarray</em>) – Curve class <span class="math notranslate nohighlight">\(\mathcal{C}_a\)</span>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>numpy.ndarray</strong> – Reflection matrix of shape <code class="docutils literal notranslate"><span class="pre">(h11,</span> <span class="pre">h11)</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The outer product order is <span class="math notranslate nohighlight">\(\mathcal{C}_a D_b\)</span> (curve x divisor),
+<strong>not</strong> <span class="math notranslate nohighlight">\(D_a \mathcal{C}_b\)</span>. Getting this wrong flips which
+vector is reflected.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.enumerate_coxeter_group">
+<span class="sig-name descname"><span class="pre">enumerate_coxeter_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generators</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500000000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.enumerate_coxeter_group" title="Link to this definition">#</a></dt>
+<dd><p>Enumerate all elements of a finite Coxeter group via BFS.</p>
+<p>Performs breadth-first search on the Cayley graph, starting from
+the identity and right-multiplying by each generator. Yields
+group elements as int64 matrices in BFS order (identity first).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generators</strong> (<em>list</em><em> of </em><em>numpy.ndarray</em>) – Integer reflection matrices (generators of the Coxeter group).</p></li>
+<li><p><strong>expected_order</strong> (<em>int</em><em>, </em><em>optional</em>) – Expected <span class="math notranslate nohighlight">\(|W|\)</span> from type classification. Used for memory estimation
+and as a sanity check.</p></li>
+<li><p><strong>max_memory_bytes</strong> (<em>int</em><em>, </em><em>optional</em>) – Memory cap for the seen-set. Default 500 MB. A warning is
+logged if the estimated memory exceeds this.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>numpy.ndarray</em> – Group elements (int64 matrices) in BFS order.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The BFS uses right-multiplication: if g is a discovered group element
+and M_i is a generator, then <code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">&#64;</span> <span class="pre">M_i</span></code> is a new candidate. This is
+consistent with generators acting on the LEFT of column vectors
+(Pitfall 4 in RESEARCH.md).</p>
+<p>All arithmetic is performed in int64 to prevent float drift (Pitfall 2).
+The seen-set stores byte representations of int64 matrices.</p>
+<p>See arXiv:2212.10573 Section 4.3 for the Coxeter group structure.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.is_finite_type">
+<span class="sig-name descname"><span class="pre">is_finite_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.is_finite_type" title="Link to this definition">#</a></dt>
+<dd><p>Check if the Coxeter group is finite via positive definiteness.</p>
+<p>A Coxeter group is finite if and only if the bilinear form
+<span class="math notranslate nohighlight">\(B_{ij} = -\cos(\pi / m_{ij})\)</span> is positive definite.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>order_matrix</strong> (<em>numpy.ndarray</em>) – Coxeter order matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the Coxeter group is finite.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">np.linalg.eigvalsh</span></code> with tolerance <code class="docutils literal notranslate"><span class="pre">1e-10</span></code> to handle
+numerical noise. See arXiv:2212.10573 Section 4.3.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.matrix_period">
+<span class="sig-name descname"><span class="pre">matrix_period</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.matrix_period" title="Link to this definition">#</a></dt>
+<dd><p>Compute the multiplicative period of an integer matrix.</p>
+<p>Finds the smallest positive integer <em>k</em> such that
+<span class="math notranslate nohighlight">\(M^k = I\)</span>. Uses exact integer arithmetic (<code class="docutils literal notranslate"><span class="pre">int64</span></code>)
+to avoid float drift (per P-03 in RESEARCH.md).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>M</strong> (<em>numpy.ndarray</em>) – Square integer matrix.</p></li>
+<li><p><strong>max_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum power to check (default <code class="docutils literal notranslate"><span class="pre">200</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>int</strong> – The period <em>k</em>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If no period is found within <em>max_iter</em>.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See arXiv:2212.10573 Section 4.3 for the use of matrix periods
+in computing Coxeter order matrices. The original implementation
+used float64 arithmetic with <code class="docutils literal notranslate"><span class="pre">np.allclose</span></code>; this version uses
+exact <code class="docutils literal notranslate"><span class="pre">int64</span></code> comparison to prevent BFS drift (Pitfall 2).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.reflect_phase_data">
+<span class="sig-name descname"><span class="pre">reflect_phase_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.reflect_phase_data" title="Link to this definition">#</a></dt>
+<dd><p>Apply a Coxeter group element to a CalabiYauLite phase.</p>
+<p>Transforms intersection numbers, second Chern class, and cones
+according to the index conventions in D-08/D-09:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\kappa'_{xyz} = g_{xa}\, g_{yb}\, g_{zc}\, \kappa_{abc}\)</span>
+(g acts on Mori-space indices)</p></li>
+<li><p><span class="math notranslate nohighlight">\(c'_2 = g \cdot c_2\)</span></p></li>
+<li><p>Kahler cone rays: <code class="docutils literal notranslate"><span class="pre">old_rays</span> <span class="pre">&#64;</span> <span class="pre">inv(g)</span></code> (row-vector convention)</p></li>
+<li><p>Mori cone: dual of the new Kahler cone</p></li>
+</ul>
+<p>For individual reflections <code class="docutils literal notranslate"><span class="pre">g^{-1}</span> <span class="pre">=</span> <span class="pre">g</span></code>, but for products
+<code class="docutils literal notranslate"><span class="pre">g^{-1}</span> <span class="pre">\neq</span> <span class="pre">g</span></code> in general (D-09).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phase</strong> (<a class="reference internal" href="cybir.core.types.html#cybir.core.types.CalabiYauLite" title="cybir.core.types.CalabiYauLite"><em>CalabiYauLite</em></a>) – Phase to reflect.</p></li>
+<li><p><strong>g</strong> (<em>numpy.ndarray</em>) – Integer group element matrix of shape <code class="docutils literal notranslate"><span class="pre">(h11,</span> <span class="pre">h11)</span></code>.</p></li>
+<li><p><strong>label</strong> (<em>str</em><em>, </em><em>optional</em>) – Label for the new phase.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>CalabiYauLite</strong> – New phase with transformed data.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AssertionError</strong> – If <code class="docutils literal notranslate"><span class="pre">inv(g)</span></code> is not an integer matrix (T-04-04 mitigation).</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See arXiv:2212.10573 Section 4.3 and D-08, D-09 in CONTEXT.md.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cybir.core.coxeter.to_fundamental_domain">
+<span class="sig-name descname"><span class="pre">to_fundamental_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reflections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curves</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.coxeter.to_fundamental_domain" title="Link to this definition">#</a></dt>
+<dd><p>Map a point to the fundamental domain via chamber walk.</p>
+<p>Repeatedly scans the wall-defining curves; if <code class="docutils literal notranslate"><span class="pre">point</span> <span class="pre">&#64;</span> <span class="pre">curve</span> <span class="pre">&lt;</span> <span class="pre">0</span></code>
+for any curve, reflects the point through that wall (and accumulates
+the group element). Stops when the point has non-negative pairing
+with all curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> (<em>array_like</em>) – Point in Mori space.</p></li>
+<li><p><strong>reflections</strong> (<em>list</em><em> of </em><em>numpy.ndarray</em>) – Symmetric-flop reflection matrices, one per wall.</p></li>
+<li><p><strong>curves</strong> (<em>list</em><em> of </em><em>array_like</em>) – Contraction curves defining the walls (same order as <em>reflections</em>).</p></li>
+<li><p><strong>max_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of reflections before raising. Default 1000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>(numpy.ndarray, numpy.ndarray)</strong> – <code class="docutils literal notranslate"><span class="pre">(fundamental_domain_point,</span> <span class="pre">group_element)</span></code> where the group
+element <em>g</em> satisfies <code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">&#64;</span> <span class="pre">fundamental_domain_point</span> <span class="pre">==</span> <span class="pre">original_point</span></code>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – If <em>max_iter</em> is exceeded (safety bound, T-04-07 mitigation).</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See arXiv:2212.10573 Section 4.3 for the chamber walk algorithm.
+The fundamental domain is the region where <code class="docutils literal notranslate"><span class="pre">point</span> <span class="pre">&#64;</span> <span class="pre">curve</span> <span class="pre">&gt;=</span> <span class="pre">0</span></code>
+for all symmetric-flop contraction curves.</p>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cybir.core.build_gv.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">build_gv — BFS pipeline builder for EKC construction</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cybir.core.patch.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">patch — CYTools monkey-patching for GV flop tracking</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.apply_coxeter_orbit"><code class="docutils literal notranslate"><span class="pre">apply_coxeter_orbit()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.classify_coxeter_type"><code class="docutils literal notranslate"><span class="pre">classify_coxeter_type()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_bilinear_form"><code class="docutils literal notranslate"><span class="pre">coxeter_bilinear_form()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_element"><code class="docutils literal notranslate"><span class="pre">coxeter_element()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_group_order"><code class="docutils literal notranslate"><span class="pre">coxeter_group_order()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_order_matrix"><code class="docutils literal notranslate"><span class="pre">coxeter_order_matrix()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.coxeter_reflection"><code class="docutils literal notranslate"><span class="pre">coxeter_reflection()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.enumerate_coxeter_group"><code class="docutils literal notranslate"><span class="pre">enumerate_coxeter_group()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.is_finite_type"><code class="docutils literal notranslate"><span class="pre">is_finite_type()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.matrix_period"><code class="docutils literal notranslate"><span class="pre">matrix_period()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.reflect_phase_data"><code class="docutils literal notranslate"><span class="pre">reflect_phase_data()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.coxeter.to_fundamental_domain"><code class="docutils literal notranslate"><span class="pre">to_fundamental_domain()</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Elijah Sheridan
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Elijah Sheridan.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,889 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>types — CalabiYauLite, ExtremalContraction, and ContractionType &#8212; cybir  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'cybir.core.types';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="graph — Phase adjacency graph" href="cybir.core.graph.html" />
+    <link rel="prev" title="patch — CYTools monkey-patching for GV flop tracking" href="cybir.core.patch.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">cybir  documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="cybir.html">cybir API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="cybir.core.html">cybir.core</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.ekc.html">ekc — Birational class orchestrator and result API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.build_gv.html">build_gv — BFS pipeline builder for EKC construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.coxeter.html">coxeter — Coxeter group construction and orbit expansion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.patch.html">patch — CYTools monkey-patching for GV flop tracking</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">types — CalabiYauLite, ExtremalContraction, and ContractionType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.graph.html">graph — Phase adjacency graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.classify.html">classify — Contraction classification algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.flop.html">flop — Wall-crossing formulas and flop construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.gv.html">gv — Gopakumar-Vafa invariant utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cybir.core.util.html">util — Projection, normalization, and lattice utilities</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="cybir.core.html">cybir.core</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.ekc.html">ekc — Birational class orchestrator and result API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.build_gv.html">build_gv — BFS pipeline builder for EKC construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.coxeter.html">coxeter — Coxeter group construction and orbit expansion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.patch.html">patch — CYTools monkey-patching for GV flop tracking</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">types — CalabiYauLite, ExtremalContraction, and ContractionType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.graph.html">graph — Phase adjacency graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.classify.html">classify — Contraction classification algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.flop.html">flop — Wall-crossing formulas and flop construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.gv.html">gv — Gopakumar-Vafa invariant utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cybir.core.util.html">util — Projection, normalization, and lattice utilities</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="notebooks/h11_2_survey.html">Survey: All h11=2 Calabi-Yau threefolds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/h11_2_walkthrough.html">EKC Construction: h11=2 Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/h11_3_walkthrough.html">EKC Construction: h11=3 Example</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/cybir.core.types.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>types — CalabiYauLite, ExtremalContraction, and ContractionType</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite"><code class="docutils literal notranslate"><span class="pre">CalabiYauLite</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.c2"><code class="docutils literal notranslate"><span class="pre">c2</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.charges"><code class="docutils literal notranslate"><span class="pre">charges</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.curve_signs"><code class="docutils literal notranslate"><span class="pre">curve_signs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.eff_cone"><code class="docutils literal notranslate"><span class="pre">eff_cone</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.fan"><code class="docutils literal notranslate"><span class="pre">fan</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.flop"><code class="docutils literal notranslate"><span class="pre">flop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.freeze"><code class="docutils literal notranslate"><span class="pre">freeze()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.gv_invariants"><code class="docutils literal notranslate"><span class="pre">gv_invariants</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.indices"><code class="docutils literal notranslate"><span class="pre">indices</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.int_nums"><code class="docutils literal notranslate"><span class="pre">int_nums</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.kahler_cone"><code class="docutils literal notranslate"><span class="pre">kahler_cone</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.label"><code class="docutils literal notranslate"><span class="pre">label</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.mori_cone"><code class="docutils literal notranslate"><span class="pre">mori_cone</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.polytope"><code class="docutils literal notranslate"><span class="pre">polytope</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.tip"><code class="docutils literal notranslate"><span class="pre">tip</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.triangulation"><code class="docutils literal notranslate"><span class="pre">triangulation</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ContractionType"><code class="docutils literal notranslate"><span class="pre">ContractionType</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ContractionType.display_name"><code class="docutils literal notranslate"><span class="pre">display_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CoxeterGroup"><code class="docutils literal notranslate"><span class="pre">CoxeterGroup</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CoxeterGroup.order"><code class="docutils literal notranslate"><span class="pre">order</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CoxeterGroup.rank"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction"><code class="docutils literal notranslate"><span class="pre">ExtremalContraction</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.cone_face"><code class="docutils literal notranslate"><span class="pre">cone_face</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.contraction_curve"><code class="docutils literal notranslate"><span class="pre">contraction_curve</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.contraction_type"><code class="docutils literal notranslate"><span class="pre">contraction_type</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.coxeter_reflection"><code class="docutils literal notranslate"><span class="pre">coxeter_reflection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.effective_gv"><code class="docutils literal notranslate"><span class="pre">effective_gv</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.gv_eff_1"><code class="docutils literal notranslate"><span class="pre">gv_eff_1</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.gv_invariant"><code class="docutils literal notranslate"><span class="pre">gv_invariant</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.gv_series"><code class="docutils literal notranslate"><span class="pre">gv_series</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.toric_origin"><code class="docutils literal notranslate"><span class="pre">toric_origin</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.zero_vol_divisor"><code class="docutils literal notranslate"><span class="pre">zero_vol_divisor</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.InsufficientGVError"><code class="docutils literal notranslate"><span class="pre">InsufficientGVError</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.PartialClassification"><code class="docutils literal notranslate"><span class="pre">PartialClassification</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-cybir.core.types">
+<span id="types-calabiyaulite-extremalcontraction-and-contractiontype"></span><h1>types — CalabiYauLite, ExtremalContraction, and ContractionType<a class="headerlink" href="#module-cybir.core.types" title="Link to this heading">#</a></h1>
+<p>Core data types for cybir.</p>
+<p>Provides CalabiYauLite, ExtremalContraction, ContractionType,
+CoxeterGroup, and InsufficientGVError.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">CalabiYauLite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">int_nums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kahler_cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mori_cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polytope</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff_cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triangulation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gv_invariants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curve_signs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.CalabiYauLite" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Lightweight container for Calabi-Yau phase data.</p>
+<p>Stores precomputed intersection numbers, second Chern class,
+cones, and charge matrices. Interface-compatible with the
+dbrane-tools <code class="docutils literal notranslate"><span class="pre">CalabiYauLite</span></code> class, with additional fields
+for GV invariants and a phase label.</p>
+<p>Mutable during construction; call <a class="reference internal" href="#cybir.core.types.CalabiYauLite.freeze" title="cybir.core.types.CalabiYauLite.freeze"><code class="xref py py-meth docutils literal notranslate"><span class="pre">freeze()</span></code></a> to make
+immutable after the EKC orchestrator finishes building.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>int_nums</strong> (<em>numpy.ndarray</em>) – Triple intersection numbers <span class="math notranslate nohighlight">\(\kappa_{ijk}\)</span>.</p></li>
+<li><p><strong>c2</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – Second Chern class <span class="math notranslate nohighlight">\(c_2 \cdot D_i\)</span>.</p></li>
+<li><p><strong>kahler_cone</strong> (<em>optional</em>) – Kahler cone (<code class="docutils literal notranslate"><span class="pre">cytools.Cone</span></code>).</p></li>
+<li><p><strong>mori_cone</strong> (<em>optional</em>) – Mori cone (<code class="docutils literal notranslate"><span class="pre">cytools.Cone</span></code>).</p></li>
+<li><p><strong>polytope</strong> (<em>optional</em>) – The underlying polytope.</p></li>
+<li><p><strong>charges</strong> (<em>optional</em>) – CY charge matrix.</p></li>
+<li><p><strong>indices</strong> (<em>optional</em>) – CY labels list.</p></li>
+<li><p><strong>eff_cone</strong> (<em>optional</em>) – Effective cone (<code class="docutils literal notranslate"><span class="pre">cytools.Cone</span></code>).</p></li>
+<li><p><strong>triangulation</strong> (<em>optional</em>) – A <code class="docutils literal notranslate"><span class="pre">cytools.triangulation.Triangulation</span></code>.</p></li>
+<li><p><strong>fan</strong> (<em>optional</em>) – A <code class="docutils literal notranslate"><span class="pre">cytools.vector_config.fan.Fan</span></code>.</p></li>
+<li><p><strong>gv_invariants</strong> (<em>optional</em>) – Reference to a CYTools Invariants object.</p></li>
+<li><p><strong>label</strong> (<em>optional</em>) – Phase identifier for the adjacency graph.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.c2">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">c2</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.c2" title="Link to this definition">#</a></dt>
+<dd><p>Second Chern class <span class="math notranslate nohighlight">\(c_2 \cdot D_i\)</span>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.charges">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">charges</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.charges" title="Link to this definition">#</a></dt>
+<dd><p>CY charge matrix.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.curve_signs">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">curve_signs</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.curve_signs" title="Link to this definition">#</a></dt>
+<dd><p>+1/-1}.</p>
+<p>Records the sign of <code class="docutils literal notranslate"><span class="pre">tip</span> <span class="pre">&#64;</span> <span class="pre">curve</span></code> for each known flop curve.
+Persisted during BFS construction for use in orbit expansion
+and on-demand GV reconstruction (D-15).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Curve-sign dictionary {curve_tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.eff_cone">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">eff_cone</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.eff_cone" title="Link to this definition">#</a></dt>
+<dd><p>Effective cone (<code class="docutils literal notranslate"><span class="pre">cytools.Cone</span></code>).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.fan">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">fan</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.fan" title="Link to this definition">#</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">cytools.vector_config.fan.Fan</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.flop">
+<span class="sig-name descname"><span class="pre">flop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curve</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gv_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.flop" title="Link to this definition">#</a></dt>
+<dd><p>Create a new phase by flopping across a wall.</p>
+<p>Thin wrapper around <a class="reference internal" href="cybir.core.flop.html#cybir.core.flop.flop_phase" title="cybir.core.flop.flop_phase"><code class="xref py py-func docutils literal notranslate"><span class="pre">cybir.core.flop.flop_phase()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>curve</strong> (<em>numpy.ndarray</em>) – Flopping curve class.</p></li>
+<li><p><strong>gv_series</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – GV series for the flopping curve.</p></li>
+<li><p><strong>label</strong> (<em>str</em><em>, </em><em>optional</em>) – Label for the new phase.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>CalabiYauLite</strong> – New phase with transformed intersection numbers and c2.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.freeze">
+<span class="sig-name descname"><span class="pre">freeze</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.freeze" title="Link to this definition">#</a></dt>
+<dd><p>Make this object immutable.</p>
+<p>Called by the EKC orchestrator after construction is complete.
+After freezing, any attempt to set an attribute raises
+<code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.gv_invariants">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gv_invariants</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.gv_invariants" title="Link to this definition">#</a></dt>
+<dd><p>Reference to a CYTools Invariants object.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.indices">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">indices</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.indices" title="Link to this definition">#</a></dt>
+<dd><p>CY labels list.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.int_nums">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">int_nums</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.int_nums" title="Link to this definition">#</a></dt>
+<dd><p>Triple intersection numbers <span class="math notranslate nohighlight">\(\kappa_{ijk}\)</span>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.kahler_cone">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">kahler_cone</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.kahler_cone" title="Link to this definition">#</a></dt>
+<dd><p>Kahler cone (<code class="docutils literal notranslate"><span class="pre">cytools.Cone</span></code>).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.label">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.label" title="Link to this definition">#</a></dt>
+<dd><p>Phase identifier for the adjacency graph.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.mori_cone">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">mori_cone</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.mori_cone" title="Link to this definition">#</a></dt>
+<dd><p>Mori cone (<code class="docutils literal notranslate"><span class="pre">cytools.Cone</span></code>).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.polytope">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">polytope</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.polytope" title="Link to this definition">#</a></dt>
+<dd><p>The underlying polytope.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.tip">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">tip</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.tip" title="Link to this definition">#</a></dt>
+<dd><p>Interior point of the Kahler cone.</p>
+<p>Persisted during BFS construction for use in orbit expansion
+and curve-sign computation (D-15).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CalabiYauLite.triangulation">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">triangulation</span></span><a class="headerlink" href="#cybir.core.types.CalabiYauLite.triangulation" title="Link to this definition">#</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">cytools.triangulation.Triangulation</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cybir.core.types.ContractionType">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ContractionType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.ContractionType" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Type of extremal birational contraction.</p>
+<p>Eight types following the classification in arXiv:2212.10573:
+asymptotic, CFT, su(2) enhancement, su(2) enhancement at
+non-generic complex structure, symmetric flop, gross flop,
+generic flop, plus an <code class="docutils literal notranslate"><span class="pre">UNRESOLVED</span></code> sentinel for walls that
+require higher GV degree than the ceiling allows.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cybir.core.types.ContractionType.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">notation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'paper'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.ContractionType.display_name" title="Link to this definition">#</a></dt>
+<dd><p>Return human-readable name in the given notation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>notation</strong> (<em>str</em>) – Either <code class="docutils literal notranslate"><span class="pre">&quot;paper&quot;</span></code> (default) for arXiv notation or
+<code class="docutils literal notranslate"><span class="pre">&quot;wilson&quot;</span></code> for Wilson’s Type I/II/III convention.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>str</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cybir.core.types.CoxeterGroup">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">CoxeterGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reflections</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.CoxeterGroup" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Coxeter group data from orbit expansion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factors</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Tuple of (family, rank, order) tuples, one per irreducible component.</p></li>
+<li><p><strong>order_matrix</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></span>) – The Coxeter order matrix m_ij (numpy.ndarray).</p></li>
+<li><p><strong>reflections</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The generator reflection matrices as a tuple of numpy arrays.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CoxeterGroup.order">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#cybir.core.types.CoxeterGroup.order" title="Link to this definition">#</a></dt>
+<dd><p>Total group order <span class="math notranslate nohighlight">\(|W|\)</span> (product of factor orders).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.CoxeterGroup.rank">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">rank</span></span><a class="headerlink" href="#cybir.core.types.CoxeterGroup.rank" title="Link to this definition">#</a></dt>
+<dd><p>Total rank (sum of factor ranks).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ExtremalContraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contraction_curve</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contraction_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gv_invariant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effective_gv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_vol_divisor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coxeter_reflection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gv_series</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gv_eff_1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cone_face</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toric_origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.ExtremalContraction" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An extremal birational contraction between two CY3 phases.</p>
+<p>Represents a wall in the extended Kahler cone where a curve
+shrinks to zero volume. Frozen by default after construction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contraction_curve</strong> (<em>numpy.ndarray</em>) – The curve class that shrinks at this wall.</p></li>
+<li><p><strong>contraction_type</strong> (<a class="reference internal" href="#cybir.core.types.ContractionType" title="cybir.core.types.ContractionType"><em>ContractionType</em></a><em>, </em><em>optional</em>) – Classification of this contraction.</p></li>
+<li><p><strong>gv_invariant</strong> (<em>int</em><em>, </em><em>optional</em>) – Gopakumar-Vafa invariant for the flopping curve.</p></li>
+<li><p><strong>effective_gv</strong> (<em>int</em><em>, </em><em>optional</em>) – Effective GV invariant (accounting for multiplicity).</p></li>
+<li><p><strong>zero_vol_divisor</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – Divisor that shrinks at this wall.</p></li>
+<li><p><strong>coxeter_reflection</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – Coxeter reflection matrix for this contraction.</p></li>
+<li><p><strong>gv_series</strong> (<em>list</em><em> of </em><em>int</em><em>, </em><em>optional</em>) – GV series <span class="math notranslate nohighlight">\([n^0_{[\mathcal{C}]}, n^0_{2[\mathcal{C}]}, \ldots]\)</span>.</p></li>
+<li><p><strong>gv_eff_1</strong> (<em>int</em><em>, </em><em>optional</em>) – Linear effective GV invariant <span class="math notranslate nohighlight">\(\sum_k k \, n^0_{k[\mathcal{C}]}\)</span>.</p></li>
+<li><p><strong>cone_face</strong> (<em>optional</em>) – Reference to the Mori cone face associated with this contraction.</p></li>
+<li><p><strong>toric_origin</strong> (<em>str</em><em>, </em><em>optional</em>) – Toric origin tag (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;flop&quot;</span></code>) when this contraction was
+identified from toric data.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.cone_face">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">cone_face</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.cone_face" title="Link to this definition">#</a></dt>
+<dd><p>Mori cone face associated with this contraction.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.contraction_curve">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contraction_curve</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.contraction_curve" title="Link to this definition">#</a></dt>
+<dd><p>The curve class that shrinks at this wall.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.contraction_type">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contraction_type</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.contraction_type" title="Link to this definition">#</a></dt>
+<dd><p>Classification of this contraction.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.coxeter_reflection">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">coxeter_reflection</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.coxeter_reflection" title="Link to this definition">#</a></dt>
+<dd><p>Coxeter reflection matrix for this contraction.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.effective_gv">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">effective_gv</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.effective_gv" title="Link to this definition">#</a></dt>
+<dd><p>Effective GV invariant (accounting for multiplicity).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.gv_eff_1">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gv_eff_1</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.gv_eff_1" title="Link to this definition">#</a></dt>
+<dd><p>Linear effective GV invariant <span class="math notranslate nohighlight">\(\sum_k k \, n^0_{k[\mathcal{C}]}\)</span>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.gv_invariant">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gv_invariant</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.gv_invariant" title="Link to this definition">#</a></dt>
+<dd><p>Gopakumar-Vafa invariant for the flopping curve.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.gv_series">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gv_series</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.gv_series" title="Link to this definition">#</a></dt>
+<dd><p>GV series <span class="math notranslate nohighlight">\([n^0_{[\mathcal{C}]}, n^0_{2[\mathcal{C}]}, \ldots]\)</span>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.toric_origin">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">toric_origin</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.toric_origin" title="Link to this definition">#</a></dt>
+<dd><p>Toric origin tag for this contraction, if any.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cybir.core.types.ExtremalContraction.zero_vol_divisor">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">zero_vol_divisor</span></span><a class="headerlink" href="#cybir.core.types.ExtremalContraction.zero_vol_divisor" title="Link to this definition">#</a></dt>
+<dd><p>Divisor that shrinks at this wall.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="cybir.core.types.InsufficientGVError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">InsufficientGVError</span></span><a class="headerlink" href="#cybir.core.types.InsufficientGVError" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></p>
+<p>Raised when GV series has not been computed to high enough degree.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cybir.core.types.PartialClassification">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">PartialClassification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zero_vol_divisor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coxeter_reflection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_asymptotic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_cft</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">determined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remaining_options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">needs_for_disambiguation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cybir.core.types.PartialClassification" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Geometric-only classification of an extremal contraction curve.</p>
+<p>Returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">cybir.diagnose_curve()</span></code> when called with
+<code class="docutils literal notranslate"><span class="pre">compute_gvs=False</span></code> and no GV series provided. Captures everything
+determinable from triple intersection numbers, the second Chern class,
+and the curve class alone – no GV invariants required.</p>
+<p>The geometric checks (asymptotic, CFT, zero-volume divisor existence,
+Coxeter-reflection integrality) are sufficient to fully classify the
+contraction in some cases. When they are not, <code class="docutils literal notranslate"><span class="pre">determined</span></code> is
+<code class="docutils literal notranslate"><span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">remaining_options</span></code> lists which contraction types
+remain possible after geometric narrowing; computing GVs is required
+to disambiguate among them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zero_vol_divisor</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></span>) – Integer divisor with <span class="math notranslate nohighlight">\(D \cdot \mathcal{C} &lt; 0\)</span>, or
+<code class="docutils literal notranslate"><span class="pre">None</span></code> if no zero-volume divisor exists or the null space is
+higher-dimensional. See <a class="reference internal" href="cybir.core.classify.html#cybir.core.classify.zero_vol_divisor" title="cybir.core.classify.zero_vol_divisor"><code class="xref py py-func docutils literal notranslate"><span class="pre">cybir.core.classify.zero_vol_divisor()</span></code></a>.</p></li>
+<li><p><strong>coxeter_reflection</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></span>) – Coxeter reflection matrix on the lattice when a zero-volume
+divisor exists; <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.</p></li>
+<li><p><strong>is_asymptotic</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the projected triple intersection numbers vanish.</p></li>
+<li><p><strong>is_cft</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the projected intersection-number matrix is
+rank-deficient.</p></li>
+<li><p><strong>determined</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></span>) – Set when geometry alone pins the type down (<code class="docutils literal notranslate"><span class="pre">ASYMPTOTIC</span></code>,
+<code class="docutils literal notranslate"><span class="pre">CFT</span></code>, or <code class="docutils literal notranslate"><span class="pre">FLOP</span></code> from no-zvd / non-integer-reflection paths).
+<code class="docutils literal notranslate"><span class="pre">None</span></code> when GVs are needed to disambiguate.</p></li>
+<li><p><strong>remaining_options</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Contraction types still possible. Length 1 when <code class="docutils literal notranslate"><span class="pre">determined</span></code>
+is set; longer when GVs are needed.</p></li>
+<li><p><strong>needs_for_disambiguation</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Short prose explanation of what GV data would resolve the
+remaining options. Empty string when <code class="docutils literal notranslate"><span class="pre">determined</span></code> is set.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">cybir</span><span class="w"> </span><span class="kn">import</span> <span class="n">diagnose_curve</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partial</span> <span class="o">=</span> <span class="n">diagnose_curve</span><span class="p">(</span><span class="n">cy</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">compute_gvs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">partial</span><span class="o">.</span><span class="n">determined</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Classified as </span><span class="si">{</span><span class="n">partial</span><span class="o">.</span><span class="n">determined</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> from geometry alone&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GVs needed; possibilities: </span><span class="si">{</span><span class="n">partial</span><span class="o">.</span><span class="n">remaining_options</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cybir.core.patch.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">patch — CYTools monkey-patching for GV flop tracking</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cybir.core.graph.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">graph — Phase adjacency graph</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite"><code class="docutils literal notranslate"><span class="pre">CalabiYauLite</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.c2"><code class="docutils literal notranslate"><span class="pre">c2</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.charges"><code class="docutils literal notranslate"><span class="pre">charges</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.curve_signs"><code class="docutils literal notranslate"><span class="pre">curve_signs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.eff_cone"><code class="docutils literal notranslate"><span class="pre">eff_cone</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.fan"><code class="docutils literal notranslate"><span class="pre">fan</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.flop"><code class="docutils literal notranslate"><span class="pre">flop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.freeze"><code class="docutils literal notranslate"><span class="pre">freeze()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.gv_invariants"><code class="docutils literal notranslate"><span class="pre">gv_invariants</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.indices"><code class="docutils literal notranslate"><span class="pre">indices</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.int_nums"><code class="docutils literal notranslate"><span class="pre">int_nums</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.kahler_cone"><code class="docutils literal notranslate"><span class="pre">kahler_cone</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.label"><code class="docutils literal notranslate"><span class="pre">label</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.mori_cone"><code class="docutils literal notranslate"><span class="pre">mori_cone</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.polytope"><code class="docutils literal notranslate"><span class="pre">polytope</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.tip"><code class="docutils literal notranslate"><span class="pre">tip</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CalabiYauLite.triangulation"><code class="docutils literal notranslate"><span class="pre">triangulation</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ContractionType"><code class="docutils literal notranslate"><span class="pre">ContractionType</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ContractionType.display_name"><code class="docutils literal notranslate"><span class="pre">display_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CoxeterGroup"><code class="docutils literal notranslate"><span class="pre">CoxeterGroup</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CoxeterGroup.order"><code class="docutils literal notranslate"><span class="pre">order</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.CoxeterGroup.rank"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction"><code class="docutils literal notranslate"><span class="pre">ExtremalContraction</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.cone_face"><code class="docutils literal notranslate"><span class="pre">cone_face</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.contraction_curve"><code class="docutils literal notranslate"><span class="pre">contraction_curve</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.contraction_type"><code class="docutils literal notranslate"><span class="pre">contraction_type</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.coxeter_reflection"><code class="docutils literal notranslate"><span class="pre">coxeter_reflection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.effective_gv"><code class="docutils literal notranslate"><span class="pre">effective_gv</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.gv_eff_1"><code class="docutils literal notranslate"><span class="pre">gv_eff_1</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.gv_invariant"><code class="docutils literal notranslate"><span class="pre">gv_invariant</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.gv_series"><code class="docutils literal notranslate"><span class="pre">gv_series</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.toric_origin"><code class="docutils literal notranslate"><span class="pre">toric_origin</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.ExtremalContraction.zero_vol_divisor"><code class="docutils literal notranslate"><span class="pre">zero_vol_divisor</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.InsufficientGVError"><code class="docutils literal notranslate"><span class="pre">InsufficientGVError</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cybir.core.types.PartialClassification"><code class="docutils literal notranslate"><span class="pre">PartialClassification</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Elijah Sheridan
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Elijah Sheridan.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
